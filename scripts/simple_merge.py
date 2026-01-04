@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+Упрощенный скрипт для объединения конфигов без проверки пинга
+"""
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -43,13 +46,14 @@ else:
 try:
     REPO = g.get_repo(REPO_NAME)
 except Exception as e:
-    log(f"⚠️ Ошибка подключения к GitHub: {e}")
+    log("Ошибка подключения к GitHub: " + str(e)[:100])
     REPO = None
 
 # Источники конфигов
 URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
-    "https://raw.githubusercontent.com/zieng2/wl/main/vless_universal.txt"
+        "https://raw.githubusercontent.com/zieng2/wl/main/vless_universal.txt",
+
 ]
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -104,7 +108,10 @@ def fetch_url(url: str, timeout: int = 15, max_attempts: int = 3) -> str:
             last_exc = exc
             if attempt < max_attempts:
                 continue
-            log(f"❌ Ошибка загрузки {url}: {str(exc)[:100]}")
+            error_msg = str(exc)
+            if len(error_msg) > 100:
+                error_msg = error_msg[:100]
+            log("Ошибка загрузки " + url + ": " + error_msg)
             return ""
     
     return ""
@@ -192,11 +199,19 @@ def download_and_process_url(url: str) -> list[str]:
                 elif '@' in line and ':' in line and line.count(':') >= 2:
                     configs.append(line)
         
-        log(f"✅ {url.split('/')[3] if '/' in url else 'unknown'}: {len(configs)} конфигов")
+        # Безопасный способ извлечения имени репозитория
+        try:
+            repo_name = url.split('/')[3] if '/' in url else 'unknown'
+        except:
+            repo_name = 'unknown'
+        log("✅ " + repo_name + ": " + str(len(configs)) + " конфигов")
         return configs
         
     except Exception as e:
-        log(f"❌ Ошибка обработки {url}: {str(e)[:100]}")
+        error_msg = str(e)
+        if len(error_msg) > 100:
+            error_msg = error_msg[:100]
+        log("Ошибка обработки " + url + ": " + error_msg)
         return []
 
 def merge_and_deduplicate(all_configs: list[str]) -> list[str]:
@@ -217,7 +232,7 @@ def merge_and_deduplicate(all_configs: list[str]) -> list[str]:
         # Дедупликация по хосту и порту
         host_port = extract_host_port(config)
         if host_port:
-            key = f"{host_port[0].lower()}:{host_port[1]}"
+            key = host_port[0].lower() + ":" + str(host_port[1])
             if key in seen_hostport:
                 continue
             seen_hostport.add(key)
@@ -231,28 +246,28 @@ def save_to_file(configs: list[str], filename: str):
     try:
         with open(filename, "w", encoding="utf-8") as f:
             # Заголовок файла
-            f.write(f"# Объединенные конфиги (источников: {len(URLS)})\n")
-            f.write(f"# Обновлено: {offset}\n")
-            f.write(f"# Всего конфигов: {len(configs)}\n")
+            f.write("# Объединенные конфиги (источников: " + str(len(URLS)) + ")\n")
+            f.write("# Обновлено: " + offset + "\n")
+            f.write("# Всего конфигов: " + str(len(configs)) + "\n")
             f.write("#" * 50 + "\n\n")
             
             # Записываем конфиги
             for config in configs:
                 f.write(config + "\n")
         
-        log(f"💾 Сохранено {len(configs)} конфигов в {filename}")
+        log("💾 Сохранено " + str(len(configs)) + " конфигов в " + filename)
         
     except Exception as e:
-        log(f"❌ Ошибка сохранения файла {filename}: {e}")
+        log("Ошибка сохранения файла " + filename + ": " + str(e))
 
 def upload_to_github(filename: str, remote_path: str):
     """Загружает файл на GitHub"""
     if not REPO:
-        log("⚠️ Пропускаю загрузку на GitHub (нет подключения)")
+        log("Пропускаю загрузку на GitHub (нет подключения)")
         return
     
     if not os.path.exists(filename):
-        log(f"❌ Файл {filename} не найден для загрузки")
+        log("Файл " + filename + " не найден для загрузки")
         return
     
     try:
@@ -267,37 +282,38 @@ def upload_to_github(filename: str, remote_path: str):
             # Проверяем, изменился ли контент
             remote_content = file_in_repo.decoded_content.decode("utf-8", errors="replace")
             if remote_content == content:
-                log(f"🔄 Файл {remote_path} не изменился")
+                log("Файл " + remote_path + " не изменился")
                 return
             
             # Обновляем файл
             REPO.update_file(
                 path=remote_path,
-                message=f"🤖 Авто-обновление: {offset}",
+                message="🤖 Авто-обновление: " + offset,
                 content=content,
                 sha=current_sha
             )
-            log(f"⬆️ Файл {remote_path} обновлён на GitHub")
+            log("⬆️ Файл " + remote_path + " обновлён на GitHub")
             
         except GithubException as e:
             if e.status == 404:
                 # Файл не существует, создаем новый
                 REPO.create_file(
                     path=remote_path,
-                    message=f"🤖 Первое создание: {offset}",
+                    message="🤖 Первое создание: " + offset,
                     content=content
                 )
-                log(f"🆕 Файл {remote_path} создан на GitHub")
+                log("🆕 Файл " + remote_path + " создан на GitHub")
             else:
-                log(f"⚠️ Ошибка GitHub: {e.data.get('message', str(e))}")
+                error_msg = e.data.get('message', str(e))
+                log("Ошибка GitHub: " + error_msg)
                 
     except Exception as e:
-        log(f"❌ Ошибка при загрузке на GitHub: {e}")
+        log("Ошибка при загрузке на GitHub: " + str(e))
 
 def update_readme(total_configs: int):
     """Обновляет README.md со статистикой"""
     if not REPO:
-        log("⚠️ Пропускаю обновление README (нет подключения)")
+        log("Пропускаю обновление README (нет подключения)")
         return
     
     try:
@@ -310,22 +326,21 @@ def update_readme(total_configs: int):
             old_content = "# Объединенные конфиги VPN\n\n"
         
         # Формируем ссылку на raw-файл
-        raw_url = f"https://github.com/{REPO_NAME}/raw/main/confs/merged.txt"
+        raw_url = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/merged.txt"
+        
+        # Разделяем время и дату
+        time_part = offset.split(" | ")[0]
+        date_part = offset.split(" | ")[1] if " | " in offset else ""
         
         # Создаем новую таблицу
-        new_section = f"""
-## 📊 Статус обновления
-
-| Файл | Описание | Конфигов | Время обновления | Дата |
-|------|----------|----------|------------------|------|
-| [`merged.txt`]({raw_url}) | Объединенные конфиги из {len(URLS)} источников | {total_configs} | {offset.split(' \| ')[0]} | {offset.split(' \| ')[1]} |
-
-## 📥 Скачать
-- [merged.txt]({raw_url}) - все конфиги в одном файле
-
-## ⚙️ Авто-обновление
-Конфиги автоматически обновляются каждый час через GitHub Actions.
-"""
+        new_section = "\n## 📊 Статус обновления\n\n"
+        new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
+        new_section += "|------|----------|----------|------------------|------|\n"
+        new_section += "| [`merged.txt`](" + raw_url + ") | Объединенные конфиги из " + str(len(URLS)) + " источников | " + str(total_configs) + " | " + time_part + " | " + date_part + " |\n\n"
+        new_section += "## 📥 Скачать\n"
+        new_section += "- [merged.txt](" + raw_url + ") - все конфиги в одном файле\n\n"
+        new_section += "## ⚙️ Авто-обновление\n"
+        new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions."
         
         # Заменяем или добавляем секцию статуса
         status_pattern = r'## 📊 Статус обновления[\s\S]*?(?=## |$)'
@@ -335,22 +350,23 @@ def update_readme(total_configs: int):
             new_content = old_content.strip() + "\n\n" + new_section
         
         # Обновляем файл
+        sha = readme_file.sha if 'readme_file' in locals() else None
         REPO.update_file(
             path="README.md",
-            message=f"📝 Обновление README: {total_configs} конфигов",
+            message="📝 Обновление README: " + str(total_configs) + " конфигов",
             content=new_content,
-            sha=readme_file.sha if 'readme_file' in locals() else None
+            sha=sha
         )
         log("📝 README.md обновлён")
         
     except Exception as e:
-        log(f"⚠️ Ошибка обновления README: {e}")
+        log("Ошибка обновления README: " + str(e))
 
 def main():
     """Основная функция"""
     log("🚀 Начало объединения конфигов")
-    log(f"📅 Время: {offset}")
-    log(f"🌐 Источников: {len(URLS)}")
+    log("📅 Время: " + offset)
+    log("🌐 Источников: " + str(len(URLS)))
     
     # 1. Скачиваем конфиги из всех источников
     log("📥 Загрузка конфигов...")
@@ -359,7 +375,10 @@ def main():
     max_workers = min(DEFAULT_MAX_WORKERS, len(URLS))
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(download_and_process_url, url): url for url in URLS}
+        futures = {}
+        for url in URLS:
+            future = executor.submit(download_and_process_url, url)
+            futures[future] = url
         
         for future in concurrent.futures.as_completed(futures):
             url = futures[future]
@@ -368,9 +387,12 @@ def main():
                 if configs:
                     all_configs.extend(configs)
             except Exception as e:
-                log(f"❌ Таймаут или ошибка для {url}: {str(e)[:50]}")
+                error_msg = str(e)
+                if len(error_msg) > 50:
+                    error_msg = error_msg[:50]
+                log("Таймаут или ошибка для " + url + ": " + error_msg)
     
-    log(f"📊 Скачано всего: {len(all_configs)} конфигов")
+    log("📊 Скачано всего: " + str(len(all_configs)) + " конфигов")
     
     if not all_configs:
         log("❌ Не удалось загрузить ни одного конфига")
@@ -379,16 +401,16 @@ def main():
     # 2. Дедупликация
     log("🔄 Дедупликация...")
     unique_configs = merge_and_deduplicate(all_configs)
-    log(f"🔄 После дедупликации: {len(unique_configs)} конфигов")
+    log("🔄 После дедупликации: " + str(len(unique_configs)) + " конфигов")
     
     # 3. Сохраняем локально
-    os.makedirs("confs", exist_ok=True)
-    output_file = "confs/merged.txt"
+    os.makedirs("githubmirror", exist_ok=True)
+    output_file = "githubmirror/merged.txt"
     save_to_file(unique_configs, output_file)
     
     # 4. Загружаем на GitHub
     log("📤 Загрузка на GitHub...")
-    upload_to_github(output_file, "confs/merged.txt")
+    upload_to_github(output_file, "githubmirror/merged.txt")
     
     # 5. Обновляем README
     update_readme(len(unique_configs))
@@ -396,15 +418,15 @@ def main():
     # 6. Выводим итоги
     log("=" * 50)
     log("📊 ИТОГИ:")
-    log(f"   🌐 Источников: {len(URLS)}")
-    log(f"   📥 Скачано: {len(all_configs)}")
-    log(f"   🔄 Уникальных: {len(unique_configs)}")
-    log(f"   📊 Дубликатов: {len(all_configs) - len(unique_configs)}")
-    log(f"   💾 Файл: {output_file}")
+    log("   🌐 Источников: " + str(len(URLS)))
+    log("   📥 Скачано: " + str(len(all_configs)))
+    log("   🔄 Уникальных: " + str(len(unique_configs)))
+    log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
+    log("   💾 Файл: " + output_file)
     log("=" * 50)
     
     # Выводим логи
-    print(f"\n📋 ЛОГИ ВЫПОЛНЕНИЯ ({offset}):")
+    print("\n📋 ЛОГИ ВЫПОЛНЕНИЯ (" + offset + "):")
     print("=" * 50)
     for line in LOGS_BY_FILE[0]:
         print(line)
