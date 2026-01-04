@@ -55,8 +55,6 @@ URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
     "https://jsnegsukavsos.hb.ru-msk.vkcloud-storage.ru/love",
-    "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/2",
-]
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
