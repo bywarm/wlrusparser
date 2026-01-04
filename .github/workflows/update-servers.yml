@@ -1,35 +1,24 @@
-name: Update Server List
+name: Update Configs Hourly
 
 on:
   schedule:
+    # Каждый час в 0 минут
     - cron: '0 * * * *'
-  workflow_dispatch:  # Ручной запуск из интерфейса GitHub
+  workflow_dispatch:  # Ручной запуск
   push:
-    branches:
-      - main
-    paths:
-      - 'scripts/**'
-      - '.github/workflows/update-servers.yml'
+    branches: [ main ]
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30 
+    timeout-minutes: 15
     
     permissions:
       contents: write
-      pages: write
-      id-token: write
-    
-    env:
-      TZ: 'Europe/Moscow'
     
     steps:
     - name: ⬇️ Checkout repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
     
     - name: 🐍 Set up Python
       uses: actions/setup-python@v4
@@ -40,75 +29,34 @@ jobs:
     - name: 📦 Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyGithub
-        pip install urllib3
-        pip install requests
-        echo "✅ Dependencies installed"
+        pip install PyGithub requests urllib3
     
-    - name: 🔧 Configure Git
-      run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git config --global core.autocrlf false
-    
-    - name: 🚀 Run server checker script
+    - name: 🚀 Run merge script
       env:
         MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        MAX_WORKERS: 50
       run: |
-        echo "🕐 Current time in UTC: $(date)"
-        echo "🕐 Current time in Moscow: $(TZ='Europe/Moscow' date)"
-        echo "🚀 Starting server check..."
-        python scripts/server_checker.py
-        echo "✅ Script completed"
-    
-    - name: 📊 Display results
-      run: |
-        echo "📋 Checking results..."
-        if [ -f "confs/good.txt" ]; then
-          GOOD_COUNT=$(grep -c '^v[lm]ess://' confs/good.txt || echo "0")
-          echo "✅ Good servers: $GOOD_COUNT"
-        else
-          echo "❌ good.txt not found"
-        fi
-        
-        if [ -f "confs/bad.txt" ]; then
-          BAD_COUNT=$(grep -c '^v[lm]ess://' confs/bad.txt || echo "0")
-          echo "❌ Bad servers: $BAD_COUNT"
-        else
-          echo "❌ bad.txt not found"
-        fi
+        echo "🕐 Запуск скрипта..."
+        python scripts/simple_merge.py
     
     - name: 💾 Commit changes
-      if: always()
       run: |
-        echo "💾 Committing changes..."
-        git add -A
-        git status
+        echo "💾 Проверка изменений..."
+        
+        if [ -f "confs/merged.txt" ]; then
+          CONFIG_COUNT=$(grep -c '^v[lm]ess://' confs/merged.txt || echo "0")
+          echo "📊 Конфигов в merged.txt: $CONFIG_COUNT"
+        fi
+        
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        git add confs/merged.txt README.md
         
         if git diff --cached --quiet; then
-          echo "🔄 No changes to commit"
+          echo "🔄 Нет изменений для коммита"
         else
-          # Получаем время по Москве
           MOSCOW_TIME=$(TZ='Europe/Moscow' date '+%H:%M | %d.%m.%Y')
           git commit -m "🤖 Авто-обновление: $MOSCOW_TIME"
-          
-          # Пытаемся сделать push с повторными попытками
-          for i in {1..3}; do
-            echo "📤 Push attempt $i..."
-            if git push; then
-              echo "✅ Push successful"
-              break
-            else
-              echo "❌ Push failed, retrying..."
-              sleep 5
-              git pull --rebase
-            fi
-          done
+          git push
+          echo "✅ Изменения закоммичены"
         fi
-    
-    - name: 📝 Update workflow status
-      if: always()
-      run: |
-        echo "🏁 Workflow completed at $(date)"
-        echo "🕐 Moscow time: $(TZ='Europe/Moscow' date '+%H:%M | %d.%m.%Y')"
