@@ -7,6 +7,9 @@ on:
   workflow_dispatch:  # Ручной запуск
   push:
     branches: [ main ]
+    paths-ignore:
+      - 'githubmirror/merged.txt'  # Игнорируем изменения в файле конфигов
+      - 'README.md'  # Игнорируем изменения в README
 
 jobs:
   update:
@@ -17,8 +20,11 @@ jobs:
       contents: write
     
     steps:
-    - name: ⬇️ Checkout repository
+    - name: ⬇️ Checkout repository with token
       uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0  # Полная история для rebase
     
     - name: 🐍 Set up Python
       uses: actions/setup-python@v4
@@ -38,7 +44,7 @@ jobs:
         echo "🕐 Запуск скрипта..."
         python scripts/simple_merge.py
     
-    - name: 💾 Commit changes
+    - name: 💾 Commit and push changes
       run: |
         echo "💾 Проверка изменений..."
         
@@ -47,16 +53,60 @@ jobs:
           echo "📊 Конфигов в merged.txt: $CONFIG_COUNT"
         fi
         
+        # Настройка git
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
+        git config --local pull.rebase true
         
+        # Добавляем изменения
         git add githubmirror/merged.txt README.md
         
+        # Проверяем, есть ли изменения
         if git diff --cached --quiet; then
           echo "🔄 Нет изменений для коммита"
-        else
-          MOSCOW_TIME=$(TZ='Europe/Moscow' date '+%H:%M | %d.%m.%Y')
-          git commit -m "🤖 Авто-обновление: $MOSCOW_TIME"
-          git push
-          echo "✅ Изменения закоммичены"
+          exit 0
         fi
+        
+        # Создаем коммит
+        MOSCOW_TIME=$(TZ='Europe/Moscow' date '+%H:%M | %d.%m.%Y')
+        git commit -m "🤖 Авто-обновление: $MOSCOW_TIME"
+        
+        # Пытаемся обновить локальный репозиторий
+        echo "🔄 Синхронизируем с удаленным репозиторием..."
+        
+        # Вариант 1: Пытаемся сделать pull с rebase
+        if git pull --rebase origin main; then
+          echo "✅ Rebase успешен"
+        else
+          echo "⚠️ Rebase не удался, отменяем и применяем стратегию слияния"
+          git rebase --abort
+          git pull origin main --strategy-option ours
+        fi
+        
+        # Пытаемся сделать push
+        echo "📤 Отправляем изменения..."
+        MAX_RETRIES=3
+        RETRY_DELAY=10
+        
+        for i in $(seq 1 $MAX_RETRIES); do
+          echo "Попытка $i из $MAX_RETRIES..."
+          
+          if git push origin main; then
+            echo "✅ Изменения успешно отправлены"
+            break
+          else
+            echo "❌ Ошибка при отправке, попытка $i не удалась"
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "⏳ Ждем $RETRY_DELAY секунд перед следующей попыткой..."
+              sleep $RETRY_DELAY
+              
+              # Обновляем локальный репозиторий
+              echo "🔄 Обновляем локальный репозиторий..."
+              git pull origin main --rebase
+            else
+              echo "💥 Все попытки отправки не удались"
+              exit 1
+            fi
+          fi
+        done
