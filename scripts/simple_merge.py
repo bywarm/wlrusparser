@@ -52,10 +52,32 @@ except Exception as e:
 
 # Сокращенный список подсетей для whitelist (первые две)
 WHITELIST_SUBNETS = [
-    "95.163.0.0/24",
-    "89.208.0.0/24"
+    "95.163.0.0/16",
+    "89.208.0.0/16",
+    "217.16.0.0/16",
+    "5.188.0.0/16",
+    "109.120.0.0/16",
+    "217.12.0.0/16",
+    "176.108.0.0/16",
+    "178.154.0.0/16",
+    "176.109.0.0/16",
+    "176.32.0.0/16",
+    "193.53.0.0/16",
+    "45.129.0.0/16",
+    "37.18.0.0/16",
+    "78.159.0.0/16",
+    "185.177.0.0/16",
+    "45.15.0.0/16",
+    "176.122.0.0/16",
+    "185.130.0.0/16",
+    "37.139.0.0/16",
+    "83.166.0.0/16",
+    "91.219.0.0/16",
+    "51.250.0.0/16",
+    "84.201.0.0/16",
+    "158.160.0.0/16",
+    "130.193.0.0/16"
 ]
-
 # Преобразуем подсети в объекты ipaddress для быстрой проверки
 WHITELIST_NETWORKS = [ipaddress.ip_network(subnet) for subnet in WHITELIST_SUBNETS]
 
@@ -65,6 +87,7 @@ URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
     "https://jsnegsukavsos.hb.ru-msk.vkcloud-storage.ru/love",
+    "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/refs/heads/main/githubmirror/26.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
