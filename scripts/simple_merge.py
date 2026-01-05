@@ -531,4 +531,264 @@ def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
             REPO.update_file(
                 path=remote_path,
                 message="🤖 Авто-обновление: " + offset,
+                content=content,
+                sha=current_sha,
+                branch=branch
+            )
+            log(f"⬆️ Файл {remote_path} обновлён на GitHub в ветке {branch}")
+            
+        except GithubException as e:
+            if e.status == 404:
+                # Файл не существует, создаем новый
+                REPO.create_file(
+                    path=remote_path,
+                    message="🤖 Первое создание: " + offset,
+                    content=content,
+                    branch=branch
+                )
+                log(f"🆕 Файл {remote_path} создан на GitHub в ветке {branch}")
+            else:
+                error_msg = e.data.get('message', str(e))
+                log("Ошибка GitHub: " + error_msg)
+                
+    except Exception as e:
+        log("Ошибка при загрузке на GitHub: " + str(e))
+
+def setup_github_pages():
+    """Настраивает ветку gh-pages для GitHub Pages"""
+    if not REPO:
+        return False
     
+    try:
+        # Пробуем получить ветку gh-pages
+        REPO.get_branch("gh-pages")
+        return True
+    except GithubException:
+        try:
+            # Создаем ветку gh-pages на основе main
+            main_branch = REPO.get_branch("main")
+            REPO.create_git_ref(ref="refs/heads/gh-pages", sha=main_branch.commit.sha)
+            log("✅ Ветка gh-pages создана")
+            
+            # Создаем минимальный CNAME файл (опционально)
+            try:
+                REPO.create_file(
+                    path="CNAME",
+                    message="🌐 Настройка GitHub Pages",
+                    content="",
+                    branch="gh-pages"
+                )
+            except:
+                pass
+                
+            return True
+        except Exception as e:
+            log(f"❌ Ошибка создания ветки gh-pages: {str(e)}")
+            return False
+
+def update_readme(total_configs: int, wl_configs_count: int):
+    """Обновляет README.md со статистикой"""
+    if not REPO:
+        log("Пропускаю обновление README (нет подключения)")
+        return
+    
+    try:
+        # Получаем текущий README
+        try:
+            readme_file = REPO.get_contents("README.md")
+            old_content = readme_file.decoded_content.decode("utf-8")
+        except GithubException:
+            # Если README не существует, создаем новый
+            old_content = "# Объединенные конфиги VPN\n\n"
+        
+        # Формируем ссылки на файлы
+        raw_url_merged = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/merged.txt"
+        raw_url_wl = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/wl.txt"
+        raw_url_working = "https://github.com/" + REPO_NAME + "/raw/main/cloudflare-pages/working-servers.txt"
+        raw_url_simple = "https://github.com/" + REPO_NAME + "/raw/main/cloudflare-pages/simple-list.txt"
+        
+        # jsDelivr CDN URL (если репозиторий публичный)
+        cdn_url_wl = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/wl.txt"
+        cdn_url_simple = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/cloudflare-pages/simple-list.txt"
+        
+        # Разделяем время и дату
+        time_part = offset.split(" | ")[0]
+        date_part = offset.split(" | ")[1] if " | " in offset else ""
+        
+        # Создаем новую таблицу
+        new_section = "\n## 📊 Статус обновления\n\n"
+        new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
+        new_section += "|------|----------|----------|------------------|------|\n"
+        new_section += f"| [`merged.txt`]({raw_url_merged}) | Все конфиги из {len(URLS)} источников | {total_configs} | {time_part} | {date_part} |\n"
+        new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n"
+        new_section += f"| [`working-servers.txt`]({raw_url_working}) | Для ручной проверки на Cloudflare | шаблон | {time_part} | {date_part} |\n"
+        new_section += f"| [`simple-list.txt`]({raw_url_simple}) | Пронумерованный список | до 50 | {time_part} | {date_part} |\n\n"
+        
+        # Добавляем информацию о подсетях
+        new_section += "## 📋 Whitelist подсети\n"
+        new_section += "Файл `wl.txt` содержит только конфиги со следующими подсетями:\n\n"
+        
+        # Группируем подсети по строкам для лучшей читаемости
+        for i in range(0, len(WHITELIST_SUBNETS), 4):
+            subnet_line = WHITELIST_SUBNETS[i:i+4]
+            new_section += "`" + "` `".join(subnet_line) + "`  \n"
+        
+        new_section += "\n## 📥 Скачать\n"
+        new_section += "### Основные файлы:\n"
+        new_section += f"- [merged.txt (все конфиги)]({raw_url_merged})\n"
+        new_section += f"- [wl.txt (только whitelist)]({raw_url_wl})\n"
+        new_section += f"- [simple-list.txt (пронумерованный)]({raw_url_simple})\n"
+        new_section += f"- [working-servers.txt (для проверки)]({raw_url_working})\n\n"
+        
+        new_section += "### Короткие ссылки (jsDelivr CDN):\n"
+        new_section += f"- [wl.txt]({cdn_url_wl})\n"
+        new_section += f"- [simple-list.txt]({cdn_url_simple})\n\n"
+        
+        new_section += "## 🔧 Особенности файлов\n"
+        new_section += "- **wl.txt**: Пронумерованные конфиги с вотермарком TG: @wlrustg\n"
+        new_section += "- **simple-list.txt**: Первые 50 серверов с нумерацией\n"
+        new_section += "- **working-servers.txt**: Шаблон для ручной проверки серверов\n\n"
+        
+        new_section += "## ⚙️ Авто-обновление\n"
+        new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions.\n"
+        new_section += "Для ручной проверки используйте файл `working-servers.txt`.\n\n"
+        
+        new_section += "## 📢 Контакты\n"
+        new_section += "Telegram канал: [@wlrustg](https://t.me/wlrustg)\n"
+        
+        # Заменяем или добавляем секцию статуса
+        status_pattern = r'## 📊 Статус обновления[\s\S]*?(?=## |$)'
+        if re.search(status_pattern, old_content):
+            new_content = re.sub(status_pattern, new_section.strip(), old_content)
+        else:
+            new_content = old_content.strip() + "\n\n" + new_section
+        
+        # Обновляем файл
+        sha = readme_file.sha if 'readme_file' in locals() else None
+        REPO.update_file(
+            path="README.md",
+            message="📝 Обновление README: " + str(total_configs) + " конфигов, " + str(wl_configs_count) + " в whitelist",
+            content=new_content,
+            sha=sha
+        )
+        log("📝 README.md обновлён")
+        
+    except Exception as e:
+        log("Ошибка обновления README: " + str(e))
+
+def main():
+    """Основная функция"""
+    log("🚀 Начало объединения конфигов")
+    log("📅 Время: " + offset)
+    log("🌐 Источников: " + str(len(URLS)))
+    log("🛡️ Whitelist подсетей: " + str(len(WHITELIST_SUBNETS)))
+    
+    # 1. Скачиваем конфиги из всех источников
+    log("📥 Загрузка конфигов...")
+    
+    all_configs = []
+    max_workers = min(DEFAULT_MAX_WORKERS, len(URLS))
+    
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {}
+        for url in URLS:
+            future = executor.submit(download_and_process_url, url)
+            futures[future] = url
+        
+        for future in concurrent.futures.as_completed(futures):
+            url = futures[future]
+            try:
+                configs = future.result(timeout=30)
+                if configs:
+                    all_configs.extend(configs)
+            except Exception as e:
+                error_msg = str(e)
+                if len(error_msg) > 50:
+                    error_msg = error_msg[:50]
+                log("Таймаут или ошибка для " + url + ": " + error_msg)
+    
+    log("📊 Скачано всего: " + str(len(all_configs)) + " конфигов")
+    
+    if not all_configs:
+        log("❌ Не удалось загрузить ни одного конфига")
+        return
+    
+    # 2. Дедупликация и сортировка по подсетям
+    log("🔄 Дедупликация и фильтрация...")
+    unique_configs, whitelist_configs = merge_and_deduplicate(all_configs)
+    log("🔄 После дедупликации: " + str(len(unique_configs)) + " конфигов")
+    log("🛡️ Whitelist конфигов: " + str(len(whitelist_configs)))
+    
+    # 3. Сохраняем локально
+    os.makedirs("githubmirror", exist_ok=True)
+    output_file_merged = "githubmirror/merged.txt"
+    output_file_wl = "githubmirror/wl.txt"
+    
+    save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники)")
+    save_to_file(whitelist_configs, output_file_wl, "Whitelist конфиги (только подсети из списка)", add_numbering=True)
+    
+    # 4. Создаем файлы для Cloudflare Pages
+    log("📋 Создание файлов для Cloudflare Pages...")
+    create_working_servers_file(whitelist_configs)
+    
+    # 5. Загружаем на GitHub (основная ветка)
+    log("📤 Загрузка на GitHub (основная ветка)...")
+    upload_to_github(output_file_merged, "githubmirror/merged.txt", "main")
+    upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
+    upload_to_github("cloudflare-pages/working-servers.txt", "cloudflare-pages/working-servers.txt", "main")
+    upload_to_github("cloudflare-pages/simple-list.txt", "cloudflare-pages/simple-list.txt", "main")
+    
+    # 6. Загружаем в ветку gh-pages для GitHub Pages
+    log("🌐 Настройка GitHub Pages...")
+    if setup_github_pages():
+        log("📤 Загрузка файлов в ветку gh-pages...")
+        upload_to_github(output_file_wl, "wl.txt", "gh-pages")
+        upload_to_github("cloudflare-pages/simple-list.txt", "simple-list.txt", "gh-pages")
+    else:
+        log("⚠️ GitHub Pages не настроены. Включите в настройках репозитория: Settings → Pages → Branch: gh-pages")
+    
+    # 7. Обновляем README
+    update_readme(len(unique_configs), len(whitelist_configs))
+    
+    # 8. Выводим итоги
+    log("=" * 60)
+    log("📊 ИТОГИ:")
+    log("   🌐 Источников: " + str(len(URLS)))
+    log("   📥 Скачано: " + str(len(all_configs)))
+    log("   🔄 Уникальных: " + str(len(unique_configs)))
+    log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
+    log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
+    log("   💾 Файлы созданы:")
+    log("      • githubmirror/merged.txt")
+    log("      • githubmirror/wl.txt (с нумерацией)")
+    log("      • cloudflare-pages/working-servers.txt")
+    log("      • cloudflare-pages/simple-list.txt")
+    log("=" * 60)
+    
+    # Выводим ссылки
+    if REPO and not REPO.private:
+        log("\n🌐 КОРОТКИЕ ССЫЛКИ:")
+        repo_owner = REPO_NAME.split('/')[0]
+        repo_name_only = REPO_NAME.split('/')[1]
+        
+        log(f"   jsDelivr CDN:")
+        log(f"   • wl.txt: https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/wl.txt")
+        log(f"   • simple-list.txt: https://cdn.jsdelivr.net/gh/{REPO_NAME}/cloudflare-pages/simple-list.txt")
+        
+        # Проверяем, есть ли ветка gh-pages
+        try:
+            REPO.get_branch("gh-pages")
+            log(f"\n   GitHub Pages:")
+            log(f"   • wl.txt: https://{repo_owner}.github.io/{repo_name_only}/wl.txt")
+            log(f"   • simple-list.txt: https://{repo_owner}.github.io/{repo_name_only}/simple-list.txt")
+        except:
+            pass
+    
+    # Выводим логи
+    print("\n📋 ЛОГИ ВЫПОЛНЕНИЯ (" + offset + "):")
+    print("=" * 60)
+    for line in LOGS_BY_FILE[0]:
+        print(line)
+
+if __name__ == "__main__":
+    main()
