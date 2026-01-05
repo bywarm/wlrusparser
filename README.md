@@ -4,12 +4,43 @@
 
 | Файл | Описание | Конфигов | Время обновления | Дата |
 |------|----------|----------|------------------|------|
-| [`merged.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt) | Все конфиги из 4 источников | 493 | 14:26 | 05.01.2026 |
-| [`wl.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt) | Только конфиги из 23 подсетей | 28 | 14:26 | 05.01.2026 |
-| [`working-servers.txt`](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/working-servers.txt) | Для ручной проверки на Cloudflare | шаблон | 14:26 | 05.01.2026 |
-| [`simple-list.txt`](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/simple-list.txt) | Пронумерованный список | до 50 | 14:26 | 05.01.2026 |
+| [`merged.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt) | Все конфиги из 4 источников | 492 | 15:55 | 05.01.2026 |
+| [`wl.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt) | Только конфиги из 23 подсетей | 27 | 15:55 | 05.01.2026 |
+| [`working-servers.txt`](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/working-servers.txt) | Для ручной проверки на Cloudflare | шаблон | 15:55 | 05.01.2026 |
+| [`simple-list.txt`](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/simple-list.txt) | Пронумерованный список | до 50 | 15:55 | 05.01.2026 |
 
 ## 📋 Whitelist подсети
+Файл `wl.txt` содержит только конфиги со следующими подсетями:
+
+`95.163.0.0/24` `89.208.0.0/24` `217.16.0.0/24` `5.188.0.0/24`  
+`109.120.188.0/24` `217.12.40.0/24` `176.108.242.0/24` `178.154.221.0/24`  
+`176.109.105.0/24` `176.109.109.0/24` `51.250.0.0/24` `176.32.0.0/24`  
+`193.53.126.0/24` `45.129.2.0/24` `37.18.15.0/24` `78.159.131.0/24`  
+`185.177.238.0/24` `45.15.0.0/24` `176.122.25.0/24` `185.130.114.0/24`  
+`37.139.35.0/24` `83.166.251.0/24` `91.219.227.0/24`  
+
+## 📥 Скачать
+### Основные файлы:
+- [merged.txt (все конфиги)](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt)
+- [wl.txt (только whitelist)](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt)
+- [simple-list.txt (пронумерованный)](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/simple-list.txt)
+- [working-servers.txt (для проверки)](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/working-servers.txt)
+
+### Короткие ссылки (jsDelivr CDN):
+- [wl.txt](https://cdn.jsdelivr.net/gh/bywarm/wlrusparser/githubmirror/wl.txt)
+- [simple-list.txt](https://cdn.jsdelivr.net/gh/bywarm/wlrusparser/cloudflare-pages/simple-list.txt)
+
+## 🔧 Особенности файлов
+- **wl.txt**: Пронумерованные конфиги с вотермарком TG: @wlrustg
+- **simple-list.txt**: Первые 50 серверов с нумерацией
+- **working-servers.txt**: Шаблон для ручной проверки серверов
+
+## ⚙️ Авто-обновление
+Конфиги автоматически обновляются каждый час через GitHub Actions.
+Для ручной проверки используйте файл `working-servers.txt`.
+
+## 📢 Контакты
+Telegram канал: [@wlrustg](https://t.me/wlrustg)## 📋 Whitelist подсети
 Файл `wl.txt` содержит только конфиги со следующими подсетями:
 
 `95.163.0.0/24` `89.208.0.0/24` `217.16.0.0/24` `5.188.0.0/24`  
