@@ -8,8 +8,11 @@ on:
   push:
     branches: [ main ]
     paths-ignore:
-      - 'githubmirror/merged.txt'  # Игнорируем изменения в файле конфигов
-      - 'README.md'  # Игнорируем изменения в README
+      - 'githubmirror/merged.txt'
+      - 'githubmirror/wl.txt'
+      - 'cloudflare-pages/working-servers.txt'
+      - 'cloudflare-pages/simple-list.txt'
+      - 'README.md'
 
 jobs:
   update:
@@ -53,13 +56,25 @@ jobs:
           echo "📊 Конфигов в merged.txt: $CONFIG_COUNT"
         fi
         
+        if [ -f "githubmirror/wl.txt" ]; then
+          WL_CONFIG_COUNT=$(grep -c '^v[lm]ess://' githubmirror/wl.txt 2>/dev/null || echo "0")
+          echo "🛡️ Конфигов в wl.txt: $WL_CONFIG_COUNT"
+        fi
+        
+        if [ -f "cloudflare-pages/simple-list.txt" ]; then
+          SIMPLE_COUNT=$(grep -c '^#[0-9]\+\.' cloudflare-pages/simple-list.txt 2>/dev/null || echo "0")
+          echo "🔢 Пронумеровано в simple-list.txt: $SIMPLE_COUNT"
+        fi
+        
         # Настройка git
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git config --local pull.rebase true
         
         # Добавляем изменения
-        git add githubmirror/merged.txt README.md
+        git add githubmirror/merged.txt githubmirror/wl.txt \
+                cloudflare-pages/working-servers.txt cloudflare-pages/simple-list.txt \
+                README.md
         
         # Проверяем, есть ли изменения
         if git diff --cached --quiet; then
