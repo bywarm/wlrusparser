@@ -4,12 +4,34 @@
 
 | Файл | Описание | Конфигов | Время обновления | Дата |
 |------|----------|----------|------------------|------|
-| [`merged.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt) | Все конфиги из 4 источников | 400 | 19:32 | 05.01.2026 |
-| [`wl.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt) | Только конфиги из 23 подсетей | 16 | 19:32 | 05.01.2026 |
-| [`working-servers.txt`](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/working-servers.txt) | Для ручной проверки на Cloudflare | шаблон | 19:32 | 05.01.2026 |
-| [`simple-list.txt`](https://github.com/bywarm/wlrusparser/raw/main/cloudflare-pages/simple-list.txt) | Пронумерованный список | до 50 | 19:32 | 05.01.2026 |
+| [`merged.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt) | Все конфиги из 4 источников | 418 | 20:11 | 05.01.2026 |
+| [`wl.txt`](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt) | Только конфиги из 2 подсетей | 0 | 20:11 | 05.01.2026 |
 
 ## 📋 Whitelist подсети
+Файл `wl.txt` содержит только конфиги из 2 проверенных подсетей:
+
+`95.163.0.0/24` `89.208.0.0/24`  
+
+## 🌐 Варианты доступа
+### Через jsDelivr CDN (быстро, кешируется)
+- Все конфиги: [https://cdn.jsdelivr.net/gh/bywarm/wlrusparser/githubmirror/merged.txt](https://cdn.jsdelivr.net/gh/bywarm/wlrusparser/githubmirror/merged.txt)
+- Только whitelist: [https://cdn.jsdelivr.net/gh/bywarm/wlrusparser/githubmirror/wl.txt](https://cdn.jsdelivr.net/gh/bywarm/wlrusparser/githubmirror/wl.txt)
+
+### Прямые ссылки GitHub
+- Все конфиги: [https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/merged.txt)
+- Только whitelist: [https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt](https://github.com/bywarm/wlrusparser/raw/main/githubmirror/wl.txt)
+
+## 🔧 Особенности
+✅ **Нумерация в поле name** - каждый конфиг в wl.txt имеет номер прямо в параметре name
+✅ **Вотермарк TG: @wlrustg** - добавлен к каждому конфигу в поле name
+✅ **Автоматическое обновление** - конфиги обновляются каждый час
+✅ **Нет дублирования** - если конфиг уже имеет номер и вотермарк, они не дублируются
+
+## ⚙️ Авто-обновление
+Конфиги автоматически обновляются каждый час через GitHub Actions.
+
+## 📢 Контакты
+Telegram канал: [@wlrustg](https://t.me/wlrustg)## 📋 Whitelist подсети
 Файл `wl.txt` содержит только конфиги со следующими подсетями:
 
 `95.163.0.0/24` `89.208.0.0/24` `217.16.0.0/24` `5.188.0.0/24`  
