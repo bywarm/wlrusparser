@@ -12,6 +12,7 @@ from datetime import datetime
 import concurrent.futures
 import urllib.parse
 import threading
+import ipaddress
 import zoneinfo
 import requests
 import urllib3
@@ -48,6 +49,36 @@ try:
 except Exception as e:
     log("Ошибка подключения к GitHub: " + str(e)[:100])
     REPO = None
+
+# Список подсетей для whitelist
+WHITELIST_SUBNETS = [
+    "95.163.0.0/24",
+    "89.208.0.0/24",
+    "217.16.0.0/24",
+    "5.188.0.0/24",
+    "109.120.188.0/24",
+    "217.12.40.0/24",
+    "176.108.242.0/24",
+    "178.154.221.0/24",
+    "176.109.105.0/24",
+    "176.109.109.0/24",
+    "51.250.0.0/24",
+    "176.32.0.0/24",
+    "193.53.126.0/24",
+    "45.129.2.0/24",
+    "37.18.15.0/24",
+    "78.159.131.0/24",
+    "185.177.238.0/24",
+    "45.15.0.0/24",
+    "176.122.25.0/24",
+    "185.130.114.0/24",
+    "37.139.35.0/24",
+    "83.166.251.0/24",
+    "91.219.227.0/24"
+]
+
+# Преобразуем подсети в объекты ipaddress для быстрой проверки
+WHITELIST_NETWORKS = [ipaddress.ip_network(subnet) for subnet in WHITELIST_SUBNETS]
 
 # Источники конфигов
 URLS = [
@@ -175,6 +206,24 @@ def extract_host_port(config: str) -> tuple[str, int] | None:
     
     return None
 
+def is_ip_in_subnets(ip_str: str) -> bool:
+    """Проверяет, принадлежит ли IP-адрес одной из разрешенных подсетей"""
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        
+        # Проверяем только IPv4
+        if ip.version != 4:
+            return False
+            
+        # Проверяем принадлежность к любой из подсетей
+        for network in WHITELIST_NETWORKS:
+            if ip in network:
+                return True
+        return False
+    except ValueError:
+        # Невалидный IP адрес
+        return False
+
 def download_and_process_url(url: str) -> list[str]:
     """Загружает и обрабатывает конфиги с одного URL"""
     try:
@@ -214,14 +263,15 @@ def download_and_process_url(url: str) -> list[str]:
         log("Ошибка обработки " + url + ": " + error_msg)
         return []
 
-def merge_and_deduplicate(all_configs: list[str]) -> list[str]:
-    """Объединяет и дедуплицирует конфиги"""
+def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]:
+    """Объединяет и дедуплицирует конфиги, возвращает два списка: все конфиги и whitelist конфиги"""
     if not all_configs:
-        return []
+        return [], []
     
     seen_full = set()
     seen_hostport = set()
     unique_configs = []
+    whitelist_configs = []
     
     for config in all_configs:
         config = config.strip()
@@ -238,30 +288,222 @@ def merge_and_deduplicate(all_configs: list[str]) -> list[str]:
             seen_hostport.add(key)
         
         unique_configs.append(config)
+        
+        # Проверяем, принадлежит ли хост к whitelist подсетям
+        if host_port:
+            host = host_port[0]
+            # Пытаемся распарсить как IP адрес
+            try:
+                ip = ipaddress.ip_address(host)
+                if ip.version == 4 and is_ip_in_subnets(str(ip)):
+                    whitelist_configs.append(config)
+            except ValueError:
+                # Если это не IP адрес (доменное имя), пропускаем для whitelist
+                pass
     
-    return unique_configs
+    return unique_configs, whitelist_configs
 
-def save_to_file(configs: list[str], filename: str):
-    """Сохраняет конфиги в файл"""
+def add_numbering_and_watermark(configs: list[str], watermark: str = "TG: @wlrustg") -> list[str]:
+    """Добавляет нумерацию и вотермарк к конфигам"""
+    numbered_configs = []
+    
+    for i, config in enumerate(configs, 1):
+        # Извлекаем хост для более информативного отображения
+        host_port = extract_host_port(config)
+        if host_port:
+            host_info = f" | {host_port[0]}:{host_port[1]}"
+        else:
+            host_info = ""
+        
+        # Определяем тип конфига
+        if config.startswith("vmess://"):
+            config_type = "VMESS"
+        elif config.startswith("vless://"):
+            config_type = "VLESS"
+        elif config.startswith("trojan://"):
+            config_type = "TROJAN"
+        elif config.startswith("ss://"):
+            config_type = "SS"
+        else:
+            config_type = "CONFIG"
+        
+        # Добавляем нумерацию и вотермарк как комментарий
+        numbered_config = f"# {i}. {config_type}{host_info} | {watermark}\n{config}"
+        numbered_configs.append(numbered_config)
+    
+    return numbered_configs
+
+def save_to_file(configs: list[str], filename: str, description: str = "", add_numbering: bool = False):
+    """Сохраняет конфиги в файл с опциональной нумерацией"""
     try:
         with open(filename, "w", encoding="utf-8") as f:
             # Заголовок файла
-            f.write("# Объединенные конфиги (источников: " + str(len(URLS)) + ")\n")
+            f.write("# " + description + "\n")
             f.write("# Обновлено: " + offset + "\n")
             f.write("# Всего конфигов: " + str(len(configs)) + "\n")
+            
+            if description == "Whitelist конфиги (только подсети из списка)":
+                f.write("# Подсети: " + str(len(WHITELIST_SUBNETS)) + "\n")
+                f.write("# Вотермарк: TG: @wlrustg\n")
+                f.write("#" * 50 + "\n")
+                for subnet in WHITELIST_SUBNETS:
+                    f.write("# " + subnet + "\n")
+            else:
+                f.write("# Источников: " + str(len(URLS)) + "\n")
+                if add_numbering:
+                    f.write("# Вотермарк: TG: @wlrustg\n")
+            
             f.write("#" * 50 + "\n\n")
             
+            # Обрабатываем конфиги в зависимости от необходимости нумерации
+            if add_numbering:
+                processed_configs = add_numbering_and_watermark(configs)
+            else:
+                processed_configs = configs
+            
             # Записываем конфиги
-            for config in configs:
-                f.write(config + "\n")
+            for config in processed_configs:
+                f.write(config + "\n\n")
         
         log("💾 Сохранено " + str(len(configs)) + " конфигов в " + filename)
         
     except Exception as e:
         log("Ошибка сохранения файла " + filename + ": " + str(e))
 
-def upload_to_github(filename: str, remote_path: str):
-    """Загружает файл на GitHub"""
+def create_working_servers_file(configs: list[str]):
+    """Создает файл с проверенными рабочими серверами для Cloudflare Pages"""
+    try:
+        # Создаем отдельную папку для Cloudflare Pages
+        os.makedirs("cloudflare-pages", exist_ok=True)
+        output_file = "cloudflare-pages/working-servers.txt"
+        
+        # Отсортировать конфиги по типу для удобства
+        vmess_configs = [c for c in configs if c.startswith("vmess://")]
+        vless_configs = [c for c in configs if c.startswith("vless://")]
+        trojan_configs = [c for c in configs if c.startswith("trojan://")]
+        other_configs = [c for c in configs if not c.startswith(("vmess://", "vless://", "trojan://"))]
+        
+        with open(output_file, "w", encoding="utf-8") as f:
+            # Красивый заголовок
+            f.write("=" * 60 + "\n")
+            f.write("РАБОЧИЕ VPN СЕРВЕРА - РУЧНАЯ ПРОВЕРКА\n")
+            f.write("=" * 60 + "\n\n")
+            
+            f.write("📅 Последнее обновление: " + offset + "\n")
+            f.write("📊 Всего конфигов доступно: " + str(len(configs)) + "\n")
+            f.write("👨‍💻 Проверено вручную: [ЗДЕСЬ БУДЕТ КОЛИЧЕСТВО]\n")
+            f.write("📢 Канал поддержки: TG: @wlrustg\n")
+            f.write("-" * 60 + "\n\n")
+            
+            f.write("ℹ️ ИНСТРУКЦИЯ:\n")
+            f.write("1. Сервера проверяются вручную на работоспособность\n")
+            f.write("2. ✅ - работает, ❌ - не работает, ⚠️ - нестабильно\n")
+            f.write("3. Статус обновляется по мере проверки\n")
+            f.write("4. Для добавления в клиент скопируйте строку БЕЗ комментариев\n")
+            f.write("-" * 60 + "\n\n")
+            
+            # Счетчики для статистики
+            total_checked = 0
+            working_count = 0
+            
+            # VLESS сервера
+            if vless_configs:
+                f.write("🔷 VLESS СЕРВЕРА (" + str(len(vless_configs)) + "):\n")
+                f.write("-" * 40 + "\n")
+                
+                for i, config in enumerate(vless_configs[:20], 1):  # Ограничим 20 для ручной проверки
+                    host_port = extract_host_port(config)
+                    if host_port:
+                        host_info = f"{host_port[0]}:{host_port[1]}"
+                    else:
+                        host_info = "Неизвестный хост"
+                    
+                    # Добавляем место для ручной пометки статуса
+                    f.write(f"#{i:03d} VLESS | {host_info}\n")
+                    f.write("# Статус: [ ] ✅ [ ] ❌ [ ] ⚠️\n")
+                    f.write("# Скорость: _____ Мбит/с\n")
+                    f.write("# Пинг: _____ мс\n")
+                    f.write("# Комментарий: ____________________\n")
+                    f.write(config + "\n")
+                    f.write("-" * 40 + "\n")
+                    total_checked += 1
+            
+            # VMESS сервера
+            if vmess_configs:
+                f.write("\n🔶 VMESS СЕРВЕРА (" + str(len(vmess_configs)) + "):\n")
+                f.write("-" * 40 + "\n")
+                
+                for i, config in enumerate(vmess_configs[:15], 1):  # Ограничим 15
+                    host_port = extract_host_port(config)
+                    if host_port:
+                        host_info = f"{host_port[0]}:{host_port[1]}"
+                    else:
+                        host_info = "Неизвестный хост"
+                    
+                    f.write(f"#{i+20:03d} VMESS | {host_info}\n")
+                    f.write("# Статус: [ ] ✅ [ ] ❌ [ ] ⚠️\n")
+                    f.write("# Скорость: _____ Мбит/с\n")
+                    f.write("# Пинг: _____ мс\n")
+                    f.write("# Комментарий: ____________________\n")
+                    f.write(config + "\n")
+                    f.write("-" * 40 + "\n")
+                    total_checked += 1
+            
+            # Trojan сервера
+            if trojan_configs:
+                f.write("\n🔺 TROJAN СЕРВЕРА (" + str(len(trojan_configs)) + "):\n")
+                f.write("-" * 40 + "\n")
+                
+                for i, config in enumerate(trojan_configs[:10], 1):  # Ограничим 10
+                    host_port = extract_host_port(config)
+                    if host_port:
+                        host_info = f"{host_port[0]}:{host_port[1]}"
+                    else:
+                        host_info = "Неизвестный хост"
+                    
+                    f.write(f"#{i+35:03d} TROJAN | {host_info}\n")
+                    f.write("# Статус: [ ] ✅ [ ] ❌ [ ] ⚠️\n")
+                    f.write("# Скорость: _____ Мбит/с\n")
+                    f.write("# Пинг: _____ мс\n")
+                    f.write("# Комментарий: ____________________\n")
+                    f.write(config + "\n")
+                    f.write("-" * 40 + "\n")
+                    total_checked += 1
+            
+            # Статистика в конце
+            f.write("\n" + "=" * 60 + "\n")
+            f.write("📈 СТАТИСТИКА:\n")
+            f.write("=" * 60 + "\n")
+            f.write(f"Всего доступно: {len(configs)} конфигов\n")
+            f.write(f"Отобрано для проверки: {total_checked}\n")
+            f.write(f"Проверено вручную: {working_count}\n")
+            f.write(f"Рабочих: {working_count}\n")
+            f.write(f"Процент рабочих: {working_count/max(total_checked,1)*100:.1f}%\n")
+            f.write("\n📢 Поддержка и обновления: TG: @wlrustg\n")
+            f.write("=" * 60 + "\n")
+        
+        log("📋 Создан файл для ручной проверки: cloudflare-pages/working-servers.txt")
+        log("ℹ️  Файл содержит шаблон для отметки работоспособности серверов")
+        
+        # Также создаем простую версию с нумерацией
+        simple_file = "cloudflare-pages/simple-list.txt"
+        with open(simple_file, "w", encoding="utf-8") as f:
+            f.write("# Пронумерованный список серверов\n")
+            f.write("# Обновлено: " + offset + "\n")
+            f.write("# TG: @wlrustg\n")
+            f.write("#" * 50 + "\n\n")
+            
+            numbered_configs = add_numbering_and_watermark(configs[:50])  # Ограничим 50
+            for config in numbered_configs:
+                f.write(config + "\n\n")
+        
+        log("📝 Создан упрощенный список: cloudflare-pages/simple-list.txt")
+        
+    except Exception as e:
+        log("Ошибка создания файла для Cloudflare Pages: " + str(e))
+
+def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
+    """Загружает файл на GitHub в указанную ветку"""
     if not REPO:
         log("Пропускаю загрузку на GitHub (нет подключения)")
         return
@@ -276,160 +518,17 @@ def upload_to_github(filename: str, remote_path: str):
         
         try:
             # Пытаемся получить существующий файл
-            file_in_repo = REPO.get_contents(remote_path)
+            file_in_repo = REPO.get_contents(remote_path, ref=branch)
             current_sha = file_in_repo.sha
             
             # Проверяем, изменился ли контент
             remote_content = file_in_repo.decoded_content.decode("utf-8", errors="replace")
             if remote_content == content:
-                log("Файл " + remote_path + " не изменился")
+                log(f"Файл {remote_path} не изменился в ветке {branch}")
                 return
             
             # Обновляем файл
             REPO.update_file(
                 path=remote_path,
                 message="🤖 Авто-обновление: " + offset,
-                content=content,
-                sha=current_sha
-            )
-            log("⬆️ Файл " + remote_path + " обновлён на GitHub")
-            
-        except GithubException as e:
-            if e.status == 404:
-                # Файл не существует, создаем новый
-                REPO.create_file(
-                    path=remote_path,
-                    message="🤖 Первое создание: " + offset,
-                    content=content
-                )
-                log("🆕 Файл " + remote_path + " создан на GitHub")
-            else:
-                error_msg = e.data.get('message', str(e))
-                log("Ошибка GitHub: " + error_msg)
-                
-    except Exception as e:
-        log("Ошибка при загрузке на GitHub: " + str(e))
-
-def update_readme(total_configs: int):
-    """Обновляет README.md со статистикой"""
-    if not REPO:
-        log("Пропускаю обновление README (нет подключения)")
-        return
     
-    try:
-        # Получаем текущий README
-        try:
-            readme_file = REPO.get_contents("README.md")
-            old_content = readme_file.decoded_content.decode("utf-8")
-        except GithubException:
-            # Если README не существует, создаем новый
-            old_content = "# Объединенные конфиги VPN\n\n"
-        
-        # Формируем ссылку на raw-файл
-        raw_url = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/merged.txt"
-        
-        # Разделяем время и дату
-        time_part = offset.split(" | ")[0]
-        date_part = offset.split(" | ")[1] if " | " in offset else ""
-        
-        # Создаем новую таблицу
-        new_section = "\n## 📊 Статус обновления\n\n"
-        new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
-        new_section += "|------|----------|----------|------------------|------|\n"
-        new_section += "| [`merged.txt`](" + raw_url + ") | Объединенные конфиги из " + str(len(URLS)) + " источников | " + str(total_configs) + " | " + time_part + " | " + date_part + " |\n\n"
-        new_section += "## 📥 Скачать\n"
-        new_section += "- [merged.txt](" + raw_url + ") - все конфиги в одном файле\n\n"
-        new_section += "## ⚙️ Авто-обновление\n"
-        new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions."
-        
-        # Заменяем или добавляем секцию статуса
-        status_pattern = r'## 📊 Статус обновления[\s\S]*?(?=## |$)'
-        if re.search(status_pattern, old_content):
-            new_content = re.sub(status_pattern, new_section.strip(), old_content)
-        else:
-            new_content = old_content.strip() + "\n\n" + new_section
-        
-        # Обновляем файл
-        sha = readme_file.sha if 'readme_file' in locals() else None
-        REPO.update_file(
-            path="README.md",
-            message="📝 Обновление README: " + str(total_configs) + " конфигов",
-            content=new_content,
-            sha=sha
-        )
-        log("📝 README.md обновлён")
-        
-    except Exception as e:
-        log("Ошибка обновления README: " + str(e))
-
-def main():
-    """Основная функция"""
-    log("🚀 Начало объединения конфигов")
-    log("📅 Время: " + offset)
-    log("🌐 Источников: " + str(len(URLS)))
-    
-    # 1. Скачиваем конфиги из всех источников
-    log("📥 Загрузка конфигов...")
-    
-    all_configs = []
-    max_workers = min(DEFAULT_MAX_WORKERS, len(URLS))
-    
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {}
-        for url in URLS:
-            future = executor.submit(download_and_process_url, url)
-            futures[future] = url
-        
-        for future in concurrent.futures.as_completed(futures):
-            url = futures[future]
-            try:
-                configs = future.result(timeout=30)
-                if configs:
-                    all_configs.extend(configs)
-            except Exception as e:
-                error_msg = str(e)
-                if len(error_msg) > 50:
-                    error_msg = error_msg[:50]
-                log("Таймаут или ошибка для " + url + ": " + error_msg)
-    
-    log("📊 Скачано всего: " + str(len(all_configs)) + " конфигов")
-    
-    if not all_configs:
-        log("❌ Не удалось загрузить ни одного конфига")
-        return
-    
-    # 2. Дедупликация
-    log("🔄 Дедупликация...")
-    unique_configs = merge_and_deduplicate(all_configs)
-    log("🔄 После дедупликации: " + str(len(unique_configs)) + " конфигов")
-    
-    # 3. Сохраняем локально
-    os.makedirs("githubmirror", exist_ok=True)
-    output_file = "githubmirror/merged.txt"
-    save_to_file(unique_configs, output_file)
-    
-    # 4. Загружаем на GitHub
-    log("📤 Загрузка на GitHub...")
-    upload_to_github(output_file, "githubmirror/merged.txt")
-    
-    # 5. Обновляем README
-    update_readme(len(unique_configs))
-    
-    # 6. Выводим итоги
-    log("=" * 50)
-    log("📊 ИТОГИ:")
-    log("   🌐 Источников: " + str(len(URLS)))
-    log("   📥 Скачано: " + str(len(all_configs)))
-    log("   🔄 Уникальных: " + str(len(unique_configs)))
-    log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
-    log("   💾 Файл: " + output_file)
-    log("=" * 50)
-    
-    # Выводим логи
-    print("\n📋 ЛОГИ ВЫПОЛНЕНИЯ (" + offset + "):")
-    print("=" * 50)
-    for line in LOGS_BY_FILE[0]:
-        print(line)
-
-if __name__ == "__main__":
-    main()
