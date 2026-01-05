@@ -265,9 +265,9 @@ def download_and_process_url(url: str) -> list[str]:
             error_msg = error_msg[:100]
         log("Ошибка обработки " + url + ": " + error_msg)
         return []
-        
-                                                    
-                                                    def add_numbering_to_name(config: str, number: int) -> str:
+    
+
+def add_numbering_to_name(config: str, number: int) -> str:
     """Добавляет нумерацию и вотермарк в поле name конфига"""
     try:
         # Определяем тип протокола
@@ -475,27 +475,8 @@ def process_configs_with_numbering(configs: list[str]) -> list[str]:
             processed = add_numbering_to_name(config, i)
             processed_configs.append(processed)
     
-    return processed_configs 
-                                                     'hysteria://', 'hysteria2://']):
-                    configs.append(line)
-                # Также принимаем строки, содержащие @host:port
-                elif '@' in line and ':' in line and line.count(':') >= 2:
-                    configs.append(line)
-        
-        # Безопасный способ извлечения имени репозитория
-        try:
-            repo_name = url.split('/')[3] if '/' in url else 'unknown'
-        except:
-            repo_name = 'unknown'
-        log("✅ " + repo_name + ": " + str(len(configs)) + " конфигов")
-        return configs
-        
-    except Exception as e:
-        error_msg = str(e)
-        if len(error_msg) > 100:
-            error_msg = error_msg[:100]
-        log("Ошибка обработки " + url + ": " + error_msg)
-        return []
+    return processed_configs
+
 
 def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]:
     """Объединяет и дедуплицирует конфиги, возвращает два списка: все конфиги и whitelist конфиги"""
@@ -537,23 +518,6 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
     
     return unique_configs, whitelist_configs
 
-def process_configs_with_numbering(configs: list[str]) -> list[str]:
-    """Добавляет нумерацию и вотермарк в поле name конфигов"""
-    processed_configs = []
-    
-    for i, config in enumerate(configs, 1):
-        # Проверяем, есть ли уже нумерация в конфиге
-        existing_number, _, existing_tg, _ = extract_existing_info(config)
-        
-        # Если уже есть номер и наш вотермарк, не меняем
-        if existing_number and "TG: @wlrustg" in config:
-            processed_configs.append(config)
-        else:
-            # Добавляем нумерацию
-            processed = add_numbering_to_name(config, i)
-            processed_configs.append(processed)
-    
-    return processed_configs
 
 def save_to_file(configs: list[str], filename: str, description: str = "", add_numbering: bool = False):
     """Сохраняет конфиги в файл с опциональной нумерацией"""
