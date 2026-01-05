@@ -244,7 +244,30 @@ def download_and_process_url(url: str) -> list[str]:
             if line and not line.startswith('#') and len(line) > 10:
                 # Проверяем, что это похоже на конфиг
                 if any(line.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
-                                                     'ss://', 'ssr://', 'tuic://',def add_numbering_to_name(config: str, number: int) -> str:
+                                                     'ss://', 'ssr://', 'tuic://', 
+                                                     'hysteria://', 'hysteria2://']):
+                    configs.append(line)
+                # Также принимаем строки, содержащие @host:port
+                elif '@' in line and ':' in line and line.count(':') >= 2:
+                    configs.append(line)
+        
+        # Безопасный способ извлечения имени репозитория
+        try:
+            repo_name = url.split('/')[3] if '/' in url else 'unknown'
+        except:
+            repo_name = 'unknown'
+        log("✅ " + repo_name + ": " + str(len(configs)) + " конфигов")
+        return configs
+        
+    except Exception as e:
+        error_msg = str(e)
+        if len(error_msg) > 100:
+            error_msg = error_msg[:100]
+        log("Ошибка обработки " + url + ": " + error_msg)
+        return []
+        
+                                                    
+                                                    def add_numbering_to_name(config: str, number: int) -> str:
     """Добавляет нумерацию и вотермарк в поле name конфига"""
     try:
         # Определяем тип протокола
