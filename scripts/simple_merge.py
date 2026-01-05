@@ -525,7 +525,7 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
     try:
         with open(filename, "w", encoding="utf-8") as f:
             # Заголовок файла
-            f.write("#profile-title: WL RUS")
+            f.write("#profile-title: WL RUS \n")
             f.write("# " + description + "\n")
             f.write("# Обновлено: " + offset + "\n")
             f.write("# Всего конфигов: " + str(len(configs)) + "\n")
