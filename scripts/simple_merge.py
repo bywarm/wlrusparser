@@ -528,18 +528,15 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
             f.write("# Обновлено: " + offset + "\n")
             f.write("# Всего конфигов: " + str(len(configs)) + "\n")
             
-            if description == "Whitelist конфиги (только подсети из списка)":
+            if "Whitelist" in description:
                 f.write("# Подсети: " + str(len(WHITELIST_SUBNETS)) + "\n")
                 f.write("# Вотермарк: TG: @wlrustg\n")
-                f.write("#" * 50 + "\n")
-                for subnet in WHITELIST_SUBNETS:
-                    f.write("# " + subnet + "\n")
+                f.write("#" * 50 + "\n\n")
             else:
                 f.write("# Источников: " + str(len(URLS)) + "\n")
                 if add_numbering:
                     f.write("# Вотермарк: TG: @wlrustg\n")
-            
-            f.write("#" * 50 + "\n\n")
+                f.write("#" * 50 + "\n\n")
             
             # Обрабатываем конфиги в зависимости от необходимости нумерации
             if add_numbering:
@@ -555,6 +552,7 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
         
     except Exception as e:
         log("Ошибка сохранения файла " + filename + ": " + str(e))
+        
 
 def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
     """Загружает файл на GitHub в указанную ветку"""
@@ -714,6 +712,74 @@ def update_readme(total_configs: int, wl_configs_count: int):
     except Exception as e:
         log("Ошибка обновления README: " + str(e))
 
+
+def process_selected_file():
+    """Обрабатывает файл selected.txt с ручными серверами"""
+    selected_file = "selected.txt"
+    
+    if os.path.exists(selected_file):
+        try:
+            with open(selected_file, "r", encoding="utf-8") as f:
+                content = f.read()
+            
+            # Разделяем на строки
+            lines = content.splitlines()
+            configs = []
+            
+            for line in lines:
+                line = line.strip()
+                # Пропускаем пустые строки и комментарии
+                if not line or line.startswith('#'):
+                    continue
+                
+                # Проверяем, что это похоже на конфиг
+                if any(line.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
+                                                     'ss://', 'ssr://', 'tuic://', 
+                                                     'hysteria://', 'hysteria2://']):
+                    configs.append(line)
+                elif '@' in line and ':' in line and line.count(':') >= 2:
+                    configs.append(line)
+            
+            if configs:
+                # Обрабатываем конфиги с нумерацией
+                processed_configs = process_configs_with_numbering(configs)
+                
+                # Сохраняем обратно с сохранением комментариев
+                with open(selected_file, "w", encoding="utf-8") as f:
+                    # Сохраняем оригинальные комментарии
+                    comment_lines = []
+                    config_lines = []
+                    
+                    for line in lines:
+                        stripped = line.strip()
+                        if not stripped:
+                            config_lines.append(line)  # Сохраняем пустую строку
+                        elif stripped.startswith('#'):
+                            comment_lines.append(line)
+                        else:
+                            config_lines.append(line)
+                    
+                    # Если есть конфиги, добавляем их после комментариев
+                    if comment_lines:
+                        for comment in comment_lines:
+                            f.write(comment + "\n")
+                        f.write("\n")
+                    
+                    # Записываем обработанные конфиги
+                    for i, config in enumerate(processed_configs, 1):
+                        f.write(config + "\n")
+                        if i < len(processed_configs):
+                            f.write("\n")
+                
+                log("✅ Обработан selected.txt: " + str(len(configs)) + " конфигов")
+            else:
+                log("ℹ️ В selected.txt нет конфигов для обработки")
+                
+        except Exception as e:
+            log("❌ Ошибка обработки selected.txt: " + str(e))
+    else:
+        log("ℹ️ Файл selected.txt не найден")
+
 def main():
     """Основная функция"""
     log("🚀 Начало объединения конфигов")
@@ -762,26 +828,38 @@ def main():
     output_file_merged = "githubmirror/merged.txt"
     output_file_wl = "githubmirror/wl.txt"
     
-    save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники)")
+    # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ
+    save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники)", add_numbering=True)
     save_to_file(whitelist_configs, output_file_wl, "Whitelist конфиги (только подсети из списка)", add_numbering=True)
     
-    # 4. Загружаем на GitHub (основная ветка)
+    # 4. Обрабатываем selected.txt
+    log("🔧 Обработка selected.txt...")
+    process_selected_file()
+    
+    # 5. Загружаем на GitHub (основная ветка)
     log("📤 Загрузка на GitHub (основная ветка)...")
     upload_to_github(output_file_merged, "githubmirror/merged.txt", "main")
     upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
     
-    # 5. Загружаем в ветку gh-pages для GitHub Pages
+    # Загружаем selected.txt на GitHub, если он существует
+    selected_file = "selected.txt"
+    if os.path.exists(selected_file):
+        upload_to_github(selected_file, selected_file, "main")
+    
+    # 6. Загружаем в ветку gh-pages для GitHub Pages
     log("📤 Загрузка в ветку gh-pages...")
     if setup_github_pages():
         upload_to_github(output_file_merged, "merged.txt", "gh-pages")
         upload_to_github(output_file_wl, "wl.txt", "gh-pages")
+        if os.path.exists(selected_file):
+            upload_to_github(selected_file, selected_file, "gh-pages")
     else:
         log("⚠️ GitHub Pages не настроены")
     
-    # 6. Обновляем README
+    # 7. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
-    # 7. Выводим итоги
+    # 8. Выводим итоги
     log("=" * 60)
     log("📊 ИТОГИ:")
     log("   🌐 Источников: " + str(len(URLS)))
@@ -790,8 +868,9 @@ def main():
     log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
     log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
     log("   💾 Основные файлы:")
-    log("      • githubmirror/merged.txt")
-    log("      • githubmirror/wl.txt")
+    log("      • githubmirror/merged.txt (с нумерацией)")
+    log("      • githubmirror/wl.txt (с нумерацией)")
+    log("      • selected.txt (обработан)")
     log("=" * 60)
     
     # Выводим логи
@@ -799,6 +878,7 @@ def main():
     print("=" * 60)
     for line in LOGS_BY_FILE[0]:
         print(line)
+
 
 if __name__ == "__main__":
     main()
