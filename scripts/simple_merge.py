@@ -226,84 +226,6 @@ def is_ip_in_subnets(ip_str: str) -> bool:
         # Невалидный IP адрес
         return False
 
-def extract_existing_info(config: str) -> tuple[str, str, str]:
-    """Извлекает существующие информацию из конфига: номер, флаг, вотермарк"""
-    config_clean = config.strip()
-    
-    # Ищем номер в формате #123, 123., #123.
-    number_match = re.search(r'(?:#?\s*)(\d{1,3})(?:\.|\s+|$)', config_clean)
-    number = number_match.group(1) if number_match else None
-    
-    # Ищем флаг эмодзи
-    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', config_clean)
-    flag = flag_match.group(0) if flag_match else ""
-    
-    # Ищем вотермарк TG
-    tg_match = re.search(r'TG\s*[:@]\s*@?[\w]+', config_clean, re.IGNORECASE)
-    tg = tg_match.group(0) if tg_match else ""
-    
-    # Ищем в поле name (если есть)
-    name_match = re.search(r'name=([^&#]+)', config_clean)
-    name_content = urllib.parse.unquote(name_match.group(1)) if name_match else ""
-    
-    return number, flag, tg, name_content
-
-def add_numbering_to_name(config: str, number: int) -> str:
-    """Добавляет нумерацию и вотермарк в поле name конфига"""
-    try:
-        # Разбираем конфиг на части
-        parsed = urllib.parse.urlparse(config)
-        
-        # Парсим параметры
-        params = urllib.parse.parse_qs(parsed.query)
-        
-        # Извлекаем существующий name
-        existing_name = ""
-        if 'name' in params:
-            existing_name = urllib.parse.unquote(params['name'][0])
-        
-        # Извлекаем фрагмент (#часть)
-        fragment = parsed.fragment
-        
-        # Ищем флаг в существующем name или фрагменте
-        flag = ""
-        flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_name + fragment)
-        if flag_match:
-            flag = flag_match.group(0) + " "
-        
-        # Определяем тип конфига
-        if config.startswith("vmess://"):
-            config_type = "VMESS"
-        elif config.startswith("vless://"):
-            config_type = "VLESS"
-        elif config.startswith("trojan://"):
-            config_type = "TROJAN"
-        elif config.startswith("ss://"):
-            config_type = "SS"
-        else:
-            config_type = ""
-        
-        # Формируем новое имя
-        new_name = f"{number}. {flag}{config_type} | TG: @wlrustg"
-        
-        # Кодируем имя
-        encoded_name = urllib.parse.quote(new_name, safe='')
-        
-        # Обновляем параметры
-        params['name'] = [encoded_name]
-        
-        # Собираем обратно параметры
-        new_query = urllib.parse.urlencode(params, doseq=True)
-        
-        # Собираем новый URL
-        new_parsed = parsed._replace(query=new_query)
-        new_config = urllib.parse.urlunparse(new_parsed)
-        
-        return new_config
-        
-    except Exception as e:
-        log(f"Ошибка добавления нумерации к конфигу: {str(e)[:100]}")
-        return config
 
 def download_and_process_url(url: str) -> list[str]:
     """Загружает и обрабатывает конфиги с одного URL"""
@@ -322,7 +244,215 @@ def download_and_process_url(url: str) -> list[str]:
             if line and not line.startswith('#') and len(line) > 10:
                 # Проверяем, что это похоже на конфиг
                 if any(line.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
-                                                     'ss://', 'ssr://', 'tuic://', 
+                                                     'ss://', 'ssr://', 'tuic://',def add_numbering_to_name(config: str, number: int) -> str:
+    """Добавляет нумерацию и вотермарк в поле name конфига"""
+    try:
+        # Определяем тип протокола
+        if config.startswith("vmess://"):
+            # Для VMESS: парсим JSON и меняем поле "ps"
+            try:
+                payload = config[8:]
+                rem = len(payload) % 4
+                if rem:
+                    payload += '=' * (4 - rem)
+                
+                decoded = base64.b64decode(payload).decode('utf-8', errors='ignore')
+                
+                if decoded.startswith('{'):
+                    j = json.loads(decoded)
+                    # Получаем существующий ps
+                    existing_ps = j.get('ps', '')
+                    
+                    # Извлекаем флаг из существующего ps
+                    flag = ""
+                    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_ps)
+                    if flag_match:
+                        flag = flag_match.group(0) + " "
+                    
+                    # Формируем новое имя
+                    new_name = f"{number}. {flag}VMESS | TG: @wlrustg"
+                    j['ps'] = new_name
+                    
+                    # Кодируем обратно
+                    new_json = json.dumps(j, separators=(',', ':'))
+                    encoded = base64.b64encode(new_json.encode()).decode()
+                    return f"vmess://{encoded}"
+            except Exception:
+                pass
+            return config
+            
+        elif config.startswith("vless://"):
+            # Для VLESS: имя задается через # (фрагмент)
+            parsed = urllib.parse.urlparse(config)
+            
+            # Извлекаем существующий фрагмент
+            existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
+            
+            # Извлекаем флаг из существующего фрагмента
+            flag = ""
+            flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
+            if flag_match:
+                flag = flag_match.group(0) + " "
+            
+            # Формируем новое имя
+            new_name = f"{number}. {flag}VLESS | TG: @wlrustg"
+            
+            # Создаем новый фрагмент
+            new_fragment = urllib.parse.quote(new_name, safe='')
+            
+            # Собираем URL с новым фрагментом
+            new_parsed = parsed._replace(fragment=new_fragment)
+            new_config = urllib.parse.urlunparse(new_parsed)
+            
+            return new_config
+            
+        elif config.startswith("trojan://"):
+            # Для Trojan: имя также может быть в фрагменте
+            parsed = urllib.parse.urlparse(config)
+            
+            # Извлекаем существующий фрагмент
+            existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
+            
+            # Извлекаем флаг
+            flag = ""
+            flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
+            if flag_match:
+                flag = flag_match.group(0) + " "
+            
+            # Формируем новое имя
+            new_name = f"{number}. {flag}TROJAN | TG: @wlrustg"
+            
+            # Создаем новый фрагмент
+            new_fragment = urllib.parse.quote(new_name, safe='')
+            
+            # Собираем URL
+            new_parsed = parsed._replace(fragment=new_fragment)
+            new_config = urllib.parse.urlunparse(new_parsed)
+            
+            return new_config
+            
+        elif config.startswith("ss://"):
+            # Для SS: имя может быть в фрагменте или в параметрах
+            parsed = urllib.parse.urlparse(config)
+            
+            # Сначала проверяем фрагмент
+            existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
+            
+            # Если нет фрагмента, проверяем query параметры
+            name_from_query = ""
+            if not existing_fragment and parsed.query:
+                params = urllib.parse.parse_qs(parsed.query)
+                if 'name' in params:
+                    name_from_query = urllib.parse.unquote(params['name'][0])
+            
+            existing_name = existing_fragment or name_from_query
+            
+            # Извлекаем флаг
+            flag = ""
+            flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_name)
+            if flag_match:
+                flag = flag_match.group(0) + " "
+            
+            # Формируем новое имя
+            new_name = f"{number}. {flag}SS | TG: @wlrustg"
+            
+            # Предпочитаем использовать фрагмент
+            new_fragment = urllib.parse.quote(new_name, safe='')
+            
+            # Собираем URL
+            new_parsed = parsed._replace(fragment=new_fragment)
+            new_config = urllib.parse.urlunparse(new_parsed)
+            
+            return new_config
+            
+        else:
+            # Для других протоколов пытаемся добавить через # в конец
+            # Проверяем, есть ли уже фрагмент
+            if '#' in config:
+                # Разделяем на основную часть и фрагмент
+                base_part, fragment = config.rsplit('#', 1)
+                existing_fragment = urllib.parse.unquote(fragment)
+                
+                # Извлекаем флаг
+                flag = ""
+                flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
+                if flag_match:
+                    flag = flag_match.group(0) + " "
+                
+                # Определяем тип протокола по началу
+                config_type = "CONFIG"
+                if config.startswith("ssr://"):
+                    config_type = "SSR"
+                elif config.startswith("tuic://"):
+                    config_type = "TUIC"
+                elif config.startswith("hysteria://"):
+                    config_type = "HYSTERIA"
+                elif config.startswith("hysteria2://"):
+                    config_type = "HYSTERIA2"
+                
+                # Формируем новое имя
+                new_name = f"{number}. {flag}{config_type} | TG: @wlrustg"
+                new_fragment = urllib.parse.quote(new_name, safe='')
+                
+                return f"{base_part}#{new_fragment}"
+            else:
+                # Добавляем фрагмент в конец
+                config_type = "CONFIG"
+                if config.startswith("ssr://"):
+                    config_type = "SSR"
+                elif config.startswith("tuic://"):
+                    config_type = "TUIC"
+                elif config.startswith("hysteria://"):
+                    config_type = "HYSTERIA"
+                elif config.startswith("hysteria2://"):
+                    config_type = "HYSTERIA2"
+                
+                new_name = f"{number}. {config_type} | TG: @wlrustg"
+                new_fragment = urllib.parse.quote(new_name, safe='')
+                
+                return f"{config}#{new_fragment}"
+                
+    except Exception as e:
+        log(f"Ошибка добавления нумерации к конфигу: {str(e)[:100]}")
+        return config
+
+
+def extract_existing_info(config: str) -> tuple:
+    """Извлекает существующие информацию из конфига: номер, флаг, вотермарк"""
+    config_clean = config.strip()
+    
+    # Ищем номер в формате #123, 123., #123.
+    number_match = re.search(r'(?:#?\s*)(\d{1,3})(?:\.|\s+|$)', config_clean)
+    number = number_match.group(1) if number_match else None
+    
+    # Ищем флаг эмодзи
+    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', config_clean)
+    flag = flag_match.group(0) if flag_match else ""
+    
+    # Ищем вотермарк TG: @wlrustg
+    tg_match = re.search(r'TG\s*:\s*@wlrustg', config_clean, re.IGNORECASE)
+    tg = tg_match.group(0) if tg_match else ""
+    
+    return number, flag, tg
+
+
+def process_configs_with_numbering(configs: list[str]) -> list[str]:
+    """Добавляет нумерацию и вотермарк в поле name конфигов"""
+    processed_configs = []
+    
+    for i, config in enumerate(configs, 1):
+        # Проверяем, есть ли уже нумерация и наш вотермарк
+        existing_number, _, existing_tg = extract_existing_info(config)
+        
+        # Если уже есть номер и наш вотермарк, не меняем
+        if existing_number and "TG: @wlrustg" in config:
+            processed_configs.append(config)
+        else:
+            # Добавляем нумерацию
+            processed = add_numbering_to_name(config, i)
+            processed_configs.append(processed)
+    
+    return processed_configs 
                                                      'hysteria://', 'hysteria2://']):
                     configs.append(line)
                 # Также принимаем строки, содержащие @host:port
