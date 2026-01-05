@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Упрощенный скрипт для объединения конфигов без проверки пинга
+Скрипт для объединения конфигов с автоматической нумерацией в поле name
 """
 
 from requests.adapters import HTTPAdapter
@@ -50,31 +50,10 @@ except Exception as e:
     log("Ошибка подключения к GitHub: " + str(e)[:100])
     REPO = None
 
-# Список подсетей для whitelist
+# Сокращенный список подсетей для whitelist (первые две)
 WHITELIST_SUBNETS = [
     "95.163.0.0/24",
-    "89.208.0.0/24",
-    "217.16.0.0/24",
-    "5.188.0.0/24",
-    "109.120.188.0/24",
-    "217.12.40.0/24",
-    "176.108.242.0/24",
-    "178.154.221.0/24",
-    "176.109.105.0/24",
-    "176.109.109.0/24",
-    "51.250.0.0/24",
-    "176.32.0.0/24",
-    "193.53.126.0/24",
-    "45.129.2.0/24",
-    "37.18.15.0/24",
-    "78.159.131.0/24",
-    "185.177.238.0/24",
-    "45.15.0.0/24",
-    "176.122.25.0/24",
-    "185.130.114.0/24",
-    "37.139.35.0/24",
-    "83.166.251.0/24",
-    "91.219.227.0/24"
+    "89.208.0.0/24"
 ]
 
 # Преобразуем подсети в объекты ipaddress для быстрой проверки
@@ -224,6 +203,85 @@ def is_ip_in_subnets(ip_str: str) -> bool:
         # Невалидный IP адрес
         return False
 
+def extract_existing_info(config: str) -> tuple[str, str, str]:
+    """Извлекает существующие информацию из конфига: номер, флаг, вотермарк"""
+    config_clean = config.strip()
+    
+    # Ищем номер в формате #123, 123., #123.
+    number_match = re.search(r'(?:#?\s*)(\d{1,3})(?:\.|\s+|$)', config_clean)
+    number = number_match.group(1) if number_match else None
+    
+    # Ищем флаг эмодзи
+    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', config_clean)
+    flag = flag_match.group(0) if flag_match else ""
+    
+    # Ищем вотермарк TG
+    tg_match = re.search(r'TG\s*[:@]\s*@?[\w]+', config_clean, re.IGNORECASE)
+    tg = tg_match.group(0) if tg_match else ""
+    
+    # Ищем в поле name (если есть)
+    name_match = re.search(r'name=([^&#]+)', config_clean)
+    name_content = urllib.parse.unquote(name_match.group(1)) if name_match else ""
+    
+    return number, flag, tg, name_content
+
+def add_numbering_to_name(config: str, number: int) -> str:
+    """Добавляет нумерацию и вотермарк в поле name конфига"""
+    try:
+        # Разбираем конфиг на части
+        parsed = urllib.parse.urlparse(config)
+        
+        # Парсим параметры
+        params = urllib.parse.parse_qs(parsed.query)
+        
+        # Извлекаем существующий name
+        existing_name = ""
+        if 'name' in params:
+            existing_name = urllib.parse.unquote(params['name'][0])
+        
+        # Извлекаем фрагмент (#часть)
+        fragment = parsed.fragment
+        
+        # Ищем флаг в существующем name или фрагменте
+        flag = ""
+        flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_name + fragment)
+        if flag_match:
+            flag = flag_match.group(0) + " "
+        
+        # Определяем тип конфига
+        if config.startswith("vmess://"):
+            config_type = "VMESS"
+        elif config.startswith("vless://"):
+            config_type = "VLESS"
+        elif config.startswith("trojan://"):
+            config_type = "TROJAN"
+        elif config.startswith("ss://"):
+            config_type = "SS"
+        else:
+            config_type = ""
+        
+        # Формируем новое имя
+        new_name = f"{number}. {flag}{config_type} | TG: @wlrustg"
+        
+        # Кодируем имя
+        encoded_name = urllib.parse.quote(new_name, safe='')
+        
+        # Обновляем параметры
+        params['name'] = [encoded_name]
+        
+        # Собираем обратно параметры
+        new_query = urllib.parse.urlencode(params, doseq=True)
+        
+        # Собираем новый URL
+        new_parsed = parsed._replace(query=new_query)
+        new_config = urllib.parse.urlunparse(new_parsed)
+        
+        return new_config
+        
+    except Exception as e:
+        log(f"Ошибка добавления нумерации к конфигу: {str(e)[:100]}")
+        return config
+
 def download_and_process_url(url: str) -> list[str]:
     """Загружает и обрабатывает конфиги с одного URL"""
     try:
@@ -303,35 +361,23 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
     
     return unique_configs, whitelist_configs
 
-def add_numbering_and_watermark(configs: list[str], watermark: str = "TG: @wlrustg") -> list[str]:
-    """Добавляет нумерацию и вотермарк к конфигам"""
-    numbered_configs = []
+def process_configs_with_numbering(configs: list[str]) -> list[str]:
+    """Добавляет нумерацию и вотермарк в поле name конфигов"""
+    processed_configs = []
     
     for i, config in enumerate(configs, 1):
-        # Извлекаем хост для более информативного отображения
-        host_port = extract_host_port(config)
-        if host_port:
-            host_info = f" | {host_port[0]}:{host_port[1]}"
-        else:
-            host_info = ""
+        # Проверяем, есть ли уже нумерация в конфиге
+        existing_number, _, existing_tg, _ = extract_existing_info(config)
         
-        # Определяем тип конфига
-        if config.startswith("vmess://"):
-            config_type = "VMESS"
-        elif config.startswith("vless://"):
-            config_type = "VLESS"
-        elif config.startswith("trojan://"):
-            config_type = "TROJAN"
-        elif config.startswith("ss://"):
-            config_type = "SS"
+        # Если уже есть номер и наш вотермарк, не меняем
+        if existing_number and "TG: @wlrustg" in config:
+            processed_configs.append(config)
         else:
-            config_type = "CONFIG"
-        
-        # Добавляем нумерацию и вотермарк как комментарий
-        numbered_config = f"# {i}. {config_type}{host_info} | {watermark}\n{config}"
-        numbered_configs.append(numbered_config)
+            # Добавляем нумерацию
+            processed = add_numbering_to_name(config, i)
+            processed_configs.append(processed)
     
-    return numbered_configs
+    return processed_configs
 
 def save_to_file(configs: list[str], filename: str, description: str = "", add_numbering: bool = False):
     """Сохраняет конфиги в файл с опциональной нумерацией"""
@@ -357,150 +403,18 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
             
             # Обрабатываем конфиги в зависимости от необходимости нумерации
             if add_numbering:
-                processed_configs = add_numbering_and_watermark(configs)
+                processed_configs = process_configs_with_numbering(configs)
             else:
                 processed_configs = configs
             
             # Записываем конфиги
             for config in processed_configs:
-                f.write(config + "\n\n")
+                f.write(config + "\n")
         
         log("💾 Сохранено " + str(len(configs)) + " конфигов в " + filename)
         
     except Exception as e:
         log("Ошибка сохранения файла " + filename + ": " + str(e))
-
-def create_working_servers_file(configs: list[str]):
-    """Создает файл с проверенными рабочими серверами для Cloudflare Pages"""
-    try:
-        # Создаем отдельную папку для Cloudflare Pages
-        os.makedirs("cloudflare-pages", exist_ok=True)
-        output_file = "cloudflare-pages/working-servers.txt"
-        
-        # Отсортировать конфиги по типу для удобства
-        vmess_configs = [c for c in configs if c.startswith("vmess://")]
-        vless_configs = [c for c in configs if c.startswith("vless://")]
-        trojan_configs = [c for c in configs if c.startswith("trojan://")]
-        other_configs = [c for c in configs if not c.startswith(("vmess://", "vless://", "trojan://"))]
-        
-        with open(output_file, "w", encoding="utf-8") as f:
-            # Красивый заголовок
-            f.write("=" * 60 + "\n")
-            f.write("РАБОЧИЕ VPN СЕРВЕРА - РУЧНАЯ ПРОВЕРКА\n")
-            f.write("=" * 60 + "\n\n")
-            
-            f.write("📅 Последнее обновление: " + offset + "\n")
-            f.write("📊 Всего конфигов доступно: " + str(len(configs)) + "\n")
-            f.write("👨‍💻 Проверено вручную: [ЗДЕСЬ БУДЕТ КОЛИЧЕСТВО]\n")
-            f.write("📢 Канал поддержки: TG: @wlrustg\n")
-            f.write("-" * 60 + "\n\n")
-            
-            f.write("ℹ️ ИНСТРУКЦИЯ:\n")
-            f.write("1. Сервера проверяются вручную на работоспособность\n")
-            f.write("2. ✅ - работает, ❌ - не работает, ⚠️ - нестабильно\n")
-            f.write("3. Статус обновляется по мере проверки\n")
-            f.write("4. Для добавления в клиент скопируйте строку БЕЗ комментариев\n")
-            f.write("-" * 60 + "\n\n")
-            
-            # Счетчики для статистики
-            total_checked = 0
-            working_count = 0
-            
-            # VLESS сервера
-            if vless_configs:
-                f.write("🔷 VLESS СЕРВЕРА (" + str(len(vless_configs)) + "):\n")
-                f.write("-" * 40 + "\n")
-                
-                for i, config in enumerate(vless_configs[:20], 1):  # Ограничим 20 для ручной проверки
-                    host_port = extract_host_port(config)
-                    if host_port:
-                        host_info = f"{host_port[0]}:{host_port[1]}"
-                    else:
-                        host_info = "Неизвестный хост"
-                    
-                    # Добавляем место для ручной пометки статуса
-                    f.write(f"#{i:03d} VLESS | {host_info}\n")
-                    f.write("# Статус: [ ] ✅ [ ] ❌ [ ] ⚠️\n")
-                    f.write("# Скорость: _____ Мбит/с\n")
-                    f.write("# Пинг: _____ мс\n")
-                    f.write("# Комментарий: ____________________\n")
-                    f.write(config + "\n")
-                    f.write("-" * 40 + "\n")
-                    total_checked += 1
-            
-            # VMESS сервера
-            if vmess_configs:
-                f.write("\n🔶 VMESS СЕРВЕРА (" + str(len(vmess_configs)) + "):\n")
-                f.write("-" * 40 + "\n")
-                
-                for i, config in enumerate(vmess_configs[:15], 1):  # Ограничим 15
-                    host_port = extract_host_port(config)
-                    if host_port:
-                        host_info = f"{host_port[0]}:{host_port[1]}"
-                    else:
-                        host_info = "Неизвестный хост"
-                    
-                    f.write(f"#{i+20:03d} VMESS | {host_info}\n")
-                    f.write("# Статус: [ ] ✅ [ ] ❌ [ ] ⚠️\n")
-                    f.write("# Скорость: _____ Мбит/с\n")
-                    f.write("# Пинг: _____ мс\n")
-                    f.write("# Комментарий: ____________________\n")
-                    f.write(config + "\n")
-                    f.write("-" * 40 + "\n")
-                    total_checked += 1
-            
-            # Trojan сервера
-            if trojan_configs:
-                f.write("\n🔺 TROJAN СЕРВЕРА (" + str(len(trojan_configs)) + "):\n")
-                f.write("-" * 40 + "\n")
-                
-                for i, config in enumerate(trojan_configs[:10], 1):  # Ограничим 10
-                    host_port = extract_host_port(config)
-                    if host_port:
-                        host_info = f"{host_port[0]}:{host_port[1]}"
-                    else:
-                        host_info = "Неизвестный хост"
-                    
-                    f.write(f"#{i+35:03d} TROJAN | {host_info}\n")
-                    f.write("# Статус: [ ] ✅ [ ] ❌ [ ] ⚠️\n")
-                    f.write("# Скорость: _____ Мбит/с\n")
-                    f.write("# Пинг: _____ мс\n")
-                    f.write("# Комментарий: ____________________\n")
-                    f.write(config + "\n")
-                    f.write("-" * 40 + "\n")
-                    total_checked += 1
-            
-            # Статистика в конце
-            f.write("\n" + "=" * 60 + "\n")
-            f.write("📈 СТАТИСТИКА:\n")
-            f.write("=" * 60 + "\n")
-            f.write(f"Всего доступно: {len(configs)} конфигов\n")
-            f.write(f"Отобрано для проверки: {total_checked}\n")
-            f.write(f"Проверено вручную: {working_count}\n")
-            f.write(f"Рабочих: {working_count}\n")
-            f.write(f"Процент рабочих: {working_count/max(total_checked,1)*100:.1f}%\n")
-            f.write("\n📢 Поддержка и обновления: TG: @wlrustg\n")
-            f.write("=" * 60 + "\n")
-        
-        log("📋 Создан файл для ручной проверки: cloudflare-pages/working-servers.txt")
-        log("ℹ️  Файл содержит шаблон для отметки работоспособности серверов")
-        
-        # Также создаем простую версию с нумерацией
-        simple_file = "cloudflare-pages/simple-list.txt"
-        with open(simple_file, "w", encoding="utf-8") as f:
-            f.write("# Пронумерованный список серверов\n")
-            f.write("# Обновлено: " + offset + "\n")
-            f.write("# TG: @wlrustg\n")
-            f.write("#" * 50 + "\n\n")
-            
-            numbered_configs = add_numbering_and_watermark(configs[:50])  # Ограничим 50
-            for config in numbered_configs:
-                f.write(config + "\n\n")
-        
-        log("📝 Создан упрощенный список: cloudflare-pages/simple-list.txt")
-        
-    except Exception as e:
-        log("Ошибка создания файла для Cloudflare Pages: " + str(e))
 
 def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
     """Загружает файл на GitHub в указанную ветку"""
@@ -570,17 +484,6 @@ def setup_github_pages():
             REPO.create_git_ref(ref="refs/heads/gh-pages", sha=main_branch.commit.sha)
             log("✅ Ветка gh-pages создана")
             
-            # Создаем минимальный CNAME файл (опционально)
-            try:
-                REPO.create_file(
-                    path="CNAME",
-                    message="🌐 Настройка GitHub Pages",
-                    content="",
-                    branch="gh-pages"
-                )
-            except:
-                pass
-                
             return True
         except Exception as e:
             log(f"❌ Ошибка создания ветки gh-pages: {str(e)}")
@@ -604,12 +507,10 @@ def update_readme(total_configs: int, wl_configs_count: int):
         # Формируем ссылки на файлы
         raw_url_merged = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/merged.txt"
         raw_url_wl = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/wl.txt"
-        raw_url_working = "https://github.com/" + REPO_NAME + "/raw/main/cloudflare-pages/working-servers.txt"
-        raw_url_simple = "https://github.com/" + REPO_NAME + "/raw/main/cloudflare-pages/simple-list.txt"
         
-        # jsDelivr CDN URL (если репозиторий публичный)
+        # jsDelivr CDN URL
         cdn_url_wl = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/wl.txt"
-        cdn_url_simple = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/cloudflare-pages/simple-list.txt"
+        cdn_url_merged = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/merged.txt"
         
         # Разделяем время и дату
         time_part = offset.split(" | ")[0]
@@ -620,38 +521,35 @@ def update_readme(total_configs: int, wl_configs_count: int):
         new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
         new_section += "|------|----------|----------|------------------|------|\n"
         new_section += f"| [`merged.txt`]({raw_url_merged}) | Все конфиги из {len(URLS)} источников | {total_configs} | {time_part} | {date_part} |\n"
-        new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n"
-        new_section += f"| [`working-servers.txt`]({raw_url_working}) | Для ручной проверки на Cloudflare | шаблон | {time_part} | {date_part} |\n"
-        new_section += f"| [`simple-list.txt`]({raw_url_simple}) | Пронумерованный список | до 50 | {time_part} | {date_part} |\n\n"
+        new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n\n"
         
         # Добавляем информацию о подсетях
         new_section += "## 📋 Whitelist подсети\n"
-        new_section += "Файл `wl.txt` содержит только конфиги со следующими подсетями:\n\n"
+        new_section += f"Файл `wl.txt` содержит только конфиги из {len(WHITELIST_SUBNETS)} проверенных подсетей:\n\n"
         
         # Группируем подсети по строкам для лучшей читаемости
         for i in range(0, len(WHITELIST_SUBNETS), 4):
             subnet_line = WHITELIST_SUBNETS[i:i+4]
             new_section += "`" + "` `".join(subnet_line) + "`  \n"
         
-        new_section += "\n## 📥 Скачать\n"
-        new_section += "### Основные файлы:\n"
-        new_section += f"- [merged.txt (все конфиги)]({raw_url_merged})\n"
-        new_section += f"- [wl.txt (только whitelist)]({raw_url_wl})\n"
-        new_section += f"- [simple-list.txt (пронумерованный)]({raw_url_simple})\n"
-        new_section += f"- [working-servers.txt (для проверки)]({raw_url_working})\n\n"
+        new_section += "\n## 🌐 Варианты доступа\n"
         
-        new_section += "### Короткие ссылки (jsDelivr CDN):\n"
-        new_section += f"- [wl.txt]({cdn_url_wl})\n"
-        new_section += f"- [simple-list.txt]({cdn_url_simple})\n\n"
+        new_section += "### Через jsDelivr CDN (быстро, кешируется)\n"
+        new_section += f"- Все конфиги: [{cdn_url_merged}]({cdn_url_merged})\n"
+        new_section += f"- Только whitelist: [{cdn_url_wl}]({cdn_url_wl})\n\n"
         
-        new_section += "## 🔧 Особенности файлов\n"
-        new_section += "- **wl.txt**: Пронумерованные конфиги с вотермарком TG: @wlrustg\n"
-        new_section += "- **simple-list.txt**: Первые 50 серверов с нумерацией\n"
-        new_section += "- **working-servers.txt**: Шаблон для ручной проверки серверов\n\n"
+        new_section += "### Прямые ссылки GitHub\n"
+        new_section += f"- Все конфиги: [{raw_url_merged}]({raw_url_merged})\n"
+        new_section += f"- Только whitelist: [{raw_url_wl}]({raw_url_wl})\n\n"
+        
+        new_section += "## 🔧 Особенности\n"
+        new_section += "✅ **Нумерация в поле name** - каждый конфиг в wl.txt имеет номер прямо в параметре name\n"
+        new_section += "✅ **Вотермарк TG: @wlrustg** - добавлен к каждому конфигу в поле name\n"
+        new_section += "✅ **Автоматическое обновление** - конфиги обновляются каждый час\n"
+        new_section += "✅ **Нет дублирования** - если конфиг уже имеет номер и вотермарк, они не дублируются\n\n"
         
         new_section += "## ⚙️ Авто-обновление\n"
-        new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions.\n"
-        new_section += "Для ручной проверки используйте файл `working-servers.txt`.\n\n"
+        new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions.\n\n"
         
         new_section += "## 📢 Контакты\n"
         new_section += "Telegram канал: [@wlrustg](https://t.me/wlrustg)\n"
@@ -727,30 +625,23 @@ def main():
     save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники)")
     save_to_file(whitelist_configs, output_file_wl, "Whitelist конфиги (только подсети из списка)", add_numbering=True)
     
-    # 4. Создаем файлы для Cloudflare Pages
-    log("📋 Создание файлов для Cloudflare Pages...")
-    create_working_servers_file(whitelist_configs)
-    
-    # 5. Загружаем на GitHub (основная ветка)
+    # 4. Загружаем на GitHub (основная ветка)
     log("📤 Загрузка на GitHub (основная ветка)...")
     upload_to_github(output_file_merged, "githubmirror/merged.txt", "main")
     upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
-    upload_to_github("cloudflare-pages/working-servers.txt", "cloudflare-pages/working-servers.txt", "main")
-    upload_to_github("cloudflare-pages/simple-list.txt", "cloudflare-pages/simple-list.txt", "main")
     
-    # 6. Загружаем в ветку gh-pages для GitHub Pages
-    log("🌐 Настройка GitHub Pages...")
+    # 5. Загружаем в ветку gh-pages для GitHub Pages
+    log("📤 Загрузка в ветку gh-pages...")
     if setup_github_pages():
-        log("📤 Загрузка файлов в ветку gh-pages...")
+        upload_to_github(output_file_merged, "merged.txt", "gh-pages")
         upload_to_github(output_file_wl, "wl.txt", "gh-pages")
-        upload_to_github("cloudflare-pages/simple-list.txt", "simple-list.txt", "gh-pages")
     else:
-        log("⚠️ GitHub Pages не настроены. Включите в настройках репозитория: Settings → Pages → Branch: gh-pages")
+        log("⚠️ GitHub Pages не настроены")
     
-    # 7. Обновляем README
+    # 6. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
-    # 8. Выводим итоги
+    # 7. Выводим итоги
     log("=" * 60)
     log("📊 ИТОГИ:")
     log("   🌐 Источников: " + str(len(URLS)))
@@ -758,31 +649,10 @@ def main():
     log("   🔄 Уникальных: " + str(len(unique_configs)))
     log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
     log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
-    log("   💾 Файлы созданы:")
+    log("   💾 Основные файлы:")
     log("      • githubmirror/merged.txt")
-    log("      • githubmirror/wl.txt (с нумерацией)")
-    log("      • cloudflare-pages/working-servers.txt")
-    log("      • cloudflare-pages/simple-list.txt")
+    log("      • githubmirror/wl.txt")
     log("=" * 60)
-    
-    # Выводим ссылки
-    if REPO and not REPO.private:
-        log("\n🌐 КОРОТКИЕ ССЫЛКИ:")
-        repo_owner = REPO_NAME.split('/')[0]
-        repo_name_only = REPO_NAME.split('/')[1]
-        
-        log(f"   jsDelivr CDN:")
-        log(f"   • wl.txt: https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/wl.txt")
-        log(f"   • simple-list.txt: https://cdn.jsdelivr.net/gh/{REPO_NAME}/cloudflare-pages/simple-list.txt")
-        
-        # Проверяем, есть ли ветка gh-pages
-        try:
-            REPO.get_branch("gh-pages")
-            log(f"\n   GitHub Pages:")
-            log(f"   • wl.txt: https://{repo_owner}.github.io/{repo_name_only}/wl.txt")
-            log(f"   • simple-list.txt: https://{repo_owner}.github.io/{repo_name_only}/simple-list.txt")
-        except:
-            pass
     
     # Выводим логи
     print("\n📋 ЛОГИ ВЫПОЛНЕНИЯ (" + offset + "):")
