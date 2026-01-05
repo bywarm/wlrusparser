@@ -86,7 +86,6 @@ URLS = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
-    "https://jsnegsukavsos.hb.ru-msk.vkcloud-storage.ru/love",
     "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/refs/heads/main/githubmirror/26.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -524,18 +523,16 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
     try:
         with open(filename, "w", encoding="utf-8") as f:
             # Заголовок файла
+            f.write("#profile-title: WL RUS")
             f.write("# " + description + "\n")
             f.write("# Обновлено: " + offset + "\n")
             f.write("# Всего конфигов: " + str(len(configs)) + "\n")
             
             if "Whitelist" in description:
                 f.write("# Подсети: " + str(len(WHITELIST_SUBNETS)) + "\n")
-                f.write("# Вотермарк: TG: @wlrustg\n")
                 f.write("#" * 50 + "\n\n")
             else:
                 f.write("# Источников: " + str(len(URLS)) + "\n")
-                if add_numbering:
-                    f.write("# Вотермарк: TG: @wlrustg\n")
                 f.write("#" * 50 + "\n\n")
             
             # Обрабатываем конфиги в зависимости от необходимости нумерации
@@ -645,10 +642,9 @@ def update_readme(total_configs: int, wl_configs_count: int):
         # Формируем ссылки на файлы
         raw_url_merged = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/merged.txt"
         raw_url_wl = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/wl.txt"
+        raw_url_selected = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/selected.txt"
         
-        # jsDelivr CDN URL
-        cdn_url_wl = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/wl.txt"
-        cdn_url_merged = f"https://cdn.jsdelivr.net/gh/{REPO_NAME}/githubmirror/merged.txt"
+        
         
         # Разделяем время и дату
         time_part = offset.split(" | ")[0]
@@ -659,7 +655,8 @@ def update_readme(total_configs: int, wl_configs_count: int):
         new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
         new_section += "|------|----------|----------|------------------|------|\n"
         new_section += f"| [`merged.txt`]({raw_url_merged}) | Все конфиги из {len(URLS)} источников | {total_configs} | {time_part} | {date_part} |\n"
-        new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n\n"
+        new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n"
+        new_section += f"| [`selected.txt`]({raw_url_selected}) | Отборные админами конфиги, самый надежный список | не знаю | {time_part} | {date_part} |\n\n"
         
         # Добавляем информацию о подсетях
         new_section += "## 📋 Whitelist подсети\n"
@@ -672,19 +669,11 @@ def update_readme(total_configs: int, wl_configs_count: int):
         
         new_section += "\n## 🌐 Варианты доступа\n"
         
-        new_section += "### Через jsDelivr CDN (быстро, кешируется)\n"
-        new_section += f"- Все конфиги: [{cdn_url_merged}]({cdn_url_merged})\n"
-        new_section += f"- Только whitelist: [{cdn_url_wl}]({cdn_url_wl})\n\n"
         
         new_section += "### Прямые ссылки GitHub\n"
         new_section += f"- Все конфиги: [{raw_url_merged}]({raw_url_merged})\n"
         new_section += f"- Только whitelist: [{raw_url_wl}]({raw_url_wl})\n\n"
         
-        new_section += "## 🔧 Особенности\n"
-        new_section += "✅ **Нумерация в поле name** - каждый конфиг в wl.txt имеет номер прямо в параметре name\n"
-        new_section += "✅ **Вотермарк TG: @wlrustg** - добавлен к каждому конфигу в поле name\n"
-        new_section += "✅ **Автоматическое обновление** - конфиги обновляются каждый час\n"
-        new_section += "✅ **Нет дублирования** - если конфиг уже имеет номер и вотермарк, они не дублируются\n\n"
         
         new_section += "## ⚙️ Авто-обновление\n"
         new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions.\n\n"
