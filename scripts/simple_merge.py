@@ -530,7 +530,6 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
             else:
                f.write("#profile-title: WL RUS (all) \n")
             
-            f.write("#support-url: https://t.me/wlrustg \n")
             f.write("#profile-update-interval: 1 \n")
             f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках! \n")
             f.write("# " + description + "\n")
@@ -765,7 +764,6 @@ def process_selected_file():
                 # Добавляем заголовок
                 new_lines.append("#profile-title: WL RUS (selected)")
                 new_lines.append("#profile-update-interval: 1")
-                new_lines.append("#support-url: https://t.me/wlrustg")
                 new_lines.append("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!")
                 
                 # Добавляем другие строки (комментарии, пустые строки)
