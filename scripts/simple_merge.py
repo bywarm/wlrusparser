@@ -711,7 +711,7 @@ def update_readme(total_configs: int, wl_configs_count: int):
 
 def process_selected_file():
     """Обрабатывает файл selected.txt с ручными серверами, включая дедупликацию"""
-    selected_file = "selected.txt"
+    selected_file = "githubmirror/selected.txt"
     
     if os.path.exists(selected_file):
         try:
