@@ -1,5 +1,5 @@
 
-vless://86c50e3a-5b87-49dd-bd20-03c7f2735e40@104.17.135.117:2095?encryption=none&flow=&host=snippets.pusytroller.cf&path=%2F&type=ws#1.%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://86c50e3a-5b87-49dd-bd20-03c7f2735e40@104.17.135.117:2095?encryption=none&flow=&host=snippets.pusytroller.cf&path=%2F&type=ws#1.%20VLESS%20%7C%20TG%3A%20
 
 vless://854eea7a-c834-4f62-9e17-ae63d1086f36@45.139.27.99:443?encryption=none&flow=&fp=chrome&pbk=drl7nndYdfzZY1aQ0eUAWmNV0nsHig2uDnu9siy9biQ&security=reality&sid=868419504747f6de&sni=vk.com&type=#2.%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
@@ -7,7 +7,7 @@ vless://7f47fd09-a30d-4d5e-a758-55d1cbf95a44@185.154.193.225:443?encryption=none
 
 vless://854eea7a-c834-4f62-9e17-ae63d1086f36@45.139.26.132:443?encryption=none&flow=&fp=chrome&pbk=drl7nndYdfzZY1aQ0eUAWmNV0nsHig2uDnu9siy9biQ&security=reality&sid=868419504747f6de&sni=vk.com&type=#4.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
-vless://4d94fa33-9462-48b4-b7de-8a2863560d19@95.163.251.134:4249?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=J5ITJbg5FQFembAfkogKHHQB6DigsFXQxK7xu-QMWUs&security=reality&sid=a20d3ed244c76426&sni=eh.vk.com&type=#5.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://4d94fa33-9462-48b4-b7de-8a2863560d19@95.163.251.134:4249?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=J5ITJbg5FQFembAfkogKHHQB6DigsFXQxK7xu-QMWUs&security=reality&sid=a20d3ed244c76426&sni=eh.vk.com&type=#5.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20
 
 vless://c5c9d8ec-6c95-4f84-a395-de41ef895f34@217.16.20.134:443?encryption=none&flow=&fp=chrome&pbk=24lsP7iRzgT7pMhCprlmHUB6_mbR17Pxc6P0R29f-Rk&security=reality&sid=633a1efd&sni=www.vk.com&type=#6.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
