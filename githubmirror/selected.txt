@@ -3,10 +3,35 @@
 #announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!
 #profile-title: WL RUS (selected)
 #profile-update-interval: 1
+#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!
+#profile-title: WL RUS (selected)
+#profile-update-interval: 1
 #support-url: https://t.me/wlrustg
 #announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!
 #profile-title: WL RUS (selected)
 #profile-update-interval: 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
