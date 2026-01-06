@@ -61,10 +61,6 @@ jobs:
           echo "🛡️ Конфигов в wl.txt: $WL_CONFIG_COUNT"
         fi
         
-        if [ -f "cloudflare-pages/simple-list.txt" ]; then
-          SIMPLE_COUNT=$(grep -c '^#[0-9]\+\.' cloudflare-pages/simple-list.txt 2>/dev/null || echo "0")
-          echo "🔢 Пронумеровано в simple-list.txt: $SIMPLE_COUNT"
-        fi
         
         # Настройка git
         git config --local user.email "action@github.com"
@@ -73,7 +69,6 @@ jobs:
         
         # Добавляем изменения
         git add githubmirror/merged.txt githubmirror/wl.txt \
-                cloudflare-pages/working-servers.txt cloudflare-pages/simple-list.txt \
                 README.md
         
         # Проверяем, есть ли изменения
