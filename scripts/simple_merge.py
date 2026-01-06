@@ -611,26 +611,6 @@ def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
     except Exception as e:
         log("Ошибка при загрузке на GitHub: " + str(e))
 
-def setup_github_pages():
-    """Настраивает ветку gh-pages для GitHub Pages"""
-    if not REPO:
-        return False
-    
-    try:
-        # Пробуем получить ветку gh-pages
-        REPO.get_branch("gh-pages")
-        return True
-    except GithubException:
-        try:
-            # Создаем ветку gh-pages на основе main
-            main_branch = REPO.get_branch("main")
-            REPO.create_git_ref(ref="refs/heads/gh-pages", sha=main_branch.commit.sha)
-            log("✅ Ветка gh-pages создана")
-            
-            return True
-        except Exception as e:
-            log(f"❌ Ошибка создания ветки gh-pages: {str(e)}")
-            return False
 
 def update_readme(total_configs: int, wl_configs_count: int):
     """Обновляет README.md со статистикой"""
@@ -717,6 +697,7 @@ def process_selected_file():
         try:
             with open(selected_file, "r", encoding="utf-8") as f:
                 content = f.read()
+ 
             
             # Разделяем на строки
             lines = content.splitlines()
@@ -801,6 +782,11 @@ def process_selected_file():
                 
                 # Сохраняем обратно
                 with open(selected_file, "w", encoding="utf-8") as f:
+
+          f.write("#profile-title: WL RUS (selected) \n")
+          f.write("#support-url: https://t.me/wlrustg \n")
+          f.write("#profile-update-interval: 1 \n")
+                    
                     for i, line in enumerate(new_lines):
                         if i == len(new_lines) - 1:
                             f.write(line)  # Последняя строка без \n
@@ -893,15 +879,6 @@ def main():
     if os.path.exists(selected_file):
         upload_to_github(selected_file, "githubmirror/selected.txt", "main")
     
-    # 7. Загружаем в ветку gh-pages для GitHub Pages
-    log("📤 Загрузка в ветку gh-pages...")
-    if setup_github_pages():
-        upload_to_github(output_file_merged, "merged.txt", "gh-pages")
-        upload_to_github(output_file_wl, "wl.txt", "gh-pages")
-        if os.path.exists(selected_file):
-            upload_to_github(selected_file, "selected.txt", "gh-pages")
-    else:
-        log("⚠️ GitHub Pages не настроены")
     
     # 8. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
