@@ -872,10 +872,10 @@ def main():
     upload_to_github(output_file_merged, "githubmirror/merged.txt", "main")
     upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
     
-    # Загружаем selected.txt на GitHub, если он существует
-    selected_file = "githubmirror/selected.txt"
-    if os.path.exists(selected_file):
-        upload_to_github(selected_file, "githubmirror/selected.txt", "main")
+   # Загружаем selected.txt на GitHub, если он существует
+   # selected_file = "githubmirror/selected.txt"
+   # if os.path.exists(selected_file):
+   #     upload_to_github(selected_file, "githubmirror/selected.txt", "main")
     
     
     # 8. Обновляем README
