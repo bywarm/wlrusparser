@@ -1,3 +1,28 @@
+#profile-title: WL RUS (selected)
+#profile-update-interval: 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 vless://86c50e3a-5b87-49dd-bd20-03c7f2735e40@104.17.135.117:2095?encryption=none&flow=&host=snippets.pusytroller.cf&path=%2F&type=ws#1.%20VLESS%20%7C%20TG%3A%20%40wlrustg
