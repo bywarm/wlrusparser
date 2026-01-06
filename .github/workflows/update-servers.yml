@@ -10,8 +10,7 @@ on:
     paths-ignore:
       - 'githubmirror/merged.txt'
       - 'githubmirror/wl.txt'
-      - 'cloudflare-pages/working-servers.txt'
-      - 'cloudflare-pages/simple-list.txt'
+      - 'githubmirror/selected.txt'
       - 'README.md'
 
 jobs:
