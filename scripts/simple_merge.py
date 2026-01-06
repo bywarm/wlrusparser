@@ -785,18 +785,27 @@ def process_selected_file():
                 for line in other_lines:
                     new_lines.append(line)
                 
+                # Добавляем пустую строку после комментариев, если есть конфиги
+                if other_lines and processed_configs:
+                    new_lines.append("")
+                
                 # Добавляем обработанные конфиги в правильном порядке
+                config_counter = 0
                 for i in range(len(processed_configs)):
                     if i in processed_by_index:
                         new_lines.append(processed_by_index[i])
+                        config_counter += 1
                         # Добавляем пустую строку между конфигами (кроме последнего)
-                        if i < len(processed_configs) - 1:
+                        if config_counter < len(processed_configs):
                             new_lines.append("")
                 
                 # Сохраняем обратно
                 with open(selected_file, "w", encoding="utf-8") as f:
-                    for line in new_lines:
-                        f.write(line + "\n")
+                    for i, line in enumerate(new_lines):
+                        if i == len(new_lines) - 1:
+                            f.write(line)  # Последняя строка без \n
+                        else:
+                            f.write(line + "\n")
                 
                 log(f"✅ Обработан selected.txt: {len(processed_configs)} конфигов (удалено {duplicates_count} дубликатов)")
                 
@@ -813,14 +822,14 @@ def process_selected_file():
         log("ℹ️ Файл selected.txt не найден")
         return []
 
+
 def main():
     """Основная функция"""
     log("🚀 Начало объединения конфигов")
     log("📅 Время: " + offset)
     log("🌐 Источников: " + str(len(URLS)))
     log("🛡️ Whitelist подсетей: " + str(len(WHITELIST_SUBNETS)))
-    
-    # 1. Скачиваем конфиги из всех источников
+
     log("📥 Загрузка конфигов...")
     
     all_configs = []
@@ -880,9 +889,9 @@ def main():
     upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
     
     # Загружаем selected.txt на GitHub, если он существует
-    selected_file = "selected.txt"
+    selected_file = "githubmirror/selected.txt"
     if os.path.exists(selected_file):
-        upload_to_github(selected_file, selected_file, "main")
+        upload_to_github(selected_file, "githubmirror/selected.txt", "main")
     
     # 7. Загружаем в ветку gh-pages для GitHub Pages
     log("📤 Загрузка в ветку gh-pages...")
@@ -890,7 +899,7 @@ def main():
         upload_to_github(output_file_merged, "merged.txt", "gh-pages")
         upload_to_github(output_file_wl, "wl.txt", "gh-pages")
         if os.path.exists(selected_file):
-            upload_to_github(selected_file, selected_file, "gh-pages")
+            upload_to_github(selected_file, "selected.txt", "gh-pages")
     else:
         log("⚠️ GitHub Pages не настроены")
     
@@ -904,13 +913,19 @@ def main():
     log("   📥 Скачано из URL: " + str(len(all_configs) - len(selected_configs)))
     log("   🔧 Из selected.txt: " + str(len(selected_configs)))
     log("   🔄 Уникальных: " + str(len(unique_configs)))
-    log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
+    total_duplicates = (len(all_configs) - len(selected_configs)) + len(selected_configs) - len(unique_configs)
+    log("   📊 Дубликатов: " + str(total_duplicates))
     log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
     log("   💾 Основные файлы:")
     log("      • githubmirror/merged.txt (с нумерацией)")
     log("      • githubmirror/wl.txt (с нумерацией)")
-    log("      • selected.txt (дедуплицирован и обработан)")
+    log("      • githubmirror/selected.txt (дедуплицирован и обработан)")
     log("=" * 60)
+    
+    # Проверяем изменения для GitHub Actions
+    log("💾 Проверка изменений...")
+    log(f"📊 Конфигов в merged.txt: {len(unique_configs)}")
+    log(f"🛡️ Конфигов в wl.txt: {len(whitelist_configs)}")
     
     # Выводим логи
     print("\n📋 ЛОГИ ВЫПОЛНЕНИЯ (" + offset + "):")
