@@ -697,7 +697,6 @@ def process_selected_file():
         try:
             with open(selected_file, "r", encoding="utf-8") as f:
                 content = f.read()
- 
             
             # Разделяем на строки
             lines = content.splitlines()
@@ -762,6 +761,11 @@ def process_selected_file():
                 # Собираем итоговый файл
                 new_lines = []
                 
+                # Добавляем заголовок
+                new_lines.append("#profile-title: WL RUS (selected)")
+                new_lines.append("#profile-update-interval: 1")
+                new_lines.append("")
+                
                 # Добавляем другие строки (комментарии, пустые строки)
                 for line in other_lines:
                     new_lines.append(line)
@@ -782,11 +786,6 @@ def process_selected_file():
                 
                 # Сохраняем обратно
                 with open(selected_file, "w", encoding="utf-8") as f:
-
-          f.write("#profile-title: WL RUS (selected) \n")
-          f.write("#support-url: https://t.me/wlrustg \n")
-          f.write("#profile-update-interval: 1 \n")
-                    
                     for i, line in enumerate(new_lines):
                         if i == len(new_lines) - 1:
                             f.write(line)  # Последняя строка без \n
@@ -807,7 +806,6 @@ def process_selected_file():
     else:
         log("ℹ️ Файл selected.txt не найден")
         return []
-
 
 def main():
     """Основная функция"""
