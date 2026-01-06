@@ -709,9 +709,8 @@ def update_readme(total_configs: int, wl_configs_count: int):
     except Exception as e:
         log("Ошибка обновления README: " + str(e))
 
-
 def process_selected_file():
-    """Обрабатывает файл selected.txt с ручными серверами"""
+    """Обрабатывает файл selected.txt с ручными серверами, включая дедупликацию"""
     selected_file = "selected.txt"
     
     if os.path.exists(selected_file):
@@ -722,60 +721,97 @@ def process_selected_file():
             # Разделяем на строки
             lines = content.splitlines()
             configs = []
+            other_lines = []  # Комментарии и пустые строки
             
+            # Собираем конфиги и другие строки
             for line in lines:
-                line = line.strip()
-                # Пропускаем пустые строки и комментарии
-                if not line or line.startswith('#'):
-                    continue
-                
-                # Проверяем, что это похоже на конфиг
-                if any(line.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
-                                                     'ss://', 'ssr://', 'tuic://', 
-                                                     'hysteria://', 'hysteria2://']):
-                    configs.append(line)
-                elif '@' in line and ':' in line and line.count(':') >= 2:
-                    configs.append(line)
+                stripped = line.strip()
+                if not stripped:
+                    other_lines.append(line)  # Пустая строка
+                elif stripped.startswith('#'):
+                    other_lines.append(line)  # Комментарий
+                else:
+                    # Проверяем, что это похоже на конфиг
+                    if any(stripped.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
+                                                             'ss://', 'ssr://', 'tuic://', 
+                                                             'hysteria://', 'hysteria2://']):
+                        configs.append((len(configs), stripped))  # Сохраняем с индексом
+                    elif '@' in stripped and ':' in stripped and stripped.count(':') >= 2:
+                        configs.append((len(configs), stripped))  # Сохраняем с индексом
             
             if configs:
+                # Разделяем индексы и конфиги
+                config_indices = [idx for idx, _ in configs]
+                raw_configs = [config for _, config in configs]
+                
+                # Дедуплицируем конфиги (как в merge_and_deduplicate)
+                seen_full = set()
+                seen_hostport = set()
+                unique_configs_with_index = []
+                
+                for idx, config in zip(config_indices, raw_configs):
+                    if config in seen_full:
+                        continue
+                    seen_full.add(config)
+                    
+                    # Дедупликация по хосту и порту
+                    host_port = extract_host_port(config)
+                    if host_port:
+                        key = host_port[0].lower() + ":" + str(host_port[1])
+                        if key in seen_hostport:
+                            continue
+                        seen_hostport.add(key)
+                    
+                    unique_configs_with_index.append((idx, config))
+                
+                # Если были дубликаты, логируем
+                duplicates_count = len(configs) - len(unique_configs_with_index)
+                if duplicates_count > 0:
+                    log(f"🔍 Найдено {duplicates_count} дубликатов в selected.txt")
+                
                 # Обрабатываем конфиги с нумерацией
-                processed_configs = process_configs_with_numbering(configs)
+                unique_configs = [config for _, config in unique_configs_with_index]
+                processed_configs = process_configs_with_numbering(unique_configs)
                 
-                # Сохраняем обратно с сохранением комментариев
+                # Собираем обработанные конфиги с сохранением порядка
+                processed_by_index = {}
+                for (idx, _), processed in zip(unique_configs_with_index, processed_configs):
+                    processed_by_index[idx] = processed
+                
+                # Собираем итоговый файл
+                new_lines = []
+                
+                # Добавляем другие строки (комментарии, пустые строки)
+                for line in other_lines:
+                    new_lines.append(line)
+                
+                # Добавляем обработанные конфиги в правильном порядке
+                for i in range(len(processed_configs)):
+                    if i in processed_by_index:
+                        new_lines.append(processed_by_index[i])
+                        # Добавляем пустую строку между конфигами (кроме последнего)
+                        if i < len(processed_configs) - 1:
+                            new_lines.append("")
+                
+                # Сохраняем обратно
                 with open(selected_file, "w", encoding="utf-8") as f:
-                    # Сохраняем оригинальные комментарии
-                    comment_lines = []
-                    config_lines = []
-                    
-                    for line in lines:
-                        stripped = line.strip()
-                        if not stripped:
-                            config_lines.append(line)  # Сохраняем пустую строку
-                        elif stripped.startswith('#'):
-                            comment_lines.append(line)
-                        else:
-                            config_lines.append(line)
-                    
-                    # Если есть конфиги, добавляем их после комментариев
-                    if comment_lines:
-                        for comment in comment_lines:
-                            f.write(comment + "\n")
-                        f.write("\n")
-                    
-                    # Записываем обработанные конфиги
-                    for i, config in enumerate(processed_configs, 1):
-                        f.write(config + "\n")
-                        if i < len(processed_configs):
-                            f.write("\n")
+                    for line in new_lines:
+                        f.write(line + "\n")
                 
-                log("✅ Обработан selected.txt: " + str(len(configs)) + " конфигов")
+                log(f"✅ Обработан selected.txt: {len(processed_configs)} конфигов (удалено {duplicates_count} дубликатов)")
+                
+                # Возвращаем список конфигов для использования в основном потоке
+                return processed_configs
             else:
                 log("ℹ️ В selected.txt нет конфигов для обработки")
+                return []
                 
         except Exception as e:
-            log("❌ Ошибка обработки selected.txt: " + str(e))
+            log(f"❌ Ошибка обработки selected.txt: {str(e)}")
+            return []
     else:
         log("ℹ️ Файл selected.txt не найден")
+        return []
 
 def main():
     """Основная функция"""
@@ -810,30 +846,35 @@ def main():
     
     log("📊 Скачано всего: " + str(len(all_configs)) + " конфигов")
     
+    # 2. Обрабатываем selected.txt (ручные серверы)
+    log("🔧 Обработка selected.txt...")
+    selected_configs = process_selected_file()
+    
+    # 3. Если есть конфиги из selected.txt, добавляем их к общему списку
+    if selected_configs:
+        all_configs.extend(selected_configs)
+        log(f"📋 Добавлено {len(selected_configs)} конфигов из selected.txt")
+    
     if not all_configs:
         log("❌ Не удалось загрузить ни одного конфига")
         return
     
-    # 2. Дедупликация и сортировка по подсетям
+    # 4. Дедупликация и сортировка по подсетям
     log("🔄 Дедупликация и фильтрация...")
     unique_configs, whitelist_configs = merge_and_deduplicate(all_configs)
     log("🔄 После дедупликации: " + str(len(unique_configs)) + " конфигов")
     log("🛡️ Whitelist конфигов: " + str(len(whitelist_configs)))
     
-    # 3. Сохраняем локально
+    # 5. Сохраняем локально
     os.makedirs("githubmirror", exist_ok=True)
     output_file_merged = "githubmirror/merged.txt"
     output_file_wl = "githubmirror/wl.txt"
     
-    # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ
-    save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники)", add_numbering=True)
+    # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
+    save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники + ручные)", add_numbering=True)
     save_to_file(whitelist_configs, output_file_wl, "Whitelist конфиги (только подсети из списка)", add_numbering=True)
     
-    # 4. Обрабатываем selected.txt
-    log("🔧 Обработка selected.txt...")
-    process_selected_file()
-    
-    # 5. Загружаем на GitHub (основная ветка)
+    # 6. Загружаем на GitHub (основная ветка)
     log("📤 Загрузка на GitHub (основная ветка)...")
     upload_to_github(output_file_merged, "githubmirror/merged.txt", "main")
     upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
@@ -843,7 +884,7 @@ def main():
     if os.path.exists(selected_file):
         upload_to_github(selected_file, selected_file, "main")
     
-    # 6. Загружаем в ветку gh-pages для GitHub Pages
+    # 7. Загружаем в ветку gh-pages для GitHub Pages
     log("📤 Загрузка в ветку gh-pages...")
     if setup_github_pages():
         upload_to_github(output_file_merged, "merged.txt", "gh-pages")
@@ -853,21 +894,22 @@ def main():
     else:
         log("⚠️ GitHub Pages не настроены")
     
-    # 7. Обновляем README
+    # 8. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
-    # 8. Выводим итоги
+    # 9. Выводим итоги
     log("=" * 60)
     log("📊 ИТОГИ:")
     log("   🌐 Источников: " + str(len(URLS)))
-    log("   📥 Скачано: " + str(len(all_configs)))
+    log("   📥 Скачано из URL: " + str(len(all_configs) - len(selected_configs)))
+    log("   🔧 Из selected.txt: " + str(len(selected_configs)))
     log("   🔄 Уникальных: " + str(len(unique_configs)))
     log("   📊 Дубликатов: " + str(len(all_configs) - len(unique_configs)))
     log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
     log("   💾 Основные файлы:")
     log("      • githubmirror/merged.txt (с нумерацией)")
     log("      • githubmirror/wl.txt (с нумерацией)")
-    log("      • selected.txt (обработан)")
+    log("      • selected.txt (дедуплицирован и обработан)")
     log("=" * 60)
     
     # Выводим логи
