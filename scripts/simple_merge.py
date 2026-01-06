@@ -532,6 +532,7 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
             
             f.write("#support-url: https://t.me/wlrustg \n")
             f.write("#profile-update-interval: 1 \n")
+            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках! \n")
             f.write("# " + description + "\n")
             f.write("# Обновлено: " + offset + "\n")
             f.write("# Всего конфигов: " + str(len(configs)) + "\n")
@@ -843,10 +844,6 @@ def main():
     log("🔧 Обработка selected.txt...")
     selected_configs = process_selected_file()
     
-    # 3. Если есть конфиги из selected.txt, добавляем их к общему списку
-    if selected_configs:
-        all_configs.extend(selected_configs)
-        log(f"📋 Добавлено {len(selected_configs)} конфигов из selected.txt")
     
     if not all_configs:
         log("❌ Не удалось загрузить ни одного конфига")
