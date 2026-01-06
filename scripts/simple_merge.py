@@ -525,7 +525,13 @@ def save_to_file(configs: list[str], filename: str, description: str = "", add_n
     try:
         with open(filename, "w", encoding="utf-8") as f:
             # Заголовок файла
-            f.write("#profile-title: WL RUS \n")
+            if "Whitelist" in description:
+               f.write("#profile-title: WL RUS (checked subnets) \n")
+            else:
+               f.write("#profile-title: WL RUS (all) \n")
+            
+            f.write("#support-url: https://t.me/wlrustg \n")
+            f.write("#profile-update-interval: 1 \n")
             f.write("# " + description + "\n")
             f.write("# Обновлено: " + offset + "\n")
             f.write("# Всего конфигов: " + str(len(configs)) + "\n")
