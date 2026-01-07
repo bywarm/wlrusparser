@@ -738,53 +738,42 @@ def process_selected_file():
         try:
             with open(selected_file, "r", encoding="utf-8") as f:
                 lines = f.readlines()
+        except Exception as e:
+            log(f"❌ Ошибка чтения selected.txt: {str(e)}")
+            return []
+        
+        configs = []
+        manual_comments = []
+        
+        skip_auto_header = False
+        for line in lines:
+            stripped = line.strip()
             
-            configs = []
-            manual_comments = []  # Только ручные комментарии пользователя
+            if stripped.startswith("#profile-title: WL RUS (selected)"):
+                skip_auto_header = True
+                continue
             
-            # Пропускаем автоматические заголовки при чтении
-            skip_auto_header = False
-            for line in lines:
-                stripped = line.strip()
-                
-                # Определяем начало автоматического заголовка
-                if stripped.startswith("#profile-title: WL RUS (selected)"):
-                    skip_auto_header = True
+            if skip_auto_header:
+                if stripped.startswith("#") or not stripped:
                     continue
-                
-                # Пропускаем все строки автоматического заголовка
-                if skip_auto_header:
-                    if stripped.startswith("#") or not stripped:
-                        continue
-                    else:
-                        skip_auto_header = False
-                
-                # Теперь обрабатываем обычные строки
-                if not stripped:
-                    if manual_comments and manual_comments[-1] != "":
-                        manual_comments.append("")
-                elif stripped.startswith('#'):
-                    # Игнорируем автоматические заголовки, но сохраняем ручные комментарии
-                    if not any(stripped.startswith(p) for p in [
-                        "#profile-title:", 
-                        "#profile-update-interval:", 
-                        "#announce:",
-                        "# Обновлено:",
-                        "# Всего конфигов:",
-                        "# Вотермарк:",
-                        "##################################################"
-                    ]):
-                        manual_comments.append(stripped)
                 else:
-                    # Это конфиг
-                    if any(stripped.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
-                                                             'ss://', 'ssr://', 'tuic://', 
-                                                             'hysteria://', 'hysteria2://']):
-                        configs.append((len(configs), stripped))
-                    elif '@' in stripped and ':' in stripped and stripped.count(':') >= 2:
-                        configs.append((len(configs), stripped))
+                    skip_auto_header = False
             
-            if configs:
+            if not stripped:
+                if manual_comments and manual_comments[-1] != "":
+                    manual_comments.append("")
+            elif stripped.startswith('#'):
+                manual_comments.append(stripped)
+            else:
+                if any(stripped.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
+                                                         'ss://', 'ssr://', 'tuic://', 
+                                                         'hysteria://', 'hysteria2://']):
+                    configs.append((len(configs), stripped))
+                elif '@' in stripped and ':' in stripped and stripped.count(':') >= 2:
+                    configs.append((len(configs), stripped))
+        
+        if configs:
+            try:
                 # Дедупликация
                 config_indices = [idx for idx, _ in configs]
                 raw_configs = [config for _, config in configs]
@@ -819,14 +808,12 @@ def process_selected_file():
                 for (idx, _), processed in zip(unique_configs_with_index, processed_configs):
                     processed_by_index[idx] = processed
                 
-         
-        
-        with open(selected_file, "w", encoding="utf-8") as f:
-            f.write(f"#profile-title: WL RUS (selected)\n")
-            f.write(f"#profile-update-interval: 1\n")
-            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
+                # Сохраняем с одним заголовком
+                with open(selected_file, "w", encoding="utf-8") as f:
+                    f.write("#profile-title: WL RUS (selected)\n")
+                    f.write("#profile-update-interval: 1\n")
+                    f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
                     
-                    # Добавляем ручные комментарии пользователя
                     if manual_comments:
                         f.write("\n")
                         for comment in manual_comments:
@@ -835,7 +822,6 @@ def process_selected_file():
                             else:
                                 f.write(comment + "\n")
                     
-                    # Добавляем конфиги
                     if processed_configs:
                         if manual_comments:
                             f.write("\n")
@@ -848,12 +834,12 @@ def process_selected_file():
                 
                 log(f"✅ Обработан selected.txt: {len(processed_configs)} конфигов (удалено {duplicates_count} дубликатов)")
                 return processed_configs
-            else:
-                log("ℹ️ В selected.txt нет конфигов для обработки")
-                return []
                 
-        except Exception as e:
-            log(f"❌ Ошибка обработки selected.txt: {str(e)}")
+            except Exception as e:
+                log(f"❌ Ошибка обработки конфигов в selected.txt: {str(e)}")
+                return []
+        else:
+            log("ℹ️ В selected.txt нет конфигов для обработки")
             return []
     else:
         log("ℹ️ Файл selected.txt не найден")
