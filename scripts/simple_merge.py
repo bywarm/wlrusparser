@@ -60,7 +60,7 @@ CONFIG = {
     "merged_file": "merged.txt",           # Все конфиги
     "wl_file": "wl.txt",                   # Whitelist конфиги
     "selected_file": "selected.txt",       # Ручные серверы
-    "custom_prefix": "wlrus_",             # Префикс для файлов
+    "custom_prefix": "",             # Префикс для файлов
     "use_date_suffix": False,              # Добавлять дату к именам?
     "rotate_folders": False,               # Ротировать папки каждый месяц?
 }
