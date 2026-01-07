@@ -849,7 +849,7 @@ def main():
     """Основная функция"""
     PATHS = get_paths()
 log("🚀 Конфигурация запуска:")
-    log(f"   📁 Папка: {PATHS['output_dir']}")
+    log(f"   📁 Папка: {PATHS['base_dir']}")
     log(f"   📄 Merged: {PATHS['merged'].replace(PATHS['base_dir']+'/', '')}")
     log(f"   🛡️ Whitelist: {PATHS['wl'].replace(PATHS['base_dir']+'/', '')}")
     log(f"   🔧 Selected: {PATHS['selected'].replace(PATHS['base_dir']+'/', '')}")
