@@ -4,13 +4,11 @@ on:
   schedule:
     - cron: '0 * * * *'
   workflow_dispatch:
-  push:
-    branches: [ main ]
-    # paths-ignore:
-    #   - 'githubmirror/merged.txt'
-    #   - 'githubmirror/wl.txt'
-    #   - 'githubmirror/selected.txt'
-    #   - 'README.md'
+    inputs:
+      folder_name:
+        description: 'Имя папки для конфигов'
+        required: false
+        default: 'githubmirror'
 
 jobs:
   update:
@@ -24,44 +22,104 @@ jobs:
     - name: ⬇️ Checkout repository
       uses: actions/checkout@v4
       with:
-        # token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
     
     - name: 🐍 Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
+        cache: 'pip'
     
     - name: 📦 Install dependencies
-      run: pip install PyGithub requests urllib3
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyGithub requests urllib3
     
     - name: 🚀 Run merge script
       env:
         MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: python scripts/simple_merge.py
+        OUTPUT_DIR: ${{ github.event.inputs.folder_name || 'githubmirror' }}
+      run: |
+        echo "🕐 Запуск скрипта..."
+        echo "📁 Используемая папка: $OUTPUT_DIR"
+        python scripts/simple_merge.py
     
-    - name: 💾 Add and commit changes
+    - name: 💾 Commit and push changes
+      env:
+        OUTPUT_DIR: ${{ github.event.inputs.folder_name || 'githubmirror' }}
       run: |
         echo "💾 Проверка изменений..."
         
+        if [ -f "$OUTPUT_DIR/merged.txt" ]; then
+          CONFIG_COUNT=$(grep -c '^v[lm]ess://' "$OUTPUT_DIR/merged.txt" 2>/dev/null || echo "0")
+          echo "📊 Конфигов в merged.txt: $CONFIG_COUNT"
+        fi
+        
+        if [ -f "$OUTPUT_DIR/wl.txt" ]; then
+          WL_CONFIG_COUNT=$(grep -c '^v[lm]ess://' "$OUTPUT_DIR/wl.txt" 2>/dev/null || echo "0")
+          echo "🛡️ Конфигов в wl.txt: $WL_CONFIG_COUNT"
+        fi
+        
         # Настройка git
-        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git config --local user.name "github-actions[bot]"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git config --local pull.rebase true
         
-        # СНАЧАЛА проверяем статус файлов
-        git status
-        git add -A
+        # Динамически находим и добавляем файлы из папки
+        if [ -d "$OUTPUT_DIR" ]; then
+          echo "📁 Добавляем файлы из папки: $OUTPUT_DIR"
+          git add "$OUTPUT_DIR"/*
+        fi
         
+        # Также добавляем README
+        git add README.md
+        
+        # Проверяем, есть ли изменения
         if git diff --cached --quiet; then
           echo "🔄 Нет изменений для коммита"
           exit 0
         fi
         
+        # Создаем коммит
         MOSCOW_TIME=$(TZ='Europe/Moscow' date '+%H:%M | %d.%m.%Y')
         git commit -m "🤖 Авто-обновление: $MOSCOW_TIME"
-    
-    - name: 📤 Push changes
-      run: |
+        
+        # Пытаемся обновить локальный репозиторий
+        echo "🔄 Синхронизируем с удаленным репозиторием..."
+        
+        # Вариант 1: Пытаемся сделать pull с rebase
+        if git pull --rebase origin main; then
+          echo "✅ Rebase успешен"
+        else
+          echo "⚠️ Rebase не удался, отменяем и применяем стратегию слияния"
+          git rebase --abort
+          git pull origin main --strategy-option ours
+        fi
+        
+        # Пытаемся сделать push
         echo "📤 Отправляем изменения..."
-        git pull origin main --rebase
-        git push origin main
+        MAX_RETRIES=3
+        RETRY_DELAY=10
+        
+        for i in $(seq 1 $MAX_RETRIES); do
+          echo "Попытка $i из $MAX_RETRIES..."
+          
+          if git push origin main; then
+            echo "✅ Изменения успешно отправлены"
+            break
+          else
+            echo "❌ Ошибка при отправке, попытка $i не удалась"
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "⏳ Ждем $RETRY_DELAY секунд перед следующей попыткой..."
+              sleep $RETRY_DELAY
+              
+              # Обновляем локальный репозиторий
+              echo "🔄 Обновляем локальный репозиторий..."
+              git pull origin main --rebase
+            else
+              echo "💥 Все попытки отправки не удались"
+              exit 1
+            fi
+          fi
+        done
