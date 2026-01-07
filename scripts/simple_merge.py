@@ -696,35 +696,49 @@ def process_selected_file():
     if os.path.exists(selected_file):
         try:
             with open(selected_file, "r", encoding="utf-8") as f:
-                content = f.read()
+                lines = f.readlines()
             
-            # Разделяем на строки
-            lines = content.splitlines()
             configs = []
-            other_lines = []  # Комментарии и пустые строки
+            manual_comments = []  # Только ручные комментарии пользователя
             
-            # Собираем конфиги и другие строки
+            # Пропускаем автоматические заголовки при чтении
+            skip_auto_header = False
             for line in lines:
                 stripped = line.strip()
+                
+                # Определяем начало автоматического заголовка
+                if stripped.startswith("#profile-title: WL RUS (selected)"):
+                    skip_auto_header = True
+                    continue
+                
+                # Пропускаем все строки автоматического заголовка
+                if skip_auto_header:
+                    if stripped.startswith("#") or not stripped:
+                        continue
+                    else:
+                        skip_auto_header = False
+                
+                # Теперь обрабатываем обычные строки
                 if not stripped:
-                    other_lines.append(line)  # Пустая строка
+                    if manual_comments and manual_comments[-1] != "":  # Не добавляем подряд идущие пустые строки
+                        manual_comments.append("")
                 elif stripped.startswith('#'):
-                    other_lines.append(line)  # Комментарий
+                    # Это ручной комментарий пользователя (не часть заголовка)
+                    manual_comments.append(stripped)
                 else:
-                    # Проверяем, что это похоже на конфиг
+                    # Это конфиг
                     if any(stripped.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
                                                              'ss://', 'ssr://', 'tuic://', 
                                                              'hysteria://', 'hysteria2://']):
-                        configs.append((len(configs), stripped))  # Сохраняем с индексом
+                        configs.append((len(configs), stripped))
                     elif '@' in stripped and ':' in stripped and stripped.count(':') >= 2:
-                        configs.append((len(configs), stripped))  # Сохраняем с индексом
+                        configs.append((len(configs), stripped))
             
             if configs:
-                # Разделяем индексы и конфиги
+   
                 config_indices = [idx for idx, _ in configs]
                 raw_configs = [config for _, config in configs]
                 
-                # Дедуплицируем конфиги (как в merge_and_deduplicate)
                 seen_full = set()
                 seen_hostport = set()
                 unique_configs_with_index = []
@@ -734,7 +748,6 @@ def process_selected_file():
                         continue
                     seen_full.add(config)
                     
-                    # Дедупликация по хосту и порту
                     host_port = extract_host_port(config)
                     if host_port:
                         key = host_port[0].lower() + ":" + str(host_port[1])
@@ -744,57 +757,45 @@ def process_selected_file():
                     
                     unique_configs_with_index.append((idx, config))
                 
-                # Если были дубликаты, логируем
                 duplicates_count = len(configs) - len(unique_configs_with_index)
                 if duplicates_count > 0:
                     log(f"🔍 Найдено {duplicates_count} дубликатов в selected.txt")
                 
-                # Обрабатываем конфиги с нумерацией
                 unique_configs = [config for _, config in unique_configs_with_index]
                 processed_configs = process_configs_with_numbering(unique_configs)
                 
-                # Собираем обработанные конфиги с сохранением порядка
                 processed_by_index = {}
                 for (idx, _), processed in zip(unique_configs_with_index, processed_configs):
                     processed_by_index[idx] = processed
                 
-                # Собираем итоговый файл
-                new_lines = []
                 
-                # Добавляем заголовок
-                new_lines.append("#profile-title: WL RUS (selected)")
-                new_lines.append("#profile-update-interval: 1")
-                new_lines.append("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!")
-                
-                # Добавляем другие строки (комментарии, пустые строки)
-                for line in other_lines:
-                    new_lines.append(line)
-                
-                # Добавляем пустую строку после комментариев, если есть конфиги
-                if other_lines and processed_configs:
-                    new_lines.append("")
-                
-                # Добавляем обработанные конфиги в правильном порядке
-                config_counter = 0
-                for i in range(len(processed_configs)):
-                    if i in processed_by_index:
-                        new_lines.append(processed_by_index[i])
-                        config_counter += 1
-                        # Добавляем пустую строку между конфигами (кроме последнего)
-                        if config_counter < len(processed_configs):
-                            new_lines.append("")
-                
-                # Сохраняем обратно
                 with open(selected_file, "w", encoding="utf-8") as f:
-                    for i, line in enumerate(new_lines):
-                        if i == len(new_lines) - 1:
-                            f.write(line)  # Последняя строка без \n
-                        else:
-                            f.write(line + "\n")
+                
+                    f.write("#profile-title: WL RUS (selected)\n")
+                    f.write("#profile-update-interval: 1 \n")
+            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках! \n")
+                    
+                    # Добавляем ручные комментарии пользователя
+                    if manual_comments:
+                        f.write("\n")
+                        for comment in manual_comments:
+                            if comment == "":
+                                f.write("\n")
+                            else:
+                                f.write(comment + "\n")
+                    
+                    # Добавляем конфиги
+                    if processed_configs:
+                        if manual_comments:
+                            f.write("\n")
+                        
+                        for i in range(len(processed_configs)):
+                            if i in processed_by_index:
+                                f.write(processed_by_index[i] + "\n")
+                                if i < len(processed_configs) - 1:
+                                    f.write("\n")
                 
                 log(f"✅ Обработан selected.txt: {len(processed_configs)} конфигов (удалено {duplicates_count} дубликатов)")
-                
-                # Возвращаем список конфигов для использования в основном потоке
                 return processed_configs
             else:
                 log("ℹ️ В selected.txt нет конфигов для обработки")
