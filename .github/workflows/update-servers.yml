@@ -3,12 +3,21 @@ name: Update Configs Hourly
 on:
   schedule:
     - cron: '0 * * * *'
+  push:
+    branches: [ main ]
+    # paths-ignore:
+    #   - 'githubmirror/merged.txt'
+    #   - 'githubmirror/wl.txt'
+    #   - 'githubmirror/selected.txt'
+    #   - 'README.md'
   workflow_dispatch:
     inputs:
       folder_name:
         description: 'Имя папки для конфигов'
         required: false
         default: 'githubmirror'
+
+  
 
 jobs:
   update:
