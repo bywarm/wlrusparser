@@ -2,8 +2,6 @@
 #profile-update-interval: 1
 #announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!
 
-#302.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG:%20@wlrustg
-
 
 vless://86c50e3a-5b87-49dd-bd20-03c7f2735e40@104.17.135.117:2095?encryption=none&flow=&host=snippets.pusytroller.cf&path=%2F&type=ws#1.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
@@ -59,14 +57,14 @@ vless://ff527822-be9c-5c11-8519-45b8cc4c644a@144.124.226.216:443/?type=xhttp&enc
 
 vless://329bd550-a8f8-4157-b2df-dc4503097a27@83.166.236.201:8443?encryption=none&flow=xtls-rprx-vision&type=raw&headerType=none&security=reality&fp=chrome&pbk=Qddpg8luihgzgx4g4uMJklXzlrMCd8L1igJSWrRUvSc&sni=m.vk.com&sid=8f222b3475800821#27.%20%F0%9F%87%B5%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
-vless://63d62292-0e4d-4b3e-b506-94bf53733b5a@95.182.110.115:7443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=DG904eM7xGecwV_nhjX73c-7g_fGEv8BgjbeAmTE8Bs&security=reality&sid=505c94b8c65afb0a&sni=yandex.ru#28.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://63d62292-0e4d-4b3e-b506-94bf53733b5a@95.182.110.115:7443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=DG904eM7xGecwV_nhjX73c-7g_fGEv8BgjbeAmTE8Bs&security=reality&sid=505c94b8c65afb0a&sni=yandex.ru#28.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40
 
-vless://86c50e3a-5b87-49dd-bd20-03c7f2735e40@8.47.69.0:2095?encryption=none&flow=&host=fangbinxingnmsl.pusytroller.cf&path=%F0%9F%94%92&type=ws#29.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://86c50e3a-5b87-49dd-bd20-03c7f2735e40@8.47.69.0:2095?encryption=none&flow=&host=fangbinxingnmsl.pusytroller.cf&path=%F0%9F%94%92&type=ws#29.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40
 
-vless://4d94fa33-9462-48b4-b7de-8a2863560d19@138.124.4.18:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=8gPjqggKyk811tZ6X7EfF9KHXe7BXYRMxKXhXN6jbR4&security=reality&sid=820571531cf2108a&sni=eh.vk.com#30.%20%F0%9F%87%AA%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://4d94fa33-9462-48b4-b7de-8a2863560d19@138.124.4.18:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=8gPjqggKyk811tZ6X7EfF9KHXe7BXYRMxKXhXN6jbR4&security=reality&sid=820571531cf2108a&sni=eh.vk.com#30.%20%F0%9F%87%AA%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40
 
-vless://c5c9d8ec-6c95-4f84-a395-de41ef895f34@217.16.19.114:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=s0qb5ggFZN3X7QXWtgK4o7UgfS9DlpFC6JT6OWVs6X4&security=reality&sid=76bbc2ee&sni=www.vk.com&type=raw#31.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://c5c9d8ec-6c95-4f84-a395-de41ef895f34@217.16.19.114:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=s0qb5ggFZN3X7QXWtgK4o7UgfS9DlpFC6JT6OWVs6X4&security=reality&sid=76bbc2ee&sni=www.vk.com&type=raw#31.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40
 
-vless://21f8d9aa-8ec7-4340-aa0a-7ce19f244adc@45.144.53.229:443?encryption=none&flow=&security=tls&sni=ficdn16.suio.me#32.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://21f8d9aa-8ec7-4340-aa0a-7ce19f244adc@45.144.53.229:443?encryption=none&flow=&security=tls&sni=ficdn16.suio.me#32.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40
 
-vless://cc5be457-024a-4bd1-b769-90973ba5b06e@51.250.25.172:4248?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&sid=&sni=ads.x5.ru#33.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://cc5be457-024a-4bd1-b769-90973ba5b06e@51.250.25.172:4248?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&sid=&sni=ads.x5.ru#33.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40
