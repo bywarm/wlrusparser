@@ -73,7 +73,7 @@ if CONFIG["rotate_folders"]:
 
 def get_paths():
     """Возвращает актуальные пути к файлам"""
-    base_dir = CONFIG["output_dir"] + CONFIG["output_dir_suffix"]
+    base_dir = CONFIG["output_dir"]
     
     # Суффикс для файлов (если нужно)
     file_suffix = ""
@@ -848,11 +848,6 @@ def process_selected_file():
 def main():
     """Основная функция"""
     PATHS = get_paths()
-log("🚀 Конфигурация запуска:")
-    log(f"   📁 Папка: {PATHS['base_dir']}")
-    log(f"   📄 Merged: {PATHS['merged'].replace(PATHS['base_dir']+'/', '')}")
-    log(f"   🛡️ Whitelist: {PATHS['wl'].replace(PATHS['base_dir']+'/', '')}")
-    log(f"   🔧 Selected: {PATHS['selected'].replace(PATHS['base_dir']+'/', '')}")
 
     log("📥 Загрузка конфигов...")
     
