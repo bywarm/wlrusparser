@@ -89,7 +89,7 @@ def get_paths():
         "gh_pages_wl": f"{CONFIG['custom_prefix']}wl{file_suffix}.txt",
     }
     return paths
-)
+
 WHITELIST_SUBNETS = [
     "95.163.0.0/16",
     "89.208.0.0/16",
