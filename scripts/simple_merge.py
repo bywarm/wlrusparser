@@ -720,11 +720,20 @@ def process_selected_file():
                 
                 # Теперь обрабатываем обычные строки
                 if not stripped:
-                    if manual_comments and manual_comments[-1] != "":  # Не добавляем подряд идущие пустые строки
+                    if manual_comments and manual_comments[-1] != "":
                         manual_comments.append("")
                 elif stripped.startswith('#'):
-                    # Это ручной комментарий пользователя (не часть заголовка)
-                    manual_comments.append(stripped)
+                    # Игнорируем автоматические заголовки, но сохраняем ручные комментарии
+                    if not any(stripped.startswith(p) for p in [
+                        "#profile-title:", 
+                        "#profile-update-interval:", 
+                        "#announce:",
+                        "# Обновлено:",
+                        "# Всего конфигов:",
+                        "# Вотермарк:",
+                        "##################################################"
+                    ]):
+                        manual_comments.append(stripped)
                 else:
                     # Это конфиг
                     if any(stripped.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
@@ -735,7 +744,7 @@ def process_selected_file():
                         configs.append((len(configs), stripped))
             
             if configs:
-   
+                # Дедупликация
                 config_indices = [idx for idx, _ in configs]
                 raw_configs = [config for _, config in configs]
                 
@@ -761,6 +770,7 @@ def process_selected_file():
                 if duplicates_count > 0:
                     log(f"🔍 Найдено {duplicates_count} дубликатов в selected.txt")
                 
+                # Обрабатываем конфиги с нумерацией
                 unique_configs = [config for _, config in unique_configs_with_index]
                 processed_configs = process_configs_with_numbering(unique_configs)
                 
@@ -768,12 +778,12 @@ def process_selected_file():
                 for (idx, _), processed in zip(unique_configs_with_index, processed_configs):
                     processed_by_index[idx] = processed
                 
-                
+                # Сохраняем с обновленными заголовками
                 with open(selected_file, "w", encoding="utf-8") as f:
-                
+                    # Только важные заголовки
                     f.write("#profile-title: WL RUS (selected)\n")
-                    f.write("#profile-update-interval: 1 \n")
-            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках! \n")
+                    f.write("#profile-update-interval: 1\n")
+                    f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
                     
                     # Добавляем ручные комментарии пользователя
                     if manual_comments:
