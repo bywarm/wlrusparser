@@ -19,6 +19,7 @@ import ipaddress
 import zoneinfo
 import requests
 import urllib3
+import calendar
 import base64
 import json
 import re
@@ -52,7 +53,43 @@ except Exception as e:
     log("Ошибка подключения к GitHub: " + str(e)[:100])
     REPO = None
 
-# Сокращенный список подсетей для whitelist (первые две)
+
+CONFIG = {
+    "output_dir": "githubmirror",          # Основная папка
+    "output_dir_suffix": "",               # Суффикс папки
+    "merged_file": "merged.txt",           # Все конфиги
+    "wl_file": "wl.txt",                   # Whitelist конфиги
+    "selected_file": "selected.txt",       # Ручные серверы
+    "custom_prefix": "wlrus_",             # Префикс для файлов
+    "use_date_suffix": False,              # Добавлять дату к именам?
+    "rotate_folders": False,               # Ротировать папки каждый месяц?
+}
+
+
+if CONFIG["rotate_folders"]:
+    month = datetime.now().month
+    year_short = datetime.now().strftime("%y")
+    CONFIG["output_dir_suffix"] = f"_{year_short}{month:02d}"
+
+def get_paths():
+    """Возвращает актуальные пути к файлам"""
+    base_dir = CONFIG["output_dir"] + CONFIG["output_dir_suffix"]
+    
+    # Суффикс для файлов (если нужно)
+    file_suffix = ""
+    if CONFIG["use_date_suffix"]:
+        file_suffix = f"_{datetime.now().strftime('%d%m')}"
+    
+    paths = {
+        "base_dir": base_dir,
+        "merged": f"{base_dir}/{CONFIG['custom_prefix']}{CONFIG['merged_file'].replace('.txt', '')}{file_suffix}.txt",
+        "wl": f"{base_dir}/{CONFIG['custom_prefix']}{CONFIG['wl_file'].replace('.txt', '')}{file_suffix}.txt",
+        "selected": f"{base_dir}/{CONFIG['selected_file']}",
+        "gh_pages_merged": f"{CONFIG['custom_prefix']}merged{file_suffix}.txt",
+        "gh_pages_wl": f"{CONFIG['custom_prefix']}wl{file_suffix}.txt",
+    }
+    return paths
+)
 WHITELIST_SUBNETS = [
     "95.163.0.0/16",
     "89.208.0.0/16",
@@ -520,54 +557,58 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
     return unique_configs, whitelist_configs
 
 
-def save_to_file(configs: list[str], filename: str, description: str = "", add_numbering: bool = False):
-    """Сохраняет конфиги в файл с опциональной нумерацией"""
+def save_to_file(configs: list[str], file_type: str, description: str = "", add_numbering: bool = False):
+    """Сохраняет конфиги в файл с динамическим именем"""
+    # Определяем путь по типу файла
+    if file_type == "merged":
+        filepath = PATHS["merged"]
+        filename = os.path.basename(filepath)
+    elif file_type == "wl":
+        filepath = PATHS["wl"]
+        filename = os.path.basename(filepath)
+    else:
+        filepath = file_type  # Прямой путь
+        filename = os.path.basename(filepath)
+    
     try:
-        with open(filename, "w", encoding="utf-8") as f:
-            # Заголовок файла
-            if "Whitelist" in description:
-               f.write("#profile-title: WL RUS (checked subnets) \n")
-            else:
-               f.write("#profile-title: WL RUS (all) \n")
+        os.makedirs(PATHS["base_dir"], exist_ok=True)
+        
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(f"# {description}\n")
+            f.write(f"# Папка: {PATHS['base_dir']}\n")
+            f.write(f"# Файл: {filename}\n")
+            f.write(f"# Обновлено: {offset}\n")
+            f.write(f"# Всего конфигов: {len(configs)}\n")
+            f.write("#" * 50 + "\n\n")
             
-            f.write("#profile-update-interval: 1 \n")
-            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках! \n")
-            f.write("# " + description + "\n")
-            f.write("# Обновлено: " + offset + "\n")
-            f.write("# Всего конфигов: " + str(len(configs)) + "\n")
-            
-            if "Whitelist" in description:
-                f.write("# Подсети: " + str(len(WHITELIST_SUBNETS)) + "\n")
-                f.write("#" * 50 + "\n\n")
-            else:
-                f.write("# Источников: " + str(len(URLS)) + "\n")
-                f.write("#" * 50 + "\n\n")
-            
-            # Обрабатываем конфиги в зависимости от необходимости нумерации
+            # Обработка конфигов
             if add_numbering:
                 processed_configs = process_configs_with_numbering(configs)
             else:
                 processed_configs = configs
             
-            # Записываем конфиги
             for config in processed_configs:
                 f.write(config + "\n")
         
-        log("💾 Сохранено " + str(len(configs)) + " конфигов в " + filename)
+        log(f"💾 Сохранено {len(configs)} конфигов в {filename}")
         
     except Exception as e:
-        log("Ошибка сохранения файла " + filename + ": " + str(e))
+        log(f"Ошибка сохранения файла {filename}: {str(e)}")
         
 
-def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
-    """Загружает файл на GitHub в указанную ветку"""
+def upload_to_github(filepath: str, remote_path: str = None, branch: str = "main"):
+    """Загружает файл на GitHub с динамическими путями"""
     if not REPO:
-        log("Пропускаю загрузку на GitHub (нет подключения)")
         return
     
-    if not os.path.exists(filename):
-        log("Файл " + filename + " не найден для загрузки")
+    if not os.path.exists(filepath):
+        log(f"Файл {filepath} не найден")
         return
+    
+    # Если remote_path не указан, формируем автоматически
+    if remote_path is None:
+        filename = os.path.basename(filepath)
+        remote_path = f"{PATHS['base_dir']}/{filename}"
     
     try:
         with open(filename, "r", encoding="utf-8") as f:
@@ -592,7 +633,7 @@ def upload_to_github(filename: str, remote_path: str, branch: str = "main"):
                 sha=current_sha,
                 branch=branch
             )
-            log(f"⬆️ Файл {remote_path} обновлён на GitHub в ветке {branch}")
+            log(f"⬆️ Файл {os.path.basename(filepath)} → {remote_path} в ветке {branch}")
             
         except GithubException as e:
             if e.status == 404:
@@ -691,7 +732,7 @@ def update_readme(total_configs: int, wl_configs_count: int):
 
 def process_selected_file():
     """Обрабатывает файл selected.txt с ручными серверами, включая дедупликацию"""
-    selected_file = "githubmirror/selected.txt"
+    selected_file = PATHS["selected"]
     
     if os.path.exists(selected_file):
         try:
@@ -778,12 +819,12 @@ def process_selected_file():
                 for (idx, _), processed in zip(unique_configs_with_index, processed_configs):
                     processed_by_index[idx] = processed
                 
-                # Сохраняем с обновленными заголовками
-                with open(selected_file, "w", encoding="utf-8") as f:
-                    # Только важные заголовки
-                    f.write("#profile-title: WL RUS (selected)\n")
-                    f.write("#profile-update-interval: 1\n")
-                    f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
+         
+        
+        with open(selected_file, "w", encoding="utf-8") as f:
+            f.write(f"#profile-title: WL RUS (selected)\n")
+            f.write(f"#profile-update-interval: 1\n")
+            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
                     
                     # Добавляем ручные комментарии пользователя
                     if manual_comments:
@@ -820,10 +861,11 @@ def process_selected_file():
 
 def main():
     """Основная функция"""
-    log("🚀 Начало объединения конфигов")
-    log("📅 Время: " + offset)
-    log("🌐 Источников: " + str(len(URLS)))
-    log("🛡️ Whitelist подсетей: " + str(len(WHITELIST_SUBNETS)))
+log("🚀 Конфигурация запуска:")
+    log(f"   📁 Папка: {PATHS['base_dir']}")
+    log(f"   📄 Merged: {PATHS['merged'].replace(PATHS['base_dir']+'/', '')}")
+    log(f"   🛡️ Whitelist: {PATHS['wl'].replace(PATHS['base_dir']+'/', '')}")
+    log(f"   🔧 Selected: {PATHS['selected'].replace(PATHS['base_dir']+'/', '')}")
 
     log("📥 Загрузка конфигов...")
     
@@ -871,13 +913,13 @@ def main():
     output_file_wl = "githubmirror/wl.txt"
     
     # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
-    save_to_file(unique_configs, output_file_merged, "Объединенные конфиги (все источники + ручные)", add_numbering=True)
-    save_to_file(whitelist_configs, output_file_wl, "Whitelist конфиги (только подсети из списка)", add_numbering=True)
+    save_to_file(unique_configs, "merged", "Объединенные конфиги", add_numbering=True)
+    save_to_file(whitelist_configs, "wl", "Whitelist конфиги", add_numbering=True)
     
-    # 6. Загружаем на GitHub (основная ветка)
-    log("📤 Загрузка на GitHub (основная ветка)...")
-    upload_to_github(output_file_merged, "githubmirror/merged.txt", "main")
-    upload_to_github(output_file_wl, "githubmirror/wl.txt", "main")
+    # Загружаем на GitHub
+    upload_to_github(PATHS["merged"])
+    upload_to_github(PATHS["wl"])
+    upload_to_github(PATHS["selected"])
     
    # Загружаем selected.txt на GitHub, если он существует
    # selected_file = "githubmirror/selected.txt"
