@@ -44,3 +44,11 @@ vless://62770d79-dc4d-07d0-b01c-ea30399725aa@185.241.192.111:51191?encryption=no
 vless://c0bdb462-5ebf-4060-a4db-caf02f62e1fa@138.124.186.191:444?encryption=none&flow=&fp=chrome&pbk=BhTJ3phnq-Z-10aFKSsj1lzhA8mULR4L6leE4-0WTAs&security=reality&sid=&sni=deu562.worldbypass.org&type=xhttp#21.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://db444bee-8212-5ff5-be40-47e1a7509eb8@195.26.224.112:8443?encryption=none&flow=&fp=chrome&pbk=HE-fVd73NsTheypCLSyeNxgkg2EJOfXWGxjUOcvPZyQ&security=reality&sid=938f14cf6757a249&sni=vk.com&type=xhttp#22.%20%F0%9F%87%B3%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
+
+vless://4a6de183-2ad3-456c-b420-feeac81f6257@51.250.25.11:1488/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&allowInsecure=1&fp=chrome&security=reality&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%5B*CIDR%2BSNI%5D%20yandex%20%287%29
+
+vless://02f62dd5-218f-4e9f-9c4b-f8a2e452533e@78.159.247.79:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.vk.com&fp=chrome&security=reality&pbk=HxjD-7OeJUtrNFsW4PEqThSs6fujV9Mkl5Z4igx21k8&sid=ef#%F0%9F%87%B7%F0%9F%87%BA%20Moscow%20-Smolensk%20-%20Solyanka%20%5B*CIDR%20SNI%5D%20cdnvideo
+
+vless://4a6de183-2ad3-456c-b420-feeac81f6257@51.250.23.141:1488/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&allowInsecure=1&fp=chrome&security=reality&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#%F0%9F%87%B3%F0%9F%87%B1%20Netherlands%20%5B*CIDR%2BSNI%5D%20yandex%20%284%29
+
+vless://ff527822-be9c-5c11-8519-45b8cc4c644a@144.124.226.216:443/?type=xhttp&encryption=none&flow=&path=%2F&mode=auto&sni=ozon.ru&fp=chrome&security=reality&pbk=JkU5Vn1pM0jelR62NIqNwbE-b6Xs4kx-Vc6F-qNq1Fo&sid=60e335610b12b2cc#%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands%20%E2%80%94%20%23351
