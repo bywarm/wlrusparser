@@ -90,6 +90,8 @@ def get_paths():
     }
     return paths
 
+PATHS = get_paths()
+
 WHITELIST_SUBNETS = [
     "95.163.0.0/16",
     "89.208.0.0/16",
@@ -847,7 +849,7 @@ def process_selected_file():
 
 def main():
     """Основная функция"""
-    PATHS = get_paths()
+
 
     log("📥 Загрузка конфигов...")
     
