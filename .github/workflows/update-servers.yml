@@ -47,7 +47,7 @@ jobs:
     - name: 🚀 Run merge script
       env:
         MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        OUTPUT_DIR: ${{ github.event.inputs.folder_name || 'githubmirror' }}
+        OUTPUT_DIR: ${{ github.event.inputs.folder_name || 'confs' }}
       run: |
         echo "🕐 Запуск скрипта..."
         echo "📁 Используемая папка: $OUTPUT_DIR"
