@@ -55,7 +55,7 @@ except Exception as e:
 
 
 CONFIG = {
-    "output_dir": "githubmirror",          # Основная папка
+    "output_dir": "main",          # Основная папка
     "output_dir_suffix": "",               # Суффикс папки
     "merged_file": "merged.txt",           # Все конфиги
     "wl_file": "wl.txt",                   # Whitelist конфиги
