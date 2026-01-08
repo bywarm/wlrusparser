@@ -577,10 +577,8 @@ def save_to_file(configs: list[str], file_type: str, description: str = "", add_
                f.write("#profile-title: WL RUS (all)\n")
         
         
-        f.write("#profile-update-interval: 1\n")
-        f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
-            
-            f.write(f"# {description}\n")
+            f.write("#profile-update-interval: 1\n")
+            f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
             f.write(f"# Обновлено: {offset}\n")
             f.write(f"# Всего конфигов: {len(configs)}\n")
             f.write("#" * 50 + "\n\n")
