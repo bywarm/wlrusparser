@@ -15,7 +15,7 @@ on:
       folder_name:
         description: 'Имя папки для конфигов'
         required: false
-        default: 'githubmirror'
+        default: 'main'
 
   
 
