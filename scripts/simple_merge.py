@@ -892,9 +892,9 @@ def main():
     log("🛡️ Whitelist конфигов: " + str(len(whitelist_configs)))
     
     # 5. Сохраняем локально
-    os.makedirs("githubmirror", exist_ok=True)
-    output_file_merged = "githubmirror/merged.txt"
-    output_file_wl = "githubmirror/wl.txt"
+    os.makedirs("main", exist_ok=True)
+    output_file_merged = "main/merged.txt"
+    output_file_wl = "main/wl.txt"
     
     # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
     save_to_file(unique_configs, "merged", "Объединенные конфиги", add_numbering=True)
