@@ -54,17 +54,14 @@ except Exception as e:
     REPO = None
 
 
-CONFIG = {
-    "output_dir": "confs",          # Основная папка
-    "output_dir_suffix": "",               # Суффикс папки
-    "merged_file": "merged.txt",           # Все конфиги
-    "wl_file": "wl.txt",                   # Whitelist конфиги
-    "selected_file": "selected.txt",       # Ручные серверы
-    "custom_prefix": "",             # Префикс для файлов
-    "use_date_suffix": False,              # Добавлять дату к именам?
-    "rotate_folders": False,               # Ротировать папки каждый месяц?
-}
+OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "confs")
 
+CONFIG = {
+    "output_dir": OUTPUT_DIR,
+    "merged_file": "merged.txt",
+    "wl_file": "wl.txt",
+    "selected_file": "selected.txt",
+}
 
 if CONFIG["rotate_folders"]:
     month = datetime.now().month
@@ -75,18 +72,13 @@ def get_paths():
     """Возвращает актуальные пути к файлам"""
     base_dir = CONFIG["output_dir"]
     
-    # Суффикс для файлов (если нужно)
-    file_suffix = ""
-    if CONFIG["use_date_suffix"]:
-        file_suffix = f"_{datetime.now().strftime('%d%m')}"
-    
     paths = {
         "base_dir": base_dir,
-        "merged": f"{base_dir}/{CONFIG['custom_prefix']}{CONFIG['merged_file'].replace('.txt', '')}{file_suffix}.txt",
-        "wl": f"{base_dir}/{CONFIG['custom_prefix']}{CONFIG['wl_file'].replace('.txt', '')}{file_suffix}.txt",
+        "merged": f"{base_dir}/{CONFIG['merged_file']}",
+        "wl": f"{base_dir}/{CONFIG['wl_file']}",
         "selected": f"{base_dir}/{CONFIG['selected_file']}",
-        "gh_pages_merged": f"{CONFIG['custom_prefix']}merged{file_suffix}.txt",
-        "gh_pages_wl": f"{CONFIG['custom_prefix']}wl{file_suffix}.txt",
+        "gh_pages_merged": "merged.txt",
+        "gh_pages_wl": "wl.txt",
     }
     return paths
 
@@ -597,24 +589,23 @@ def save_to_file(configs: list[str], file_type: str, description: str = "", add_
     except Exception as e:
         log(f"Ошибка сохранения файла {filename}: {str(e)}")
         
-
-def upload_to_github(filepath: str, remote_path: str = None, branch: str = "main"):
-    """Загружает файл на GitHub с динамическими путями"""
+def upload_to_github(filename: str, remote_path: str = None, branch: str = "main"):
+    """Загружает файл на GitHub в указанную ветку"""
     if not REPO:
+        log("Пропускаю загрузку на GitHub (нет подключения)")
         return
     
-    if not os.path.exists(filepath):
-        log(f"Файл {filepath} не найден")
+    if not os.path.exists(filename):
+        log(f"Файл {filename} не найден для загрузки")
         return
-    
-    # Если remote_path не указан, формируем автоматически
-    if remote_path is None:
-        filename = os.path.basename(filepath)
-        remote_path = f"{PATHS['base_dir']}/{filename}"
     
     try:
         with open(filename, "r", encoding="utf-8") as f:
             content = f.read()
+        
+        # Если remote_path не указан, используем относительный путь
+        if remote_path is None:
+            remote_path = filename
         
         try:
             # Пытаемся получить существующий файл
@@ -635,7 +626,7 @@ def upload_to_github(filepath: str, remote_path: str = None, branch: str = "main
                 sha=current_sha,
                 branch=branch
             )
-            log(f"⬆️ Файл {os.path.basename(filepath)} → {remote_path} в ветке {branch}")
+            log(f"⬆️ Файл {remote_path} обновлён на GitHub в ветке {branch}")
             
         except GithubException as e:
             if e.status == 404:
@@ -925,9 +916,9 @@ def main():
     log("   📊 Дубликатов: " + str(total_duplicates))
     log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
     log("   💾 Основные файлы:")
-    log("      • githubmirror/merged.txt (с нумерацией)")
-    log("      • githubmirror/wl.txt (с нумерацией)")
-    log("      • githubmirror/selected.txt (дедуплицирован и обработан)")
+    log(f"      • {PATHS['merged']}")
+    log(f"      • {PATHS['wl']}")
+    log(f"      • {PATHS['selected']}")
     log("=" * 60)
     
     # Проверяем изменения для GitHub Actions
