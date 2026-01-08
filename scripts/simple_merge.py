@@ -55,7 +55,7 @@ except Exception as e:
 
 
 CONFIG = {
-    "output_dir": "main",          # Основная папка
+    "output_dir": "confs",          # Основная папка
     "output_dir_suffix": "",               # Суффикс папки
     "merged_file": "merged.txt",           # Все конфиги
     "wl_file": "wl.txt",                   # Whitelist конфиги
@@ -671,7 +671,7 @@ def update_readme(total_configs: int, wl_configs_count: int):
             old_content = "# Объединенные конфиги VPN\n\n"
         
         # Формируем ссылки на файлы
-        raw_url_merged = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/merged.txt"
+        raw_url_merged = "https://github.com/" + REPO_NAME + "/raw/main/merged.txt"
         raw_url_wl = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/wl.txt"
         raw_url_selected = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/selected.txt"
         
@@ -892,9 +892,9 @@ def main():
     log("🛡️ Whitelist конфигов: " + str(len(whitelist_configs)))
     
     # 5. Сохраняем локально
-    os.makedirs("main", exist_ok=True)
-    output_file_merged = "main/merged.txt"
-    output_file_wl = "main/wl.txt"
+    os.makedirs("confs", exist_ok=True)
+    output_file_merged = "confs/merged.txt"
+    output_file_wl = "confs/wl.txt"
     
     # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
     save_to_file(unique_configs, "merged", "Объединенные конфиги", add_numbering=True)
