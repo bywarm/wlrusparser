@@ -1,8 +1,8 @@
 # Whitelist конфиги
 # Папка: githubmirror
 # Файл: wl.txt
-# Обновлено: 15:08 | 08.01.2026
-# Всего конфигов: 259
+# Обновлено: 15:55 | 08.01.2026
+# Всего конфигов: 258
 ##################################################
 
 vless://d63129ab-04a5-4797-8a70-84f4ab610ca9@217.16.16.251:8443?encryption=none&fp=chrome&pbk=bPN2gQ-96uG3DZONnduotvwViMDsUsN2XZnRkzXcMxk&security=reality&sid=edc87d796657fbe5&sni=eh.vk.vom&type=tcp#1.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
@@ -257,10 +257,9 @@ vless://c4365608-1fc4-46ee-be38-887518e2eb24@158.160.201.80:51102?encryption=non
 vless://c4365608-1fc4-46ee-be38-887518e2eb24@89.208.87.173:51102?encryption=none&flow=xtls-rprx-vision&security=tls&sni=m.vk.ru&fp=chrome&pbk=Qddpg8luihgzgx4g4uMJklXzlrMCd8L1igJSWrRUvSc&sid=1929ef620e9b34f5&packetEncoding=xudp#250.%20VLESS%20%7C%20TG%3A%20%40wlrustg
 vless://c33cbceb-4a2a-4a22-b02a-e0de3e4795be@37.18.14.192:443?path=%2F&security=tls&encryption=none&host=static.operator.mail.ru&fp=chrome&type=ws&sni=static.operator.mail.ru#251.%20VLESS%20%7C%20TG%3A%20%40wlrustg
 vless://4feab863-0b04-444d-87e5-4375adca92cf@37.18.14.103:443?security=tls&encryption=none&headerType=none&fp=chrome&type=tcp&sni=300.ya.ru#252.%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://c5c9d8ec-6c95-4f84-a395-de41ef895f34@78.159.131.51:443?encryption=none&fp=chrome&pbk=bonLTdEWniTF7h32iBBM4XK5CP0MhhZ0rIegMsYpbkw&security=reality&sid=e1eb8c41&sni=www.samsung.com&type=tcp#253.%20%F0%9F%87%A6%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://c768b44a-3e27-5fc0-97b5-ea2dfb8cf233@84.201.152.124:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=PchkdI12xSsduDxpr0wu5in1PIeVHY-sudzNFifUSn4&security=reality&sid=ed5a06ef&sni=ads.x5.ru&type=tcp&name=TG%3AYoutubeUnBlockRu#254.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.25.11:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#255.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.28.8:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2#256.%20%F0%9F%87%B8%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://84b24517-2989-4f23-b6df-a12effc3c432@84.201.178.99:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2#257.%20%F0%9F%87%B3%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.109.47:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2#258.%20%F0%9F%87%B5%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
-vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.106.20:4249?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2#259.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://c768b44a-3e27-5fc0-97b5-ea2dfb8cf233@84.201.152.124:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=PchkdI12xSsduDxpr0wu5in1PIeVHY-sudzNFifUSn4&security=reality&sid=ed5a06ef&sni=ads.x5.ru&type=tcp&name=TG%3AYoutubeUnBlockRu#253.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.25.11:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#254.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.109.47:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#255.%20%F0%9F%87%B5%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.106.20:4249?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2#256.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://84b24517-2989-4f23-b6df-a12effc3c432@84.201.178.99:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#257.%20%F0%9F%87%B3%F0%9F%87%B1%20VLESS%20%7C%20TG%3A%20%40wlrustg
+vless://84b24517-2989-4f23-b6df-a12effc3c432@51.250.28.8:1488?security=reality&type=tcp&headerType=&path=&host=&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=#258.%20%F0%9F%87%B8%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
