@@ -62,13 +62,3 @@ vless://4d94fa33-9462-48b4-b7de-8a2863560d19@138.124.4.18:443?encryption=none&fl
 vless://c5c9d8ec-6c95-4f84-a395-de41ef895f34@217.16.19.114:443?encryption=none&security=reality&sni=www.vk.com&fp=firefox&pbk=s0qb5ggFZN3X7QXWtgK4o7UgfS9DlpFC6JT6OWVs6X4&sid=76bbc2ee&type=tcp&headerType=none#30.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://21f8d9aa-8ec7-4340-aa0a-7ce19f244adc@45.144.53.229:443?encryption=none&flow=&security=tls&sni=ficdn16.suio.me#31.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
-vless://4d94fa33-9462-48b4-b7de-8a2863560d19@84.201.162.47:4249?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=J5ITJbg5FQFembAfkogKHHQB6DigsFXQxK7xu-QMWUs&security=reality&sid=a20d3ed244c76426&sni=sun6-22.userapi.com&type=tcp#32.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
-vless://4d94fa33-9462-48b4-b7de-8a2863560d19@51.250.104.227:443?alpn=h2%2Chttp%2F1.1&encryption=none&host=chat.speedload.ru&path=%2F&fp=chrome&security=tls&sni=chat.speedload.ru&type=xhttp#33.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
-vless://4d94fa33-9462-48b4-b7de-8a2863560d19@84.201.152.123:4249?security=reality&encryption=none&pbk=J5ITJbg5FQFembAfkogKHHQB6DigsFXQxK7xu-QMWUs&headerType=&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=sun6-22.userapi.com&sid=a20d3ed244c76426#34.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
-vless://4d94fa33-9462-48b4-b7de-8a2863560d19@51.250.110.247:8090?encryption=none&fp=chrome&path=%2F&pbk=J5ITJbg5FQFembAfkogKHHQB6DigsFXQxK7xu-QMWUs&security=reality&sid=a20d3ed244c76426&sni=ads.x5.ru&type=xhttp#35.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
-vless://6d91811a-a366-4857-993c-09234b0dd2aa@158.160.182.134:8443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=zii4nGNapnFKL6SN8GzWNqFlElBvUCUFUThEP0kFH04&security=reality&sid=e57932a42872a362&sni=tradingview.com&type=tcp#36.%20%F0%9F%87%B9%F0%9F%87%B7%20VLESS%20%7C%20TG%3A%20%40wlrustg
