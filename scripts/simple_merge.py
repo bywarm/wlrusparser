@@ -61,6 +61,9 @@ CONFIG = {
     "merged_file": "merged.txt",
     "wl_file": "wl.txt",
     "selected_file": "selected.txt",
+    "custom_prefix": "",
+    "use_date_suffix": False,
+    "rotate_folders": False,
 }
 
 if CONFIG["rotate_folders"]:
