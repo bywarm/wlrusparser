@@ -465,6 +465,29 @@
                 padding: 20px;
             }
         }
+    .contacts-section {
+        padding: 60px 0;
+        background: rgba(30, 41, 59, 0.2);
+        border-radius: 20px;
+        margin: 40px 0;
+    }
+    
+    .contact-card a:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 136, 204, 0.3);
+        opacity: 0.9;
+    }
+    
+    @media (max-width: 768px) {
+        .contacts-section {
+            padding: 40px 0;
+        }
+        
+        .contact-card {
+            padding: 25px 20px !important;
+            margin: 0 15px;
+        }
+    }
     </style>
 </head>
 <body>
@@ -556,6 +579,32 @@
                 </div>
             </div>
         </div>
+    </section>
+    <section id="contacts" class="contacts-section">
+    <div class="container">
+        <h2 class="section-title">Контакты и обновления</h2>
+        <p style="text-align: center; color: var(--text-gray); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            Подписывайтесь на телеграм канал, чтобы получать актуальные новости о проекте, обновлениях конфигов и инструкции по использованию.
+        </p>
+        
+        <div class="contacts-container" style="display: flex; justify-content: center;">
+            <div class="contact-card" style="background: var(--bg-card); border-radius: 15px; padding: 30px; border: 1px solid var(--border-color); max-width: 400px; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 20px; color: #0088cc;">
+                    <i class="fab fa-telegram"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; margin-bottom: 15px; color: var(--text-light);">Telegram канал</h3>
+                <p style="color: var(--text-gray); margin-bottom: 25px;">
+                    Основной канал для связи, обновлений и новостей проекта. Здесь публикуются новые конфиги, инструкции и отвечаю на вопросы.
+                </p>
+                <a href="https://t.me/wlrustg" target="_blank" style="background: linear-gradient(135deg, #0088cc, #34b7f1); color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-block; transition: all 0.3s;">
+                    <i class="fab fa-telegram"></i> Перейти в канал
+                </a>
+                <p style="margin-top: 20px; color: var(--text-gray); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Канал публичный
+                </p>
+            </div>
+        </div>
+    </div>
     </section>
 
     <!-- Modal for subscription links -->
