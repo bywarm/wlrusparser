@@ -13,76 +13,130 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+        }
+        
         body {
-            background-color: #0a0a0f;
-            color: #e0e0e0;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
             min-height: 100vh;
             background-image: 
-                radial-gradient(circle at 10% 20%, rgba(28, 58, 173, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(138, 43, 226, 0.1) 0%, transparent 20%);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-            background: linear-gradient(90deg, #7c3aed, #3b82f6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 1px;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #a0a0c0;
-            max-width: 600px;
-            margin: 0 auto;
+                radial-gradient(circle at 10% 10%, rgba(28, 58, 173, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 90% 90%, rgba(138, 43, 226, 0.1) 0%, transparent 25%);
             line-height: 1.6;
         }
         
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 40px;
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
         
-        .button-container {
+        /* Header */
+        header {
+            padding: 25px 0;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(15, 23, 42, 0.95);
+        }
+        
+        nav {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            gap: 25px;
-            width: 100%;
-            max-width: 600px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo i {
+            font-size: 1.7rem;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 60px 0;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 30px;
+        }
+        
+        .mission-statement {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .mission-statement p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--text-gray);
+        }
+        
+        .mission-statement .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        /* Links Button */
+        .links-button-container {
+            text-align: center;
+            margin: 40px 0;
         }
         
         .get-links-btn {
-            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            padding: 20px 50px;
+            padding: 18px 45px;
             font-size: 1.3rem;
             border-radius: 50px;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 15px;
             transition: all 0.3s ease;
             box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
             font-weight: 600;
-            letter-spacing: 1px;
         }
         
         .get-links-btn:hover {
@@ -90,94 +144,206 @@
             box-shadow: 0 15px 30px rgba(124, 58, 237, 0.4);
         }
         
-        .get-links-btn:active {
-            transform: translateY(-2px);
-        }
-        
         .get-links-btn i {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
         }
         
-        .loading {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            margin-top: 20px;
+        /* FAQ Section */
+        .faq-section {
+            padding: 50px 0;
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 20px;
+            margin: 30px 0;
         }
         
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(59, 130, 246, 0.3);
-            border-radius: 50%;
-            border-top-color: #3b82f6;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .links-container {
-            display: none;
-            width: 100%;
+        .faq-container {
             max-width: 800px;
-            background: rgba(20, 20, 30, 0.8);
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 40px;
+            color: var(--text-light);
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin: 15px auto 0;
+            border-radius: 2px;
+        }
+        
+        .faq-item {
+            background: var(--bg-card);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .faq-question {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .faq-question i {
+            transition: transform 0.3s;
+        }
+        
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s, padding 0.3s;
+            color: var(--text-gray);
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 20px 20px;
+            max-height: 500px;
+        }
+        
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+        }
+        
+        /* Clients Section */
+        .clients-section {
+            padding: 50px 0;
+        }
+        
+        .clients-grid {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .client-card {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            width: 220px;
+        }
+        
+        .client-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .client-card i {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .client-card h4 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        
+        .client-card p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        .download-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Modal for subscription links */
+        #linksModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
             border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(124, 58, 237, 0.2);
-            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
         }
         
-        .links-header {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
         }
         
-        .links-header h2 {
+        .modal-header h2 {
+            font-size: 1.7rem;
+            color: var(--primary);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-gray);
             font-size: 1.8rem;
-            color: #7c3aed;
-        }
-        
-        .refresh-btn {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
-            border-radius: 30px;
-            padding: 8px 20px;
             cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
+            transition: color 0.3s;
         }
         
-        .refresh-btn:hover {
-            background: rgba(59, 130, 246, 0.2);
+        .close-modal:hover {
+            color: var(--text-light);
         }
         
         .links-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
         
         .link-card {
-            background: rgba(30, 30, 45, 0.9);
-            border-radius: 15px;
-            padding: 25px;
-            transition: all 0.3s;
-            border: 1px solid rgba(124, 58, 237, 0.1);
-        }
-        
-        .link-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(124, 58, 237, 0.5);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
         }
         
         .link-title {
@@ -185,37 +351,46 @@
             align-items: center;
             gap: 12px;
             margin-bottom: 15px;
-            font-size: 1.2rem;
-            color: #a78bfa;
         }
         
         .link-title i {
-            color: #7c3aed;
             font-size: 1.3rem;
+            color: var(--primary);
+        }
+        
+        .link-title span {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .link-url-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
         }
         
         .link-url {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 12px 15px;
-            border-radius: 10px;
-            font-size: 0.95rem;
+            flex-grow: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-gray);
+            font-family: monospace;
+            font-size: 0.9rem;
             word-break: break-all;
-            margin-bottom: 15px;
-            color: #c0c0e0;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .copy-btn {
-            background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
-            width: 100%;
-            font-size: 0.95rem;
+            min-width: 120px;
         }
         
         .copy-btn:hover {
@@ -223,115 +398,214 @@
         }
         
         .copy-btn.copied {
-            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            background: linear-gradient(135deg, var(--accent), #34d399);
         }
         
-        .instructions {
-            margin-top: 40px;
-            padding: 25px;
-            background: rgba(20, 20, 30, 0.6);
-            border-radius: 15px;
-            border-left: 4px solid #7c3aed;
-            max-width: 800px;
+        .modal-instructions {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(124, 58, 237, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
         }
         
-        .instructions h3 {
-            color: #a78bfa;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .instructions p {
-            line-height: 1.6;
-            margin-bottom: 10px;
-            color: #c0c0e0;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 50px;
-            color: #6b7280;
+        .modal-instructions p {
+            color: var(--text-gray);
             font-size: 0.9rem;
-            border-top: 1px solid rgba(124, 58, 237, 0.1);
+            margin-bottom: 8px;
         }
         
-        /* Адаптивность */
+        /* Responsive */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.2rem;
+            .hero h1 {
+                font-size: 2rem;
             }
             
-            .links-list {
-                grid-template-columns: 1fr;
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 1.7rem;
             }
             
             .get-links-btn {
-                padding: 18px 35px;
+                padding: 15px 35px;
                 font-size: 1.1rem;
+            }
+            
+            .client-card {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .link-url-container {
+                flex-direction: column;
+            }
+            
+            .copy-btn {
+                width: 100%;
             }
         }
         
         @media (max-width: 480px) {
-            h1 {
-                font-size: 1.8rem;
-            }
-            
             .container {
-                padding: 10px;
+                padding: 0 15px;
             }
             
-            .links-container {
+            .hero h1 {
+                font-size: 1.7rem;
+            }
+            
+            .mission-statement {
+                padding: 20px;
+            }
+            
+            .modal-content {
                 padding: 20px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-link"></i> Получить ссылки на подписки</h1>
-            <p class="subtitle">Получите актуальные ссылки на подписки в один клик. Все ссылки проверены и регулярно обновляются для вашего удобства.</p>
-        </header>
-        
-        <main class="main-content">
-            <div class="button-container">
-                <button id="getLinksBtn" class="get-links-btn">
-                    <i class="fas fa-magic"></i> Получить ссылки на подписки
-                </button>
-                
-                <div id="loadingIndicator" class="loading">
-                    <div class="spinner"></div>
-                    <p></p>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>WL RUS</span>
                 </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>WL RUS - Обход белых списков</h1>
+            <p class="hero-subtitle">Привет! Этот проект создан для помощи людям в обходе введенных на мобильном интернете белых списков</p>
+            
+            <div class="mission-statement">
+                <p>Данный проект <span class="highlight">не коммерческий</span>, вы можете пользоваться сервисом <span class="highlight">бесплатно</span>.</p>
+               <!-- <p>Все пожертвования идут на создание собственных способов обхода, и на мотивацию создателю продолжать свое дело.</p> -->
             </div>
             
-            <div id="linksContainer" class="links-container">
-                <div class="links-header">
-                    <h2><i class="fas fa-star"></i> Актуальные ссылки</h2>
-                    <button id="refreshBtn" class="refresh-btn">
-                        <i class="fas fa-sync-alt"></i> Обновить
+            <div class="links-button-container">
+                <button id="getLinksBtn" class="get-links-btn">
+                    <i class="fas fa-key"></i> Получить ссылки на конфиги
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <div class="faq-container">
+                <h2 class="section-title">Частые вопросы</h2>
+                
+                <div class="faq-item active">
+                    <div class="faq-question">
+                        <span>⁉️ Как это работает?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Я собираю ключи из открытых источников, которые доступны всем, и публикую их в Общие подписки, где каждый пользователь может пользоваться этими ключами, которые обновляются время от времени.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>⁉️ Это безопасно?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Все конфиги в подписке собираются из открытых источников, из-за чего мне я не могу сказать, что сервера полностью безопасны. Хоть и логгировать трафик очень трудно, кто-то может его перехватывать, поэтому я не советую использовать сервера для приложений банков и гос. сервисов.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clients Section -->
+    <section id="clients" class="clients-section">
+        <div class="container">
+            <h2 class="section-title">Как начать пользоваться?</h2>
+            <p style="text-align: center; color: var(--text-gray); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">Все просто, нам надо скачать один клиент из нижеперечисленных (универсальные для всех устройств):</p>
+            
+            <div class="clients-grid">
+                <!-- Happ Client -->
+                <div class="client-card">
+                    <i class="fas fa-rocket"></i>
+                    <h4>Happ</h4>
+                    <p>Универсальный клиент для всех платформ. Простой интерфейс, идеален для новичков.</p>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Скачать
                     </button>
                 </div>
                 
-                <div id="linksList" class="links-list">
-                    
+                <!-- Karing Client -->
+                <div class="client-card">
+                    <i class="fas fa-mobile-alt"></i>
+                    <h4>Karing</h4>
+                    <p>Мощный клиент с поддержкой нескольких протоколов. Работает на всех устройствах.</p>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Скачать
+                    </button>
                 </div>
             </div>
-        </main>
+        </div>
+    </section>
+
+    <!-- Modal for subscription links -->
+    <div id="linksModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ссылки на конфигурации</h2>
+                <button class="close-modal">×</button>
+            </div>
+            
+            <div class="links-list" id="linksContent">
+                <!-- Контент будет загружен здесь -->
+            </div>
+            
+            <div class="modal-instructions">
+                <p><strong>Как использовать:</strong></p>
+                <p>1. Скопируйте нужную ссылку</p>
+                <p>2. Вставьте ее в ваш VPN-клиент (Happ или Karing)</p>
+                <p>3. Сделайте пинг серверов</p>
+                <p>4. Подключитесь к рабочему серверу</p>
+            </div>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // FAQ аккордеон
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    // Закрываем все остальные
+                    faqItems.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('active')) {
+                            otherItem.classList.remove('active');
+                        }
+                    });
+                    
+                    // Открываем/закрываем текущий
+                    item.classList.toggle('active');
+                });
+            });
+            
+            // Модальное окно для ссылок
             const getLinksBtn = document.getElementById('getLinksBtn');
-            const refreshBtn = document.getElementById('refreshBtn');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            const linksContainer = document.getElementById('linksContainer');
-            const linksList = document.getElementById('linksList');
+            const linksModal = document.getElementById('linksModal');
+            const closeModal = document.querySelector('.close-modal');
+            const linksContent = document.getElementById('linksContent');
             
-            
+            // Данные для ссылок
             const sampleLinks = [
                 {
                     id: 1,
@@ -353,27 +627,28 @@
                 },
             ];
             
-            // Функция для отображения ссылок
-            function displayLinks(links) {
-                linksList.innerHTML = '';
+function showLinks() {
+                let html = '';
                 
-                links.forEach(link => {
-                    const linkCard = document.createElement('div');
-                    linkCard.className = 'link-card';
-                    
-                    linkCard.innerHTML = `
-                        <div class="link-title">
-                            <i class="${link.icon}"></i>
-                            <span>${link.title}</span>
+                sampleLinks.forEach(link => {
+                    html += `
+                        <div class="link-card">
+                            <div class="link-title">
+                                <i class="${link.icon}"></i>
+                                <span>${link.title}</span>
+                            </div>
+                            <div class="link-url-container">
+                                <input type="text" class="link-url" value="${link.url}" readonly>
+                                <button class="copy-btn" data-url="${link.url}">
+                                    <i class="fas fa-copy"></i> Копировать
+                                </button>
+                            </div>
                         </div>
-                        <div class="link-url">${link.url}</div>
-                        <button class="copy-btn" data-url="${link.url}">
-                            <i class="fas fa-copy"></i> Копировать ссылку
-                        </button>
                     `;
-                    
-                    linksList.appendChild(linkCard);
                 });
+                
+                linksContent.innerHTML = html;
+                linksModal.style.display = 'flex';
                 
                 // Добавляем обработчики для кнопок копирования
                 document.querySelectorAll('.copy-btn').forEach(button => {
@@ -389,7 +664,7 @@
                         setTimeout(() => {
                             this.innerHTML = originalText;
                             this.classList.remove('copied');
-                        }, 2000);
+                        }, 1000);
                     });
                 });
             }
@@ -410,32 +685,70 @@
                 });
             }
             
-
-            function getLinks() {
-                // Показываем индикатор загрузки
-                loadingIndicator.style.display = 'flex';
-                linksContainer.style.display = 'none';
-                
-
-                setTimeout(() => {
-
-                    displayLinks(sampleLinks);
+            // Обработчики для кнопок
+            getLinksBtn.addEventListener('click', showLinks);
+            
+            // Закрытие модального окна
+            closeModal.addEventListener('click', () => {
+                linksModal.style.display = 'none';
+            });
+            
+            // Закрытие модального окна при клике вне его
+            window.addEventListener('click', (e) => {
+                if (e.target === linksModal) {
+                    linksModal.style.display = 'none';
+                }
+            });
+            
+            // Кнопки скачивания клиентов (просто информация)
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const clientName = this.closest('.client-card').querySelector('h4').textContent;
+                    alert(`Чтобы скачать ${clientName}, пожалуйста, найдите его в официальном магазине приложений для вашего устройства.`);
+                });
+            });
+            
+            // Плавная прокрутка для FAQ
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
                     
-                    // Скрываем индикатор загрузки
-                    loadingIndicator.style.display = 'none';
-                    linksContainer.style.display = 'block';
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
                     
-                    // Прокручиваем к результатам
-                    linksContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 1500);
-            }
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
             
-            // Обработчики событий
-            getLinksBtn.addEventListener('click', getLinks);
-            refreshBtn.addEventListener('click', getLinks);
+            // Анимация появления элементов при скролле
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
             
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
             
+            // Наблюдаем за элементами для анимации
+            document.querySelectorAll('.client-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.5s, transform 0.5s';
+                observer.observe(el);
+            });
         });
     </script>
 </body>
-  </html>
+</html>
