@@ -552,34 +552,40 @@
     </section>
 
     <!-- Clients Section -->
-    <section id="clients" class="clients-section">
-        <div class="container">
-            <h2 class="section-title">Как начать пользоваться?</h2>
-            <p style="text-align: center; color: var(--text-gray); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">Все просто, нам надо скачать один клиент из нижеперечисленных (универсальные для всех устройств):</p>
+<section id="clients" class="clients-section">
+    <div class="container">
+        <h2 class="section-title">Как начать пользоваться?</h2>
+        <p style="text-align: center; color: var(--text-gray); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">Все просто, нам надо скачать один клиент из нижеперечисленных (универсальные для всех устройств):</p>
+        
+        <div class="clients-grid">
+            <!-- Happ Client -->
+            <div class="client-card">
+                <i class="fas fa-rocket"></i>
+                <h4>Happ</h4>
+                <p>Универсальный клиент для всех платформ. Простой интерфейс, идеален для новичков.</p>
+                <button class="download-btn" data-client="happ">
+                    <i class="fas fa-download"></i> Скачать Happ
+                </button>
+            </div>
             
-            <div class="clients-grid">
-                <!-- Happ Client -->
-                <div class="client-card">
-                    <i class="fas fa-rocket"></i>
-                    <h4>Happ</h4>
-                    <p>Универсальный клиент для всех платформ. Простой интерфейс, идеален для новичков.</p>
-                    <button class="download-btn">
-                        <i class="fas fa-download"></i> Скачать
-                    </button>
-                </div>
-                
-                <!-- Karing Client -->
-                <div class="client-card">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h4>Karing</h4>
-                    <p>Мощный клиент с поддержкой нескольких протоколов. Работает на всех устройствах.</p>
-                    <button class="download-btn">
-                        <i class="fas fa-download"></i> Скачать
-                    </button>
-                </div>
+            <!-- Karing Client -->
+            <div class="client-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h4>Karing</h4>
+                <p>Мощный клиент с поддержкой нескольких протоколов. Работает на всех устройствах.</p>
+                <button class="download-btn" data-client="karing">
+                    <i class="fas fa-download"></i> Скачать Karing
+                </button>
             </div>
         </div>
-    </section>
+        
+        <div style="text-align: center; margin-top: 30px; color: var(--text-gray); font-size: 0.9rem;">
+            <p><i class="fas fa-info-circle"></i> После установки клиента, получите конфиги выше и импортируйте их в приложение</p>
+        </div>
+    </div>
+</section>
+    
+    
     <section id="contacts" class="contacts-section">
     <div class="container">
         <h2 class="section-title">Контакты и обновления</h2>
@@ -750,12 +756,103 @@ function showLinks() {
             });
             
             // Кнопки скачивания клиентов (просто информация)
-            document.querySelectorAll('.download-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const clientName = this.closest('.client-card').querySelector('h4').textContent;
-                    alert(`Чтобы скачать ${clientName}, пожалуйста, найдите его в официальном магазине приложений для вашего устройства.`);
-                });
-            });
+document.querySelectorAll('.download-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const client = this.getAttribute('data-client');
+        
+        // Ссылки для каждого клиента
+        const downloadLinks = {
+            happ: "https://www.happ.su/main/", 
+            karing: "https://github.com/KaringX/karing/releases/latest" 
+        };
+        
+        if (downloadLinks[client]) {
+            // Открываем ссылку в новом окне
+            window.open(downloadLinks[client], '_blank');
+            
+            // Показать уведомление
+            showDownloadNotification(client);
+        } else {
+            alert("Ссылка для скачивания временно недоступна.");
+        }
+    });
+});
+
+// Функция для показа уведомления о скачивании
+function showDownloadNotification(client) {
+    const clientNames = {
+        happ: "Happ",
+        karing: "Karing"
+    };
+    
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 15px 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+            <div>
+                <div style="font-weight: 600;">Скачивание ${clientNames[client]}</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Открываю страницу загрузки...</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Удаляем уведомление через 3 секунды
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Добавляем стили для анимаций уведомлений (если еще не добавлены)
+if (!document.querySelector('#notification-styles')) {
+    const style = document.createElement('style');
+    style.id = 'notification-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
             
             // Плавная прокрутка для FAQ
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
