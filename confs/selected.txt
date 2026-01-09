@@ -1,5 +1,5 @@
 #profile-title: WL RUS (selected)
-#profile-update-interval: 1
+#profile-update-interval: 24
 #announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!
 vless://854eea7a-c834-4f62-9e17-ae63d1086f36@45.139.27.99:444?encryption=none&extra=%7B%22scMaxEachPostBytes%22%3A1000000%2C%22scMaxConcurrentPosts%22%3A100%2C%22scMinPostsIntervalMs%22%3A30%2C%22xPaddingBytes%22%3A%22100-1000%22%2C%22noGRPCHeader%22%3Afalse%7D&fp=chrome&mode=auto&path=%2Fexample&pbk=i1kgdvvNoTAdTsmFcdFBItn1wakoTNZHC1F7nTCpLlo&security=reality&sid=6f9ae5be33ead6f9&sni=vk.com&type=xhttp#1.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
