@@ -577,7 +577,7 @@ def save_to_file(configs: list[str], file_type: str, description: str = "", add_
                f.write("#profile-title: WL RUS (all)\n")
         
         
-            f.write("#profile-update-interval: 1\n")
+            f.write("#profile-update-interval: 24\n")
             f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
             f.write(f"# Обновлено: {offset}\n")
             f.write(f"# Всего конфигов: {len(configs)}\n")
@@ -812,7 +812,7 @@ def process_selected_file():
                 # Сохраняем с одним заголовком
                 with open(selected_file, "w", encoding="utf-8") as f:
                     f.write("#profile-title: WL RUS (selected)\n")
-                    f.write("#profile-update-interval: 1\n")
+                    f.write("#profile-update-interval: 24\n")
                     f.write("#announce: Сервера из подписки должны использоваться ТОЛЬКО при белых списках!\n")
                     
                     if manual_comments:
