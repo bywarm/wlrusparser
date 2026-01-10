@@ -123,6 +123,7 @@ URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
     "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/refs/heads/main/githubmirror/26.txt",
+    "https://raw.githubusercontent.com/vsevjik/OBSpiskov/refs/heads/main/wwh",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
