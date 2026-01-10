@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расширенный редактор статей | FreeAccess</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+            --editor-bg: #1e293b;
+            --toolbar-bg: #334155;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            padding: 25px 0;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(15, 23, 42, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-decoration: none;
+        }
+        
+        .logo i {
+            font-size: 1.7rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text-light);
+        }
+        
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+            padding: 40px 0;
+            min-height: calc(100vh - 120px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .sidebar-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .articles-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .articles-list li {
+            margin-bottom: 15px;
+        }
+        
+        .articles-list a {
+            color: var(--text-gray);
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        
+        .articles-list a:hover {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+            border-color: var(--border-color);
+        }
+        
+        .articles-list a.active {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(59, 130, 246, 0.2));
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .create-article-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        
+        .create-article-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+        }
+        
+        /* Editor */
+        .editor-container {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        .editor-toolbar {
+            background: var(--toolbar-bg);
+            padding: 15px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .toolbar-group {
+            display: flex;
+            gap: 5px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 15px;
+            margin-right: 10px;
+        }
+        
+        .toolbar-group:last-child {
+            border-right: none;
+            padding-right: 0;
+            margin-right: 0;
+        }
+        
+        .toolbar-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toolbar-btn:hover {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+            border-color: var(--primary);
+        }
+        
+        .toolbar-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .editor-title-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .editor-title-input::placeholder {
+            color: var(--text-gray);
+        }
+        
+        #articleEditor {
+            min-height: 500px;
+            padding: 20px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            background: var(--editor-bg);
+            color: var(--text-light);
+            outline: none;
+            border: none;
+            resize: vertical;
+            width: 100%;
+        }
+        
+        #articleEditor:focus {
+            outline: none;
+        }
+        
+        .editor-actions {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--toolbar-bg);
+        }
+        
+        .editor-btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, var(--accent), #34d399);
+            color: white;
+        }
+        
+        .save-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .export-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .export-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .cancel-btn {
+            background: var(--bg-card);
+            color: var(--text-gray);
+            border: 1px solid var(--border-color);
+        }
+        
+        .cancel-btn:hover {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+        }
+        
+        /* Article View */
+        .article-view {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .article-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Article Content Styles */
+        .article-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        .article-content h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .article-content h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 12px;
+            color: var(--secondary);
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+            color: var(--text-gray);
+        }
+        
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            color: var(--text-gray);
+        }
+        
+        .article-content li {
+            margin-bottom: 10px;
+        }
+        
+        .article-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+        
+        .article-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: #e2e8f0;
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: var(--text-gray);
+            background: rgba(124, 58, 237, 0.1);
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content .spoiler {
+            background: var(--bg-card-light);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content .spoiler-header {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .article-content .spoiler-content {
+            padding: 20px;
+            display: none;
+            color: var(--text-gray);
+        }
+        
+        .article-content .spoiler.open .spoiler-content {
+            display: block;
+        }
+        
+        .article-content .spoiler.open .spoiler-header i {
+            transform: rotate(180deg);
+        }
+        
+        .article-content .warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            color: var(--text-gray);
+        }
+        
+        .article-content .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--warning);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .article-content .tip {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            color: var(--text-gray);
+        }
+        
+        .article-content .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .article-content .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        .article-content table th {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .article-content table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-gray);
+        }
+        
+        .article-content table tr:hover {
+            background: rgba(124, 58, 237, 0.05);
+        }
+        
+        .article-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .edit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .edit-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+        }
+        
+        .empty-state p {
+            color: var(--text-gray);
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+        
+        /* Export Modal */
+        .export-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .export-modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .export-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .export-modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        .close-export-modal {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-export-modal:hover {
+            color: var(--text-light);
+        }
+        
+        .export-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .export-tab {
+            background: var(--bg-card);
+            color: var(--text-gray);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .export-tab.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-color: transparent;
+        }
+        
+        .export-code-container {
+            flex-grow: 1;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .export-code {
+            width: 100%;
+            height: 400px;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border: none;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+        }
+        
+        .export-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .export-action-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, var(--accent), #34d399);
+            color: white;
+        }
+        
+        .export-action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .article-title {
+                font-size: 2rem;
+            }
+            
+            .editor-toolbar {
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .article-view {
+                padding: 25px;
+            }
+            
+            .article-actions {
+                flex-direction: column;
+            }
+            
+            .editor-actions {
+                flex-wrap: wrap;
+            }
+            
+            .export-actions {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .article-title {
+                font-size: 1.7rem;
+            }
+            
+            .editor-title-input {
+                font-size: 1.5rem;
+            }
+            
+            .export-modal-content {
+                padding: 20px;
+            }
+            
+            .export-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>FreeAccess</span>
+                </a>
+                
+                <div class="nav-links">
+                    <a href="/">Главная</a>
+                    <a href="/articles.html" class="active">Статьи</a>
+                    <a href="#contacts">Контакты</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h2 class="sidebar-title">
+                    <i class="fas fa-newspaper"></i> Статьи
+                </h2>
+                
+                <ul class="articles-list" id="articlesList">
+                    <!-- Статьи будут загружены здесь -->
+                </ul>
+                
+                <button id="createArticleBtn" class="create-article-btn">
+                    <i class="fas fa-plus"></i> Создать статью
+                </button>
+            </div>
+            
+            <!-- Editor (скрыт по умолчанию) -->
+            <div class="editor-container" id="editorContainer">
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="bold" title="Жирный текст">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="italic" title="Курсив">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="underline" title="Подчеркивание">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="insertUnorderedList" title="Маркированный список">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="insertOrderedList" title="Нумерованный список">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="createLink" title="Вставить ссылку">
+                            <i class="fas fa-link"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="insertImage" title="Вставить изображение">
+                            <i class="fas fa-image"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="code" title="Вставить код">
+                            <i class="fas fa-code"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="spoiler" title="Вставить спойлер">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="quote" title="Вставить цитату">
+                            <i class="fas fa-quote-right"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="warning" title="Вставить предупреждение">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="tip" title="Вставить подсказку">
+                            <i class="fas fa-lightbulb"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="table" title="Вставить таблицу">
+                            <i class="fas fa-table"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="formatBlock" data-value="h2" title="Заголовок 2">
+                            H2
+                        </button>
+                        <button class="toolbar-btn" data-command="formatBlock" data-value="h3" title="Заголовок 3">
+                            H3
+                        </button>
+                    </div>
+                </div>
+                
+                <input type="text" class="editor-title-input" id="articleTitle" placeholder="Заголовок статьи">
+                
+                <div id="articleEditor" contenteditable="true" placeholder="Начните писать вашу статью здесь..."></div>
+                
+                <div class="editor-actions">
+                    <button id="saveArticleBtn" class="editor-btn save-btn">
+                        <i class="fas fa-save"></i> Сохранить статью
+                    </button>
+                    <button id="exportArticleBtn" class="editor-btn export-btn">
+                        <i class="fas fa-file-export"></i> Экспорт HTML
+                    </button>
+                    <button id="cancelEditBtn" class="editor-btn cancel-btn">
+                        <i class="fas fa-times"></i> Отмена
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Article View -->
+            <div class="article-view" id="articleView">
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-newspaper"></i>
+                    <h3>Пока нет статей</h3>
+                    <p>Создайте свою первую статью или инструкцию, чтобы поделиться знаниями с другими пользователями.</p>
+                    <button id="createFirstArticleBtn" class="create-article-btn" style="width: auto; padding: 15px 30px;">
+                        <i class="fas fa-plus"></i> Создать первую статью
+                    </button>
+                </div>
+                
+                <div id="articleContent" style="display: none;">
+                    <!-- Контент статьи будет загружен здесь -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="export-modal" id="exportModal">
+        <div class="export-modal-content">
+            <div class="export-modal-header">
+                <h3>Экспорт статьи</h3>
+                <button class="close-export-modal">×</button>
+            </div>
+            
+            <div class="export-tabs">
+                <button class="export-tab active" data-tab="html">HTML код</button>
+                <button class="export-tab" data-tab="preview">Предпросмотр</button>
+            </div>
+            
+            <div class="export-code-container">
+                <textarea class="export-code" id="exportCode" readonly></textarea>
+                <div id="exportPreview" style="display: none; padding: 20px; overflow-y: auto; height: 400px;"></div>
+            </div>
+            
+            <div class="export-actions">
+                <button id="copyCodeBtn" class="export-action-btn copy-btn">
+                    <i class="fas fa-copy"></i> Копировать код
+                </button>
+                <button id="downloadHtmlBtn" class="export-action-btn download-btn">
+                    <i class="fas fa-download"></i> Скачать HTML файл
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal для вставки ссылки -->
+    <div id="linkModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; border: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--text-light);">Вставить ссылку</h3>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-gray);">URL:</label>
+                <input type="text" id="linkUrl" style="width: 100%; padding: 12px; background: var(--bg-card-light); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-light);">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-gray);">Текст (опционально):</label>
+                <input type="text" id="linkText" style="width: 100%; padding: 12px; background: var(--bg-card-light); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-light);">
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button id="insertLinkBtn" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; flex: 1;">Вставить</button>
+                <button id="cancelLinkBtn" style="background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border-color); padding: 12px 25px; border-radius: 8px; cursor: pointer; flex: 1;">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal для вставки изображения -->
+    <div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); border-radius: 20px; padding: 30px; max-width: 500px; width: 90%; border: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.5rem; margin-bottom: 20px; color: var(--text-light);">Вставить изображение</h3>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-gray);">URL изображения:</label>
+                <input type="text" id="imageUrl" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 12px; background: var(--bg-card-light); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-light);">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; color: var(--text-gray);">Описание (alt текст):</label>
+                <input type="text" id="imageAlt" placeholder="Описание изображения" style="width: 100%; padding: 12px; background: var(--bg-card-light); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-light);">
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button id="insertImageBtn" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; flex: 1;">Вставить</button>
+                <button id="cancelImageBtn" style="background: var(--bg-card); color: var(--text-gray); border: 1px solid var(--border-color); padding: 12px 25px; border-radius: 8px; cursor: pointer; flex: 1;">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы DOM
+            const articlesList = document.getElementById('articlesList');
+            const createArticleBtn = document.getElementById('createArticleBtn');
+            const createFirstArticleBtn = document.getElementById('createFirstArticleBtn');
+            const editorContainer = document.getElementById('editorContainer');
+            const articleView = document.getElementById('articleView');
+            const articleContent = document.getElementById('articleContent');
+            const emptyState = document.getElementById('emptyState');
+            const articleEditor = document.getElementById('articleEditor');
+            const articleTitle = document.getElementById('articleTitle');
+            const saveArticleBtn = document.getElementById('saveArticleBtn');
+            const exportArticleBtn = document.getElementById('exportArticleBtn');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+            const exportModal = document.getElementById('exportModal');
+            const closeExportModal = document.querySelector('.close-export-modal');
+            const exportCode = document.getElementById('exportCode');
+            const exportPreview = document.getElementById('exportPreview');
+            const exportTabs = document.querySelectorAll('.export-tab');
+            const copyCodeBtn = document.getElementById('copyCodeBtn');
+            const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+            
+            // Модальные окна
+            const linkModal = document.getElementById('linkModal');
+            const insertLinkBtn = document.getElementById('insertLinkBtn');
+            const cancelLinkBtn = document.getElementById('cancelLinkBtn');
+            const linkUrl = document.getElementById('linkUrl');
+            const linkText = document.getElementById('linkText');
+            
+            const imageModal = document.getElementById('imageModal');
+            const insertImageBtn = document.getElementById('insertImageBtn');
+            const cancelImageBtn = document.getElementById('cancelImageBtn');
+            const imageUrl = document.getElementById('imageUrl');
+            const imageAlt = document.getElementById('imageAlt');
+            
+            // Текущее состояние
+            let currentArticleId = null;
+            let isEditing = false;
+            let articles = [];
+            
+            // Загрузка статей из localStorage
+            function loadArticles() {
+                const saved = localStorage.getItem('freeaccess_articles');
+                if (saved) {
+                    articles = JSON.parse(saved);
+                } else {
+                    // Пример статей для начала
+                    articles = [
+                        {
+                            id: 1,
+                            title: "Как начать пользоваться FreeAccess",
+                            content: `<h2>Пошаговая инструкция</h2>
+<p>Чтобы начать пользоваться нашим сервисом, выполните следующие шаги:</p>
+<ol>
+<li>Скачайте один из поддерживаемых клиентов (Happ или Karing)</li>
+<li>Получите ссылки на конфигурации на главной странице</li>
+<li>Импортируйте конфигурацию в ваш клиент</li>
+<li>Подключитесь к серверу</li>
+</ol>
+<div class="tip">
+<div class="tip-header">
+<i class="fas fa-lightbulb"></i>
+<span>Подсказка</span>
+</div>
+<p>Для максимальной скорости рекомендуется выбирать серверы, расположенные ближе к вашему местоположению.</p>
+</div>
+<div class="warning">
+<div class="warning-header">
+<i class="fas fa-exclamation-triangle"></i>
+<span>Важно</span>
+</div>
+<p>Никогда не используйте один и тот же конфиг на нескольких устройствах одновременно, это может привести к блокировке.</p>
+</div>`,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        },
+                        {
+                            id: 2,
+                            title: "Расширенная настройка клиентов",
+                            content: `<h2>Настройка Happ</h2>
+<p>Happ — один из самых простых клиентов для начинающих.</p>
+<div class="spoiler">
+<div class="spoiler-header">
+<span>Расширенные настройки Happ</span>
+<i class="fas fa-chevron-down"></i>
+</div>
+<div class="spoiler-content">
+<p>Для доступа к расширенным настройкам:</p>
+<ol>
+<li>Откройте меню настроек</li>
+<li>Перейдите в раздел "Дополнительно"</li>
+<li>Активируйте режим эксперта</li>
+</ol>
+<pre><code>// Пример конфигурации для продвинутых пользователей
+{
+  "protocol": "vless",
+  "port": 443,
+  "security": "tls"
+}</code></pre>
+</div>
+</div>
+<h2>Настройка Karing</h2>
+<p>Karing предлагает больше возможностей для тонкой настройки.</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Настройка</th>
+<th>Рекомендуемое значение</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Протокол</td>
+<td>VLESS</td>
+<td>Самый современный протокол</td>
+</tr>
+<tr>
+<td>Порт</td>
+<td>443</td>
+<td>Стандартный порт HTTPS</td>
+</tr>
+<tr>
+<td>Шифрование</td>
+<td>TLS 1.3</td>
+<td>Надежное шифрование</td>
+</tr>
+</tbody>
+</table>
+</div>`,
+                            createdAt: new Date(Date.now() - 86400000).toISOString(),
+                            updatedAt: new Date(Date.now() - 86400000).toISOString()
+                        }
+                    ];
+                    saveArticles();
+                }
+                
+                renderArticlesList();
+            }
+            
+            // Сохранение статей в localStorage
+            function saveArticles() {
+                localStorage.setItem('freeaccess_articles', JSON.stringify(articles));
+            }
+            
+            // Отрисовка списка статей
+            function renderArticlesList() {
+                articlesList.innerHTML = '';
+                
+                // Сортируем статьи по дате обновления (новые сначала)
+                const sortedArticles = [...articles].sort((a, b) => 
+                    new Date(b.updatedAt) - new Date(a.updatedAt)
+                );
+                
+                sortedArticles.forEach(article => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.textContent = article.title;
+                    a.dataset.id = article.id;
+                    
+                    if (currentArticleId === article.id) {
+                        a.classList.add('active');
+                    }
+                    
+                    a.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        loadArticle(article.id);
+                    });
+                    
+                    li.appendChild(a);
+                    articlesList.appendChild(li);
+                });
+                
+                // Показываем или скрываем empty state
+                if (articles.length === 0) {
+                    emptyState.style.display = 'block';
+                    articleContent.style.display = 'none';
+                } else if (!currentArticleId && articles.length > 0) {
+                    // Загружаем первую статью
+                    loadArticle(articles[0].id);
+                }
+            }
+            
+            // Загрузка статьи
+            function loadArticle(id) {
+                const article = articles.find(a => a.id == id);
+                if (!article) return;
+                
+                currentArticleId = id;
+                
+                // Обновляем список статей
+                renderArticlesList();
+                
+                // Скрываем редактор и показываем просмотр
+                editorContainer.style.display = 'none';
+                articleView.style.display = 'block';
+                emptyState.style.display = 'none';
+                articleContent.style.display = 'block';
+                
+                // Заполняем содержимое статьи
+                articleContent.innerHTML = `
+                    <div class="article-header">
+                        <h1 class="article-title">${article.title}</h1>
+                        <div class="article-meta">
+                            <span><i class="far fa-calendar"></i> ${formatDate(article.updatedAt)}</span>
+                            <span><i class="far fa-clock"></i> ${estimateReadingTime(article.content)}</span>
+                        </div>
+                    </div>
+                    <div class="article-content">${article.content}</div>
+                    <div class="article-actions">
+                        <button id="editArticleBtn" class="edit-btn">
+                            <i class="fas fa-edit"></i> Редактировать
+                        </button>
+                        <button id="exportThisArticleBtn" class="export-btn" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 600; cursor: pointer;">
+                            <i class="fas fa-file-export"></i> Экспорт HTML
+                        </button>
+                        <button id="deleteArticleBtn" class="delete-btn">
+                            <i class="fas fa-trash"></i> Удалить
+                        </button>
+                    </div>
+                `;
+                
+                // Добавляем обработчики для кнопок
+                document.getElementById('editArticleBtn').addEventListener('click', function() {
+                    editArticle(id);
+                });
+                
+                document.getElementById('exportThisArticleBtn').addEventListener('click', function() {
+                    showExportModal(article);
+                });
+                
+                document.getElementById('deleteArticleBtn').addEventListener('click', function() {
+                    if (confirm('Вы уверены, что хотите удалить эту статью?')) {
+                        deleteArticle(id);
+                    }
+                });
+                
+                // Инициализируем спойлеры
+                initSpoilers();
+            }
+            
+            // Редактирование статьи
+            function editArticle(id) {
+                const article = articles.find(a => a.id == id);
+                if (!article) return;
+                
+                isEditing = true;
+                currentArticleId = id;
+                
+                // Заполняем редактор
+                articleTitle.value = article.title;
+                articleEditor.innerHTML = article.content;
+                
+                // Показываем редактор и скрываем просмотр
+                editorContainer.style.display = 'block';
+                articleView.style.display = 'none';
+                
+                // Фокус на заголовке
+                articleTitle.focus();
+            }
+            
+            // Создание новой статьи
+            function createNewArticle() {
+                isEditing = false;
+                currentArticleId = null;
+                
+                // Очищаем редактор
+                articleTitle.value = '';
+                articleEditor.innerHTML = '<p>Начните писать вашу статью здесь...</p>';
+                
+                // Показываем редактор и скрываем просмотр
+                editorContainer.style.display = 'block';
+                articleView.style.display = 'none';
+                
+                // Фокус на заголовке
+                articleTitle.focus();
+            }
+            
+            // Удаление статьи
+            function deleteArticle(id) {
+                articles = articles.filter(a => a.id != id);
+                saveArticles();
+                
+                if (articles.length > 0) {
+                    loadArticle(articles[0].id);
+                } else {
+                    currentArticleId = null;
+                    editorContainer.style.display = 'none';
+                    articleView.style.display = 'block';
+                    emptyState.style.display = 'block';
+                    articleContent.style.display = 'none';
+                }
+                
+                renderArticlesList();
+            }
+            
+            // Сохранение статьи
+            function saveArticle() {
+                const title = articleTitle.value.trim();
+                const content = articleEditor.innerHTML.trim();
+                
+                if (!title) {
+                    alert('Пожалуйста, введите заголовок статьи');
+                    articleTitle.focus();
+                    return;
+                }
+                
+                if (!content || content === '<p>Начните писать вашу статью здесь...</p>') {
+                    alert('Пожалуйста, добавьте содержание статьи');
+                    return;
+                }
+                
+                const now = new Date().toISOString();
+                
+                if (isEditing && currentArticleId) {
+                    // Обновляем существующую статью
+                    const articleIndex = articles.findIndex(a => a.id == currentArticleId);
+                    if (articleIndex !== -1) {
+                        articles[articleIndex].title = title;
+                        articles[articleIndex].content = content;
+                        articles[articleIndex].updatedAt = now;
+                    }
+                } else {
+                    // Создаем новую статью
+                    const newId = articles.length > 0 ? Math.max(...articles.map(a => a.id)) + 1 : 1;
+                    articles.push({
+                        id: newId,
+                        title,
+                        content,
+                        createdAt: now,
+                        updatedAt: now
+                    });
+                    currentArticleId = newId;
+                }
+                
+                saveArticles();
+                renderArticlesList();
+                loadArticle(currentArticleId);
+            }
+            
+            // Экспорт статьи
+            function showExportModal(article = null) {
+                const articleToExport = article || {
+                    title: articleTitle.value,
+                    content: articleEditor.innerHTML
+                };
+                
+                if (!articleToExport.title || !articleToExport.content) {
+                    alert('Сначала создайте или откройте статью для экспорта');
+                    return;
+                }
+                
+                // Генерируем HTML код
+                const htmlCode = generateFullHtml(articleToExport);
+                exportCode.value = htmlCode;
+                
+                // Показываем предпросмотр
+                exportPreview.innerHTML = `
+                    <div class="article-content">${articleToExport.content}</div>
+                `;
+                
+                // Инициализируем спойлеры в предпросмотре
+                setTimeout(() => {
+                    const spoilers = exportPreview.querySelectorAll('.spoiler');
+                    spoilers.forEach(spoiler => {
+                        const header = spoiler.querySelector('.spoiler-header');
+                        const content = spoiler.querySelector('.spoiler-content');
+                        if (header && content) {
+                            header.addEventListener('click', () => {
+                                spoiler.classList.toggle('open');
+                            });
+                        }
+                    });
+                }, 100);
+                
+                // Показываем модальное окно
+                exportModal.style.display = 'flex';
+                
+                // Активируем первую вкладку
+                switchTab('html');
+            }
+            
+            // Генерация полного HTML кода
+            function generateFullHtml(article) {
+                const date = new Date().toLocaleDateString('ru-RU');
+                
+                return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${article.title} | FreeAccess</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .article-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .article-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        .article-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        .article-content h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .article-content h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 12px;
+            color: var(--secondary);
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+            color: var(--text-gray);
+        }
+        
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            color: var(--text-gray);
+        }
+        
+        .article-content li {
+            margin-bottom: 10px;
+        }
+        
+        .article-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+        
+        .article-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: #e2e8f0;
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: var(--text-gray);
+            background: rgba(124, 58, 237, 0.1);
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content .spoiler {
+            background: var(--bg-card-light);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content .spoiler-header {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .article-content .spoiler-content {
+            padding: 20px;
+            display: none;
+            color: var(--text-gray);
+        }
+        
+        .article-content .spoiler.open .spoiler-content {
+            display: block;
+        }
+        
+        .article-content .spoiler.open .spoiler-header i {
+            transform: rotate(180deg);
+        }
+        
+        .article-content .warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            color: var(--text-gray);
+        }
+        
+        .article-content .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--warning);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .article-content .tip {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+            color: var(--text-gray);
+        }
+        
+        .article-content .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .article-content .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        
+        .article-content table th {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .article-content table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-gray);
+        }
+        
+        .article-content table tr:hover {
+            background: rgba(124, 58, 237, 0.05);
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .article-title {
+                font-size: 2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .article-title {
+                font-size: 1.7rem;
+            }
+            
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="article-header">
+            <h1 class="article-title">${article.title}</h1>
+            <div class="article-meta">
+                <span><i class="far fa-calendar"></i> ${date}</span>
+                <span><i class="far fa-clock"></i> ${estimateReadingTime(article.content)}</span>
+            </div>
+        </div>
+        
+        <div class="article-content">
+            ${article.content}
+        </div>
+        
+        <div class="footer">
+            <p>Статья создана в редакторе FreeAccess | <a href="/" style="color: var(--primary);">freeaccess.net</a></p>
+        </div>
+    </div>
+    
+    <script>
+        // Инициализация спойлеров
+        document.addEventListener('DOMContentLoaded', function() {
+            const spoilers = document.querySelectorAll('.spoiler');
+            spoilers.forEach(spoiler => {
+                const header = spoiler.querySelector('.spoiler-header');
+                const content = spoiler.querySelector('.spoiler-content');
+                if (header && content) {
+                    header.addEventListener('click', () => {
+                        spoiler.classList.toggle('open');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>`;
+            }
+            
+            // Переключение вкладок в экспорт модальном окне
+            function switchTab(tabName) {
+                // Обновляем активные вкладки
+                exportTabs.forEach(tab => {
+                    if (tab.dataset.tab === tabName) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                
+                // Показываем соответствующий контент
+                if (tabName === 'html') {
+                    exportCode.style.display = 'block';
+                    exportPreview.style.display = 'none';
+                } else {
+                    exportCode.style.display = 'none';
+                    exportPreview.style.display = 'block';
+                }
+            }
+            
+            // Копирование кода в буфер обмена
+            function copyCodeToClipboard() {
+                exportCode.select();
+                document.execCommand('copy');
+                
+                // Показываем уведомление
+                const originalText = copyCodeBtn.innerHTML;
+                copyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                
+                setTimeout(() => {
+                    copyCodeBtn.innerHTML = originalText;
+                }, 2000);
+            }
+            
+            // Скачивание HTML файла
+            function downloadHtmlFile() {
+                const title = articleTitle.value || 'article';
+                const html = exportCode.value;
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+            
+            // Отмена редактирования
+            function cancelEdit() {
+                if (isEditing && currentArticleId) {
+                    loadArticle(currentArticleId);
+                } else if (articles.length > 0) {
+                    loadArticle(articles[0].id);
+                } else {
+                    editorContainer.style.display = 'none';
+                    articleView.style.display = 'block';
+                    emptyState.style.display = 'block';
+                }
+            }
+            
+            // Форматирование даты
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                });
+            }
+            
+            // Оценка времени чтения
+            function estimateReadingTime(content) {
+                const text = content.replace(/<[^>]*>/g, '');
+                const words = text.split(/\s+/).length;
+                const minutes = Math.ceil(words / 200);
+                
+                if (minutes === 1) return '1 мин чтения';
+                if (minutes < 5) return `${minutes} мин чтения`;
+                return `${minutes} минут чтения`;
+            }
+            
+            // Инициализация спойлеров
+            function initSpoilers() {
+                const spoilers = document.querySelectorAll('.spoiler');
+                spoilers.forEach(spoiler => {
+                    const header = spoiler.querySelector('.spoiler-header');
+                    const content = spoiler.querySelector('.spoiler-content');
+                    if (header && content) {
+                        header.addEventListener('click', () => {
+                            spoiler.classList.toggle('open');
+                        });
+                    }
+                });
+            }
+            
+            // Инициализация редактора
+            function initEditor() {
+                // Обработчики кнопок тулбара
+                toolbarButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const command = this.dataset.command;
+                        const value = this.dataset.value;
+                        
+                        if (command === 'createLink') {
+                            // Показываем модальное окно для вставки ссылки
+                            linkModal.style.display = 'flex';
+                            linkUrl.value = '';
+                            linkText.value = '';
+                        } else if (command === 'insertImage') {
+                            // Показываем модальное окно для вставки изображения
+                            imageModal.style.display = 'flex';
+                            imageUrl.value = '';
+                            imageAlt.value = '';
+                        } else if (command === 'code') {
+                            // Вставка кода
+                            const code = prompt('Введите код (для многострочного кода используйте блок кода в редакторе):');
+                            if (code) {
+                                document.execCommand('insertHTML', false, `<code>${code}</code>`);
+                            }
+                        } else if (command === 'spoiler') {
+                            // Вставка спойлера
+                            document.execCommand('insertHTML', false, `
+                                <div class="spoiler">
+                                    <div class="spoiler-header">
+                                        <span>Текст спойлера</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="spoiler-content">
+                                        <p>Содержимое спойлера</p>
+                                    </div>
+                                </div>
+                            `);
+                        } else if (command === 'quote') {
+                            // Вставка цитаты
+                            document.execCommand('insertHTML', false, `
+                                <blockquote>
+                                    <p>Текст цитаты</p>
+                                </blockquote>
+                            `);
+                        } else if (command === 'warning') {
+                            // Вставка предупреждения
+                            document.execCommand('insertHTML', false, `
+                                <div class="warning">
+                                    <div class="warning-header">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <span>Предупреждение</span>
+                                    </div>
+                                    <p>Текст предупреждения</p>
+                                </div>
+                            `);
+                        } else if (command === 'tip') {
+                            // Вставка подсказки
+                            document.execCommand('insertHTML', false, `
+                                <div class="tip">
+                                    <div class="tip-header">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Подсказка</span>
+                                    </div>
+                                    <p>Текст подсказки</p>
+                                </div>
+                            `);
+                        } else if (command === 'table') {
+                            // Вставка таблицы
+                            document.execCommand('insertHTML', false, `
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Заголовок 1</th>
+                                                <th>Заголовок 2</th>
+                                                <th>Заголовок 3</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Ячейка 1</td>
+                                                <td>Ячейка 2</td>
+                                                <td>Ячейка 3</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Ячейка 4</td>
+                                                <td>Ячейка 5</td>
+                                                <td>Ячейка 6</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            `);
+                        } else {
+                            document.execCommand(command, false, value || null);
+                        }
+                        
+                        // Возвращаем фокус редактору
+                        articleEditor.focus();
+                    });
+                });
+                
+                // Вставка ссылки
+                insertLinkBtn.addEventListener('click', function() {
+                    const url = linkUrl.value.trim();
+                    const text = linkText.value.trim();
+                    
+                    if (!url) {
+                        alert('Пожалуйста, введите URL');
+                        return;
+                    }
+                    
+                    if (text) {
+                        document.execCommand('insertHTML', false, `<a href="${url}" target="_blank">${text}</a>`);
+                    } else {
+                        document.execCommand('createLink', false, url);
+                    }
+                    
+                    linkModal.style.display = 'none';
+                    articleEditor.focus();
+                });
+                
+                // Отмена вставки ссылки
+                cancelLinkBtn.addEventListener('click', function() {
+                    linkModal.style.display = 'none';
+                    articleEditor.focus();
+                });
+                
+                // Вставка изображения
+                insertImageBtn.addEventListener('click', function() {
+                    const url = imageUrl.value.trim();
+                    const alt = imageAlt.value.trim();
+                    
+                    if (!url) {
+                        alert('Пожалуйста, введите URL изображения');
+                        return;
+                    }
+                    
+                    document.execCommand('insertHTML', false, `<img src="${url}" alt="${alt}" style="max-width: 100%; height: auto; border-radius: 10px; margin: 20px 0;">`);
+                    
+                    imageModal.style.display = 'none';
+                    articleEditor.focus();
+                });
+                
+                // Отмена вставки изображения
+                cancelImageBtn.addEventListener('click', function() {
+                    imageModal.style.display = 'none';
+                    articleEditor.focus();
+                });
+                
+                // Закрытие модальных окон по клику вне их
+                window.addEventListener('click', function(e) {
+                    if (e.target === linkModal) {
+                        linkModal.style.display = 'none';
+                    }
+                    if (e.target === imageModal) {
+                        imageModal.style.display = 'none';
+                    }
+                    if (e.target === exportModal) {
+                        exportModal.style.display = 'none';
+                    }
+                });
+                
+                // Обработчики для экспорт модального окна
+                exportTabs.forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        switchTab(this.dataset.tab);
+                    });
+                });
+                
+                closeExportModal.addEventListener('click', function() {
+                    exportModal.style.display = 'none';
+                });
+                
+                copyCodeBtn.addEventListener('click', copyCodeToClipboard);
+                downloadHtmlBtn.addEventListener('click', downloadHtmlFile);
+            }
+            
+            // Инициализация
+            function init() {
+                loadArticles();
+                initEditor();
+                
+                // Обработчики событий
+                createArticleBtn.addEventListener('click', createNewArticle);
+                createFirstArticleBtn.addEventListener('click', createNewArticle);
+                saveArticleBtn.addEventListener('click', saveArticle);
+                exportArticleBtn.addEventListener('click', function() {
+                    showExportModal();
+                });
+                cancelEditBtn.addEventListener('click', cancelEdit);
+                
+                // Загрузка статьи из URL hash
+                const hash = window.location.hash.substring(1);
+                if (hash && hash.startsWith('article-')) {
+                    const articleId = parseInt(hash.replace('article-', ''));
+                    const article = articles.find(a => a.id === articleId);
+                    if (article) {
+                        loadArticle(articleId);
+                    }
+                }
+            }
+            
+            // Запуск инициализации
+            init();
+        });
+    </script>
+</body>
+</html>
