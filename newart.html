@@ -712,6 +712,71 @@
                 font-size: 1.3rem;
             }
         }
+        .article-content pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.article-content pre::before {
+    content: '📋 Код';
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: var(--bg-card);
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+/* Улучшение стилей для списков */
+.article-content ul, .article-content ol {
+    margin: 15px 0 20px 25px;
+    color: var(--text-gray);
+}
+
+.article-content ul {
+    list-style-type: disc;
+}
+
+.article-content ol {
+    list-style-type: decimal;
+}
+
+.article-content li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+/* Улучшение цитат */
+.article-content blockquote {
+    border-left: 4px solid var(--primary);
+    padding: 15px 20px 15px 25px;
+    margin: 20px 0;
+    font-style: italic;
+    color: var(--text-gray);
+    background: rgba(124, 58, 237, 0.1);
+    border-radius: 0 10px 10px 0;
+    position: relative;
+}
+
+.article-content blockquote::before {
+    content: '"';
+    font-size: 3rem;
+    color: var(--primary);
+    opacity: 0.3;
+    position: absolute;
+    left: 10px;
+    top: 5px;
+}
     </style>
 </head>
 <body>
@@ -947,84 +1012,184 @@
         
         // Обновление предпросмотра
         function updatePreview() {
-            const title = articleTitle.value.trim();
-            const content = articleContent.value;
+    const title = articleTitle.value.trim();
+    const content = articleContent.value;
+    
+    if (!title && !content) {
+        previewContent.innerHTML = '<p style="color: var(--text-gray); text-align: center; margin-top: 50px;">Здесь будет отображаться предпросмотр вашей статьи...</p>';
+        return;
+    }
+    
+    let html = '';
+    
+    if (title) {
+        html += '<h1>' + escapeHtml(title) + '</h1>';
+    }
+    
+    if (content) {
+        // Разбиваем содержимое на строки для обработки
+        const lines = content.split('\n');
+        let inList = false;
+        let inCodeBlock = false;
+        let inQuote = false;
+        let codeBlockContent = '';
+        
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
             
-            if (!title && !content) {
-                previewContent.innerHTML = '<p style="color: var(--text-gray); text-align: center; margin-top: 50px;">Здесь будет отображаться предпросмотр вашей статьи...</p>';
-                return;
+            // Обработка блоков кода ```
+            if (line.trim().startsWith('```')) {
+                if (!inCodeBlock) {
+                    // Начало блока кода
+                    inCodeBlock = true;
+                    codeBlockContent = '';
+                    // Закрываем предыдущие блоки
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                } else {
+                    // Конец блока кода
+                    inCodeBlock = false;
+                    html += '<pre><code>' + escapeHtml(codeBlockContent) + '</code></pre>';
+                }
+                continue;
             }
             
-            let html = '';
-            
-            if (title) {
-                html += '<h1>' + escapeHtml(title) + '</h1>';
+            if (inCodeBlock) {
+                codeBlockContent += line + '\n';
+                continue;
             }
             
-            if (content) {
-                // Преобразуем простую разметку в HTML
-                let formattedContent = escapeHtml(content);
-                
-                // Заменяем переносы строк на <br> и параграфы
-                formattedContent = formattedContent.replace(/\n\n/g, '</p><p>');
-                formattedContent = formattedContent.replace(/\n/g, '<br>');
-                
-                // Обрабатываем заголовки
-                formattedContent = formattedContent.replace(/### (.*?)(?=\n|$)/g, '<h3>$1</h3>');
-                formattedContent = formattedContent.replace(/## (.*?)(?=\n|$)/g, '<h2>$1</h2>');
-                formattedContent = formattedContent.replace(/# (.*?)(?=\n|$)/g, '<h1>$1</h1>');
-                
-                // Обрабатываем жирный текст
-                formattedContent = formattedContent.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                formattedContent = formattedContent.replace(/__(.*?)__/g, '<strong>$1</strong>');
-                
-                // Обрабатываем курсив
-                formattedContent = formattedContent.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                formattedContent = formattedContent.replace(/_(.*?)_/g, '<em>$1</em>');
-                
-                // Обрабатываем подчеркивание
-                formattedContent = formattedContent.replace(/~~(.*?)~~/g, '<u>$1</u>');
-                
-                // Обрабатываем списки
-                formattedContent = formattedContent.replace(/^- (.*?)(?=\n|$)/gm, '<li>$1</li>');
-                formattedContent = formattedContent.replace(/^\d+\. (.*?)(?=\n|$)/gm, '<li>$1</li>');
-                
-                // Группируем элементы списка в ul/ol
-                formattedContent = formattedContent.replace(/(<li>.*?<\/li>)+/gs, function(match) {
-                    if (match.includes('<li>')) {
-                        return '<ul>' + match + '</ul>';
-                    }
-                    return match;
-                });
-                
-                // Обрабатываем код
-                formattedContent = formattedContent.replace(/`(.*?)`/g, '<code>$1</code>');
-                
-                // Обрабатываем блоки кода
-                formattedContent = formattedContent.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-                
-                // Обрабатываем цитаты
-                formattedContent = formattedContent.replace(/^> (.*?)(?=\n|$)/gm, '<blockquote><p>$1</p></blockquote>');
-                
-                // Обрабатываем ссылки
-                formattedContent = formattedContent.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
-                
-                // Обрабатываем изображения
-                formattedContent = formattedContent.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:10px;margin:20px 0;">');
-                
-                // Обрабатываем спойлеры
-                formattedContent = formattedContent.replace(/:::spoiler (.*?)\n([\s\S]*?):::/g, '<div class="spoiler"><div class="spoiler-header"><span>$1</span><i class="fas fa-chevron-down"></i></div><div class="spoiler-content">$2</div></div>');
-                
-                html += formattedContent;
+            // Обработка заголовков
+            if (line.startsWith('## ')) {
+                if (inList) { html += '</ul>'; inList = false; }
+                if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                html += '<h2>' + escapeHtml(line.substring(3)) + '</h2>';
+                continue;
             }
             
-            previewContent.innerHTML = html;
+            if (line.startsWith('### ')) {
+                if (inList) { html += '</ul>'; inList = false; }
+                if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                html += '<h3>' + escapeHtml(line.substring(4)) + '</h3>';
+                continue;
+            }
             
-            // Инициализируем спойлеры
-            initSpoilers();
+            // Обработка цитат
+            if (line.startsWith('> ')) {
+                if (!inQuote) {
+                    html += '<blockquote>';
+                    inQuote = true;
+                }
+                html += '<p>' + formatInlineHtml(line.substring(2)) + '</p>';
+                continue;
+            } else if (inQuote) {
+                html += '</blockquote>';
+                inQuote = false;
+            }
+            
+            // Обработка маркированных списков
+            if (line.startsWith('- ')) {
+                if (!inList) {
+                    html += '<ul>';
+                    inList = true;
+                }
+                html += '<li>' + formatInlineHtml(line.substring(2)) + '</li>';
+                continue;
+            }
+            
+            // Обработка нумерованных списков
+            if (/^\d+\.\s/.test(line)) {
+                if (!inList) {
+                    html += '<ol>';
+                    inList = true;
+                }
+                const match = line.match(/^\d+\.\s(.*)/);
+                html += '<li>' + formatInlineHtml(match[1]) + '</li>';
+                continue;
+            }
+            
+            // Закрываем список, если он был открыт
+            if (inList && line.trim() === '') {
+                html += inList ? '</ul>' : '</ol>';
+                inList = false;
+            }
+            
+            // Обработка пустых строк (параграфы)
+            if (line.trim() === '') {
+                html += '<p></p>';
+                continue;
+            }
+            
+            // Обработка изображений
+            const imgMatch = line.match(/!\[(.*?)\]\((.*?)\)/);
+            if (imgMatch) {
+                html += '<img src="' + escapeHtml(imgMatch[2]) + '" alt="' + escapeHtml(imgMatch[1] || '') + '" style="max-width:100%;border-radius:10px;margin:20px 0;">';
+                continue;
+            }
+            
+            // Обработка спойлеров
+            const spoilerMatch = line.match(/:::spoiler (.*?)/);
+            if (spoilerMatch) {
+                // Ищем конец спойлера
+                let spoilerContent = '';
+                let j = i + 1;
+                while (j < lines.length && lines[j].trim() !== ':::') {
+                    spoilerContent += formatInlineHtml(lines[j]) + '<br>';
+                    j++;
+                }
+                i = j; // Пропускаем обработанные строки
+                
+                html += `<div class="spoiler">
+                    <div class="spoiler-header">
+                        <span>${escapeHtml(spoilerMatch[1])}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="spoiler-content">${spoilerContent}</div>
+                </div>`;
+                continue;
+            }
+            
+            // Обработка обычного текста
+            html += '<p>' + formatInlineHtml(line) + '</p>';
         }
         
-        // Генерация полного HTML
+        // Закрываем открытые блоки
+        if (inList) { html += inList ? '</ul>' : '</ol>'; }
+        if (inQuote) { html += '</blockquote>'; }
+        if (inCodeBlock) { html += '<pre><code>' + escapeHtml(codeBlockContent) + '</code></pre>'; }
+    }
+    
+    previewContent.innerHTML = html;
+    
+    // Инициализируем спойлеры
+    initSpoilers();
+}
+
+// Вспомогательная функция для форматирования inline HTML
+function formatInlineHtml(text) {
+    if (!text) return '';
+    
+    // Экранируем HTML спецсимволы
+    let result = escapeHtml(text);
+    
+    // Обработка жирного текста
+    result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Обработка курсива
+    result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Обработка подчеркивания
+    result = result.replace(/~~(.*?)~~/g, '<u>$1</u>');
+    
+    // Обработка inline кода
+    result = result.replace(/`(.*?)`/g, '<code>$1</code>');
+    
+    // Обработка ссылок
+    result = result.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+    
+    return result;
+}
+        
         // Генерация полного HTML
 function generateFullHtml() {
     const title = articleTitle.value.trim();
@@ -1326,21 +1491,21 @@ function generateFullHtml() {
         </div>
     </div>
     
-    <script>
-        // Инициализация спойлеров
-        document.addEventListener('DOMContentLoaded', function() {
-            const spoilers = document.querySelectorAll('.spoiler');
-            spoilers.forEach(spoiler => {
-                const header = spoiler.querySelector('.spoiler-header');
-                const content = spoiler.querySelector('.spoiler-content');
-                if (header && content) {
-                    header.addEventListener('click', () => {
-                        spoiler.classList.toggle('open');
-                    });
-                }
-            });
+<script>
+    // Инициализация спойлеров
+    document.addEventListener('DOMContentLoaded', function() {
+        const spoilers = document.querySelectorAll('.spoiler');
+        spoilers.forEach(spoiler => {
+            const header = spoiler.querySelector('.spoiler-header');
+            const content = spoiler.querySelector('.spoiler-content');
+            if (header && content) {
+                header.addEventListener('click', () => {
+                    spoiler.classList.toggle('open');
+                });
+            }
         });
-    <` + `/script>
+    });
+<` + `/script>
 </body>
 </html>`;
     
