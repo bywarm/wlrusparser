@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница не найдена | WL RUS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(28, 58, 173, 0.1) 0%, transparent 25%),
+                radial-gradient(circle at 90% 90%, rgba(138, 43, 226, 0.1) 0%, transparent 25%);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .logo i {
+            font-size: 2rem;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-light);
+        }
+        
+        .error-description {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(124, 58, 237, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(30, 41, 59, 1);
+            transform: translateY(-3px);
+        }
+        
+        .error-illustration {
+            margin: 40px 0;
+            position: relative;
+            width: 300px;
+            height: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .error-illustration i {
+            font-size: 10rem;
+            position: absolute;
+            opacity: 0.7;
+        }
+        
+        .error-illustration .icon-1 {
+            color: var(--primary);
+            top: 0;
+            left: 0;
+            transform: rotate(-15deg);
+        }
+        
+        .error-illustration .icon-2 {
+            color: var(--secondary);
+            top: 30px;
+            right: 0;
+            transform: rotate(15deg);
+        }
+        
+        .error-illustration .icon-3 {
+            color: var(--accent);
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) rotate(5deg);
+        }
+        
+        .error-search {
+            margin-top: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .search-input {
+            flex-grow: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 15px 20px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .search-button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .search-button:hover {
+            opacity: 0.9;
+        }
+        
+        .useful-links {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+        }
+        
+        .links-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: var(--text-light);
+        }
+        
+        .links-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .link-item {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 15px 25px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .link-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            background: rgba(30, 41, 59, 0.9);
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .error-illustration {
+                width: 250px;
+                height: 150px;
+            }
+            
+            .error-illustration i {
+                font-size: 7rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .error-code {
+                font-size: 5rem;
+            }
+            
+            .error-title {
+                font-size: 1.7rem;
+            }
+            
+            .error-description {
+                font-size: 1rem;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .search-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            <span>WL RUS</span>
+        </div>
+        
+        <div class="error-illustration">
+            <i class="fas fa-unlink icon-1"></i>
+            <i class="fas fa-map-signs icon-2"></i>
+            <i class="fas fa-search icon-3"></i>
+        </div>
+        
+        <div class="error-code">404</div>
+        
+        <h1 class="error-title">Страница не найдена</h1>
+        
+        <p class="error-description">
+            К сожалению, запрашиваемая вами страница не существует или была перемещена.
+            Возможно, вы перешли по устаревшей ссылке или допустили опечатку в адресе.
+        </p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home"></i> Вернуться на главную
+            </a>
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Вернуться назад
+            </a>
+        </div>
+        
+
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchButton.click();
+                }
+            });
+            
+            const icons = document.querySelectorAll('.error-illustration i');
+            icons.forEach((icon, index) => {
+                icon.style.animation = `float 3s ease-in-out ${index * 0.5}s infinite alternate`;
+            });
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% {
+                        transform: translateY(0) rotate(var(--rotate, 0deg));
+                    }
+                    100% {
+                        transform: translateY(-20px) rotate(var(--rotate, 0deg));
+                    }
+                }
+                
+                .error-illustration .icon-1 {
+                    --rotate: -15deg;
+                }
+                
+                .error-illustration .icon-2 {
+                    --rotate: 15deg;
+                }
+                
+                .error-illustration .icon-3 {
+                    --rotate: 5deg;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
