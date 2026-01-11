@@ -1128,36 +1128,92 @@
             }
             
             // Обработка спойлеров
-            const spoilerMatch = line.match(/:::spoiler (.*?)/);
-            if (spoilerMatch) {
-                // Ищем конец спойлера
-                let spoilerContent = '';
-                let j = i + 1;
-                while (j < lines.length && lines[j].trim() !== ':::') {
-                    spoilerContent += formatInlineHtml(lines[j]) + '<br>';
-                    j++;
+            // Обработка спойлеров
+if (line.trim().startsWith(':::spoiler ')) {
+    // Закрываем предыдущие блоки
+    if (inList) { html += inList ? '</ul>' : '</ol>'; inList = false; }
+    if (inQuote) { html += '</blockquote>'; inQuote = false; }
+    if (inCodeBlock) { html += '<pre><code>' + escapeHtml(codeBlockContent) + '</code></pre>'; inCodeBlock = false; }
+    
+    // Извлекаем заголовок спойлера
+    const spoilerTitle = line.substring(11).trim(); // 11 = длина ":::spoiler "
+    
+    // Собираем все строки спойлера
+    let spoilerLines = [];
+    let j = i + 1;
+    
+    while (j < lines.length && lines[j].trim() !== ':::') {
+        spoilerLines.push(lines[j]);
+        j++;
+    }
+    
+    // Если нашли закрывающий :::
+    if (j < lines.length && lines[j].trim() === ':::') {
+        // Обрабатываем содержимое спойлера как отдельный блок
+        let spoilerHtml = '';
+        let inSpoilerList = false;
+        let inSpoilerQuote = false;
+        
+        for (let k = 0; k < spoilerLines.length; k++) {
+            let spoilerLine = spoilerLines[k];
+            
+            // Обработка цитат внутри спойлера
+            if (spoilerLine.startsWith('> ')) {
+                if (!inSpoilerQuote) {
+                    spoilerHtml += '<blockquote>';
+                    inSpoilerQuote = true;
                 }
-                i = j; // Пропускаем обработанные строки
-                
-                html += `<div class="spoiler">
-                    <div class="spoiler-header">
-                        <span>${escapeHtml(spoilerMatch[1])}</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
-                    <div class="spoiler-content">${spoilerContent}</div>
-                </div>`;
+                spoilerHtml += '<p>' + formatInlineHtml(spoilerLine.substring(2)) + '</p>';
+                continue;
+            } else if (inSpoilerQuote) {
+                spoilerHtml += '</blockquote>';
+                inSpoilerQuote = false;
+            }
+            
+            // Обработка списков внутри спойлера
+            if (spoilerLine.startsWith('- ')) {
+                if (!inSpoilerList) {
+                    spoilerHtml += '<ul>';
+                    inSpoilerList = true;
+                }
+                spoilerHtml += '<li>' + formatInlineHtml(spoilerLine.substring(2)) + '</li>';
                 continue;
             }
             
-            // Обработка обычного текста
-            html += '<p>' + formatInlineHtml(line) + '</p>';
+            // Закрываем список, если строка пустая
+            if (inSpoilerList && spoilerLine.trim() === '') {
+                spoilerHtml += '</ul>';
+                inSpoilerList = false;
+            }
+            
+            // Обычный текст
+            if (spoilerLine.trim() !== '') {
+                spoilerHtml += '<p>' + formatInlineHtml(spoilerLine) + '</p>';
+            }
         }
         
         // Закрываем открытые блоки
-        if (inList) { html += inList ? '</ul>' : '</ol>'; }
-        if (inQuote) { html += '</blockquote>'; }
-        if (inCodeBlock) { html += '<pre><code>' + escapeHtml(codeBlockContent) + '</code></pre>'; }
+        if (inSpoilerList) { spoilerHtml += '</ul>'; }
+        if (inSpoilerQuote) { spoilerHtml += '</blockquote>'; }
+        
+        // Формируем HTML спойлера
+        html += `<div class="spoiler">
+            <div class="spoiler-header">
+                <span>${escapeHtml(spoilerTitle)}</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="spoiler-content">${spoilerHtml}</div>
+        </div>`;
+        
+        i = j; // Переходим к строке после :::
+    } else {
+        // Если закрывающий ::: не найден, выводим как обычный текст
+        html += '<p>' + formatInlineHtml(line) + '</p>';
     }
+    
+    continue;
+  }
+}
     
     previewContent.innerHTML = html;
     
@@ -1216,7 +1272,7 @@ function generateFullHtml() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${escapeHtml(title)} | FreeAccess</title>
+    <title>${escapeHtml(title)} | WL RUS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -1487,7 +1543,7 @@ function generateFullHtml() {
         </div>
         
         <div class="footer">
-            <p>Статья создана в генераторе FreeAccess | <a href="/" style="color: var(--primary);">freeaccess.net</a></p>
+            <p>Статья создана командой WL RUS | <a href="/" style="color: var(--primary);">WL RUS WebSite</a></p>
         </div>
     </div>
     
