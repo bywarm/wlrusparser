@@ -577,6 +577,24 @@
                     <i class="fas fa-download"></i> Скачать Karing
                 </button>
             </div>
+
+            <div class="client-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h4>Hiddify</h4>
+                <p>По отзывам работает довольно хорошо.</p>
+                <button class="download-btn" data-client="hiddify">
+                    <i class="fas fa-download"></i> Скачать Hiddify
+                </button>
+            </div>
+            
+            <div class="client-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h4>Exclave</h4>
+                <p>Android-клиент. Многофункционален.</p>
+                <button class="download-btn" data-client="exclave">
+                    <i class="fas fa-download"></i> Скачать Exclave
+                </button>
+            </div>
         </div>
         
         <div style="text-align: center; margin-top: 30px; color: var(--text-gray); font-size: 0.9rem;">
@@ -803,7 +821,9 @@ document.querySelectorAll('.download-btn').forEach(btn => {
         // Ссылки для каждого клиента
         const downloadLinks = {
             happ: "https://www.happ.su/main/", 
-            karing: "https://github.com/KaringX/karing/releases/latest" 
+            karing: "https://github.com/KaringX/karing/releases/latest" ,
+            exclave: "https://github.com/dyhkwong/Exclave/releases/latest",
+            hiddify: "https://hiddify.com/#app"
         };
         
         if (downloadLinks[client]) {
