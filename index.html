@@ -666,7 +666,7 @@
 </section>    
 
 <div id="linksModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="modal-content" style="background: #1e293b; border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(124, 58, 237, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);">
+    <div class="modal-content" style="background: #1e293b; border-radius: 20px; padding: 30px; max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(124, 58, 237, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);">
         <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);">
             <h2 style="font-size: 1.7rem; color: #7c3aed;">Ссылки на конфигурации</h2>
             <button class="close-modal" style="background: none; border: none; color: #cbd5e1; font-size: 1.8rem; cursor: pointer; transition: color 0.3s;">×</button>
@@ -678,9 +678,9 @@
         
         <div class="modal-instructions" style="margin-top: 25px; padding: 15px; background: rgba(124, 58, 237, 0.1); border-radius: 10px; border-left: 4px solid #7c3aed;">
             <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;"><strong>Как использовать:</strong></p>
-            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">1. Разверните нужную ссылку, нажав на заголовок</p>
-            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">2. Скопируйте ссылку кнопкой</p>
-            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">3. Вставьте ее в ваш VPN-клиент</p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">1. Разверните нужную подписку, нажав на заголовок</p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">2. Используйте основную ссылку или зеркало</p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">3. Скопируйте ссылку и вставьте в VPN-клиент</p>
         </div>
     </div>
 </div>
@@ -710,45 +710,82 @@ const linksModal = document.getElementById('linksModal');
 const closeModal = document.querySelector('.close-modal');
 const linksContent = document.getElementById('linksContent');
             
-            // Данные для ссылок
-            const sampleLinks = [
-                {
-                    id: 1,
-                    title: "Проверенные подсети",
-                    url: "https://bp.wl.free.nf/confs/wl.txt",
-                    icon: "fas fa-user",
-                    defaultOpen: false
-                },
-                {
-                    id: 2,
-                    title: "Проверенные подсети ALT - Обновляется при белых списках",
-                    url: "https://wlr.s3-website.cloud.ru/zNhbYZtBc",
-                    icon: "fas fa-user",
-                    defaultOpen: false
-                },
-                {
-                    id: 3,
-                    title: "Отборные серверы",
-                    url: "https://bp.wl.free.nf/confs/selected.txt",
-                    icon: "fas fa-crown",
-                    defaultOpen: false
-                },
-                {
-                    id: 4,
-                    title: "Все конфиги (много мусора)",
-                    url: "https://bp.wl.free.nf/confs/merged.txt",
-                    icon: "fas fa-users",
-                    defaultOpen: false
-                },
-                {
-                    id: 5,
-                    title: "Тестовая подписка (как все конфиги, только мусора поменьше)",
-                    url: "https://bp.wl.free.nf/confs/test.txt",
-                    icon: "fas fa-users",
-                    defaultOpen: false
-                },
-            ];
-            
+const sampleLinks = [
+    {
+        id: 1,
+        title: "Проверенные подсети (рекомендуется)",
+        icon: "fas fa-user",
+        description: "Только проверенные подсети серверов",
+        defaultOpen: true,
+        links: [
+            {
+                url: "https://bp.wl.free.nf/confs/wl.txt",
+                label: "Основная ссылка",
+                type: "primary"
+            },
+            {
+                url: "https://wlr.s3-website.cloud.ru/zNhbYZtBc",
+                label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
+            }
+        ]
+    },
+    {
+        id: 2,
+        title: "Отборные серверы",
+        icon: "fas fa-crown",
+        description: "ВСЕ ЕЩЕ ОЧЕНЬ СЫРОЙ СПИСОК!",
+        links: [
+            {
+                url: "https://bp.wl.free.nf/confs/selected.txt",
+                label: "Основная ссылка",
+                type: "primary"
+            },
+            {
+                url: "",
+                label: "А зеркала нет, зачем оно здесь?)",
+                type: "mirror"
+            }
+        ]
+    },
+    {
+        id: 3,
+        title: "Все конфиги",
+        icon: "fas fa-users",
+        description: "Много мусора, так как не проходит никакие проверки",
+        links: [
+            {
+                url: "https://bp.wl.free.nf/confs/merged.txt",
+                label: "Основная ссылка",
+                type: "primary"
+            },
+            {
+                url: "https://wlr.s3-website.cloud.ru/hXifnhisV",
+                label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
+            }
+        ]
+    },
+    {
+        id: 4,
+        title: "Тестовая подписка",
+        icon: "fas fa-flask",
+        description: "Используется новый скрипт перебора серверов. Как все конфиги, только мусора поменьше",
+        links: [
+            {
+                url: "https://bp.wl.free.nf/confs/test.txt",
+                label: "Основная ссылка",
+                type: "primary"
+            },
+            {
+                url: "",
+                label: "Для тестовой подписки нет зеркала, увы",
+                type: "mirror"
+            }
+        ]
+    },
+];
+
 function showLinks() {
     let html = '';
     
@@ -768,22 +805,65 @@ function showLinks() {
                     <i class="fas fa-chevron-down accordion-arrow" style="color: #7c3aed; transition: transform 0.3s; ${isOpen ? 'transform: rotate(180deg);' : ''}"></i>
                 </div>
                 
-                <div class="link-content" style="padding: 0 20px; max-height: ${isOpen ? '200px' : '0'}; overflow: hidden; transition: max-height 0.3s, padding 0.3s;">
+                <div class="link-content" style="padding: 0 20px; max-height: ${isOpen ? '400px' : '0'}; overflow: hidden; transition: max-height 0.3s, padding 0.3s;">
                     <div style="padding: 20px 0; border-top: 1px solid rgba(124, 58, 237, 0.1);">
-                        <div style="margin-bottom: 10px; color: #cbd5e1; font-size: 0.9rem; font-weight: 600;">
-                            <i class="fas fa-link"></i> Ссылка:
+                        <div style="margin-bottom: 15px; color: #cbd5e1; font-size: 0.9rem; font-weight: 600;">
+                            <i class="fas fa-link"></i> Доступные ссылки:
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-                            <input type="text" class="link-url" value="${link.url}" readonly 
-                                   style="flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 12px; color: #cbd5e1; font-family: monospace; font-size: 0.9rem; word-break: break-all;">
-                            <button class="copy-btn" data-url="${link.url}" 
-                                    style="background: linear-gradient(135deg, #7c3aed, #3b82f6); color: white; border: none; border-radius: 8px; padding: 12px 20px; cursor: pointer; font-weight: 600; transition: all 0.3s; min-width: 120px; white-space: nowrap;">
-                                <i class="fas fa-copy"></i> Копировать
-                            </button>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+        `;
+        
+        // Добавляем каждую ссылку из массива links
+        link.links.forEach((linkItem, index) => {
+            const badgeColor = linkItem.type === 'primary' ? '#10b981' : '#3b82f6';
+            const badgeText = linkItem.type === 'primary' ? 'Основная' : 'Зеркало';
+            
+            html += `
+                <div class="link-item" style="border: 1px solid rgba(124, 58, 237, 0.1); border-radius: 10px; padding: 15px; background: rgba(0,0,0,0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="background: ${badgeColor}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                ${badgeText}
+                            </span>
+                            <span style="color: #cbd5e1; font-size: 0.9rem; font-weight: 600;">
+                                ${linkItem.label}
+                            </span>
                         </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" class="link-url" value="${linkItem.url}" readonly 
+                               style="flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 12px; color: #cbd5e1; font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                        <button class="copy-btn" data-url="${linkItem.url}" 
+                                style="background: ${linkItem.type === 'primary' ? 'linear-gradient(135deg, #10b981, #34d399)' : 'linear-gradient(135deg, #3b82f6, #60a5fa)'}; color: white; border: none; border-radius: 8px; padding: 12px 20px; cursor: pointer; font-weight: 600; transition: all 0.3s; min-width: 120px; white-space: nowrap;">
+                            <i class="fas fa-copy"></i> Копировать
+                        </button>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                         <div style="color: #cbd5e1; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-info-circle"></i>
-                            <span>Длина ссылки: ${link.url.length} символов</span>
+                            <span>Длина: ${linkItem.url.length} символов</span>
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 0.85rem;">
+                            ${index === 0 ? 'Рекомендуется' : 'Резервная'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding: 10px; background: rgba(124, 58, 237, 0.05); border-radius: 8px; border-left: 3px solid #7c3aed;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
+                                <span style="color: #cbd5e1; font-size: 0.85rem;">
+                                    Если основная ссылка не работает, используйте зеркало
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -795,8 +875,7 @@ function showLinks() {
     linksModal.style.display = 'flex';
     
     // Добавляем обработчики для аккордеона
-    
-               document.querySelectorAll('.link-header').forEach(header => {
+    document.querySelectorAll('.link-header').forEach(header => {
         header.addEventListener('click', function() {
             const accordion = this.closest('.link-accordion');
             const content = accordion.querySelector('.link-content');
@@ -825,26 +904,35 @@ function showLinks() {
             }
         });
     });
-
+    
+    // Добавляем обработчики для кнопок копирования
     document.querySelectorAll('.copy-btn').forEach(button => {
         button.addEventListener('click', function() {
             const url = this.getAttribute('data-url');
+            const originalBg = this.style.background;
+            
             copyToClipboard(url);
             
             // Визуальная обратная связь
             const originalText = this.innerHTML;
             this.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
-            this.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+            this.style.background = 'linear-gradient(135deg, #7c3aed, #6d28d9)';
             
             setTimeout(() => {
                 this.innerHTML = originalText;
-                this.style.background = 'linear-gradient(135deg, #7c3aed, #3b82f6)';
+                this.style.background = originalBg;
             }, 1000);
+        });
+    });
+    
+    // Автоматически выделяем текст при клике на поле ввода
+    document.querySelectorAll('.link-url').forEach(input => {
+        input.addEventListener('click', function() {
+            this.select();
         });
     });
 }
 
-// Функция для копирования в буфер обмена
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         console.log('Текст скопирован в буфер обмена');
@@ -890,6 +978,7 @@ style.textContent = `
     
     .link-url {
         transition: all 0.3s !important;
+        cursor: pointer !important;
     }
     
     .link-url:focus {
@@ -901,9 +990,14 @@ style.textContent = `
     .link-accordion.open {
         border-color: rgba(124, 58, 237, 0.4) !important;
     }
+    
+    .link-item:hover {
+        border-color: rgba(124, 58, 237, 0.3) !important;
+        background: rgba(0,0,0,0.3) !important;
+    }
 `;
 document.head.appendChild(style);
-            // Кнопки скачивания клиентов (просто информация)
+
 document.querySelectorAll('.download-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const client = this.getAttribute('data-client');
