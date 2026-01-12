@@ -665,27 +665,25 @@
     </div>
 </section>    
 
-    <!-- Modal for subscription links -->
-    <div id="linksModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Ссылки на конфигурации</h2>
-                <button class="close-modal">×</button>
-            </div>
-            
-            <div class="links-list" id="linksContent">
-                <!-- Контент будет загружен здесь -->
-            </div>
-            
-            <div class="modal-instructions">
-                <p><strong>Как использовать:</strong></p>
-                <p>1. Скопируйте нужную ссылку</p>
-                <p>2. Вставьте ее в ваш VPN-клиент (Happ или Karing)</p>
-                <p>3. Сделайте пинг серверов</p>
-                <p>4. Подключитесь к рабочему серверу</p>
-            </div>
+<div id="linksModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="modal-content" style="background: #1e293b; border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(124, 58, 237, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(124, 58, 237, 0.2);">
+            <h2 style="font-size: 1.7rem; color: #7c3aed;">Ссылки на конфигурации</h2>
+            <button class="close-modal" style="background: none; border: none; color: #cbd5e1; font-size: 1.8rem; cursor: pointer; transition: color 0.3s;">×</button>
+        </div>
+        
+        <div class="links-list" id="linksContent" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Контент будет загружен здесь -->
+        </div>
+        
+        <div class="modal-instructions" style="margin-top: 25px; padding: 15px; background: rgba(124, 58, 237, 0.1); border-radius: 10px; border-left: 4px solid #7c3aed;">
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;"><strong>Как использовать:</strong></p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">1. Разверните нужную ссылку, нажав на заголовок</p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">2. Скопируйте ссылку кнопкой</p>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 8px;">3. Вставьте ее в ваш VPN-клиент</p>
         </div>
     </div>
+</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -707,10 +705,10 @@
             });
             
             // Модальное окно для ссылок
-            const getLinksBtn = document.getElementById('getLinksBtn');
-            const linksModal = document.getElementById('linksModal');
-            const closeModal = document.querySelector('.close-modal');
-            const linksContent = document.getElementById('linksContent');
+const getLinksBtn = document.getElementById('getLinksBtn');
+const linksModal = document.getElementById('linksModal');
+const closeModal = document.querySelector('.close-modal');
+const linksContent = document.getElementById('linksContent');
             
             // Данные для ссылок
             const sampleLinks = [
@@ -718,25 +716,36 @@
                     id: 1,
                     title: "Проверенные подсети",
                     url: "https://bp.wl.free.nf/confs/wl.txt",
-                    icon: "fas fa-user"
+                    icon: "fas fa-user",
+                    defaultOpen: true
                 },
                 {
                     id: 2,
-                    title: "Отборные серверы",
-                    url: "https://bp.wl.free.nf/confs/selected.txt",
-                    icon: "fas fa-crown"
+                    title: "Отборные серверы ALT - Обновляется при белых списков",
+                    url: "https://s3.cloud.ru/bucket-93b250/zNhbYZtBc?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=28a54be8-b238-4edf-8079-7cee88d2ab3c%3A71b24e4a5591c3fd308d999d9c9e8e85%2F20260112%2Fru-central-1%2Fs3%2Faws4_request&X-Amz-Date=20260112T092507Z&X-Amz-Expires=86400&X-Amz-Signature=85857c334367ff1cbeb9e6859bbd857703ab15d561c92bb826a4970d472f977f&X-Amz-SignedHeaders=host&response-content-disposition=attachment&x-id=GetObject",
+                    icon: "fas fa-crown",
+                    defaultOpen: false
                 },
                 {
                     id: 3,
-                    title: "Все конфиги (много мусора)",
-                    url: "https://bp.wl.free.nf/confs/merged.txt",
-                    icon: "fas fa-users"
+                    title: "Отборные серверы",
+                    url: "https://bp.wl.free.nf/confs/selected.txt",
+                    icon: "fas fa-crown",
+                    defaultOpen: true
                 },
                 {
                     id: 4,
+                    title: "Все конфиги (много мусора)",
+                    url: "https://bp.wl.free.nf/confs/merged.txt",
+                    icon: "fas fa-users",
+                    defaultOpen: true
+                },
+                {
+                    id: 5,
                     title: "Тестовая подписка (как все конфиги, только мусора поменьше)",
                     url: "https://bp.wl.free.nf/confs/test.txt",
-                    icon: "fas fa-user"
+                    icon: "fas fa-user",
+                    defaultOpen: true
                 },
             ];
             
