@@ -750,78 +750,159 @@ const linksContent = document.getElementById('linksContent');
             ];
             
 function showLinks() {
-                let html = '';
-                
-                sampleLinks.forEach(link => {
-                    html += `
-                        <div class="link-card">
-                            <div class="link-title">
-                                <i class="${link.icon}"></i>
-                                <span>${link.title}</span>
-                            </div>
-                            <div class="link-url-container">
-                                <input type="text" class="link-url" value="${link.url}" readonly>
-                                <button class="copy-btn" data-url="${link.url}">
-                                    <i class="fas fa-copy"></i> Копировать
-                                </button>
-                            </div>
+    let html = '';
+    
+    sampleLinks.forEach(link => {
+        const isOpen = link.defaultOpen ? 'open' : '';
+        
+        html += `
+            <div class="link-accordion ${isOpen}" style="border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 12px; overflow: hidden; background: rgba(30, 41, 59, 0.5);">
+                <div class="link-header" style="padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: rgba(30, 41, 59, 0.8); transition: background 0.3s;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="${link.icon}" style="color: #7c3aed; font-size: 1.1rem;"></i>
+                        <div>
+                            <div style="font-weight: 600; color: #f8fafc; font-size: 1.05rem;">${link.title}</div>
+                            ${link.description ? `<div style="color: #cbd5e1; font-size: 0.85rem; margin-top: 4px;">${link.description}</div>` : ''}
                         </div>
-                    `;
-                });
+                    </div>
+                    <i class="fas fa-chevron-down accordion-arrow" style="color: #7c3aed; transition: transform 0.3s; ${isOpen ? 'transform: rotate(180deg);' : ''}"></i>
+                </div>
                 
-                linksContent.innerHTML = html;
-                linksModal.style.display = 'flex';
-                
-                // Добавляем обработчики для кнопок копирования
-                document.querySelectorAll('.copy-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const url = this.getAttribute('data-url');
-                        copyToClipboard(url);
-                        
-                        // Визуальная обратная связь
-                        const originalText = this.innerHTML;
-                        this.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
-                        this.classList.add('copied');
-                        
-                        setTimeout(() => {
-                            this.innerHTML = originalText;
-                            this.classList.remove('copied');
-                        }, 1000);
-                    });
-                });
-            }
+                <div class="link-content" style="padding: 0 20px; max-height: ${isOpen ? '200px' : '0'}; overflow: hidden; transition: max-height 0.3s, padding 0.3s;">
+                    <div style="padding: 20px 0; border-top: 1px solid rgba(124, 58, 237, 0.1);">
+                        <div style="margin-bottom: 10px; color: #cbd5e1; font-size: 0.9rem; font-weight: 600;">
+                            <i class="fas fa-link"></i> Ссылка:
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                            <input type="text" class="link-url" value="${link.url}" readonly 
+                                   style="flex-grow: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 8px; padding: 12px; color: #cbd5e1; font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                            <button class="copy-btn" data-url="${link.url}" 
+                                    style="background: linear-gradient(135deg, #7c3aed, #3b82f6); color: white; border: none; border-radius: 8px; padding: 12px 20px; cursor: pointer; font-weight: 600; transition: all 0.3s; min-width: 120px; white-space: nowrap;">
+                                <i class="fas fa-copy"></i> Копировать
+                            </button>
+                        </div>
+                        <div style="color: #cbd5e1; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Длина ссылки: ${link.url.length} символов</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    linksContent.innerHTML = html;
+    linksModal.style.display = 'flex';
+    
+    // Добавляем обработчики для аккордеона
+    
+               document.querySelectorAll('.link-header').forEach(header => {
+        header.addEventListener('click', function() {
+            const accordion = this.closest('.link-accordion');
+            const content = accordion.querySelector('.link-content');
+            const arrow = accordion.querySelector('.accordion-arrow');
             
-            // Функция для копирования в буфер обмена
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    console.log('Текст скопирован в буфер обмена');
-                }).catch(err => {
-                    console.error('Ошибка копирования: ', err);
-                    // Альтернативный метод для старых браузеров
-                    const textArea = document.createElement('textarea');
-                    textArea.value = text;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                });
-            }
-            
-            // Обработчики для кнопок
-            getLinksBtn.addEventListener('click', showLinks);
-            
-            // Закрытие модального окна
-            closeModal.addEventListener('click', () => {
-                linksModal.style.display = 'none';
-            });
-            
-            // Закрытие модального окна при клике вне его
-            window.addEventListener('click', (e) => {
-                if (e.target === linksModal) {
-                    linksModal.style.display = 'none';
+            // Закрываем все остальные
+            document.querySelectorAll('.link-accordion').forEach(otherAccordion => {
+                if (otherAccordion !== accordion) {
+                    otherAccordion.classList.remove('open');
+                    const otherContent = otherAccordion.querySelector('.link-content');
+                    const otherArrow = otherAccordion.querySelector('.accordion-arrow');
+                    otherContent.style.maxHeight = '0';
+                    otherArrow.style.transform = 'rotate(0deg)';
                 }
             });
             
+            // Переключаем текущий
+            accordion.classList.toggle('open');
+            
+            if (accordion.classList.contains('open')) {
+                content.style.maxHeight = content.scrollHeight + 'px';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                content.style.maxHeight = '0';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        });
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            copyToClipboard(url);
+            
+            // Визуальная обратная связь
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+            this.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+            
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.style.background = 'linear-gradient(135deg, #7c3aed, #3b82f6)';
+            }, 1000);
+        });
+    });
+}
+
+// Функция для копирования в буфер обмена
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('Текст скопирован в буфер обмена');
+    }).catch(err => {
+        console.error('Ошибка копирования: ', err);
+        // Альтернативный метод для старых браузеров
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+    });
+}
+
+// Обработчики для кнопок
+getLinksBtn.addEventListener('click', showLinks);
+
+// Закрытие модального окна
+closeModal.addEventListener('click', () => {
+    linksModal.style.display = 'none';
+});
+
+// Закрытие модального окна при клике вне его
+window.addEventListener('click', (e) => {
+    if (e.target === linksModal) {
+        linksModal.style.display = 'none';
+    }
+});
+
+// Добавляем стили для hover эффектов
+const style = document.createElement('style');
+style.textContent = `
+    .link-header:hover {
+        background: rgba(124, 58, 237, 0.1) !important;
+    }
+    
+    .copy-btn:hover {
+        opacity: 0.9 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3) !important;
+    }
+    
+    .link-url {
+        transition: all 0.3s !important;
+    }
+    
+    .link-url:focus {
+        outline: none !important;
+        border-color: #7c3aed !important;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2) !important;
+    }
+    
+    .link-accordion.open {
+        border-color: rgba(124, 58, 237, 0.4) !important;
+    }
+`;
+document.head.appendChild(style);
             // Кнопки скачивания клиентов (просто информация)
 document.querySelectorAll('.download-btn').forEach(btn => {
     btn.addEventListener('click', function() {
