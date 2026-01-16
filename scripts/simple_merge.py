@@ -33,12 +33,10 @@ def log(message: str):
     with _LOG_LOCK:
         LOGS_BY_FILE[0].append(message)
 
-# Получение текущего времени по часовому поясу Европа/Москва
 zone = zoneinfo.ZoneInfo("Europe/Moscow")
 thistime = datetime.now(zone)
 offset = thistime.strftime("%H:%M | %d.%m.%Y")
 
-# Получение GitHub токена из переменных окружения
 GITHUB_TOKEN = os.environ.get("MY_TOKEN", "")
 REPO_NAME = os.environ.get("GITHUB_REPOSITORY", "bywarm/wlrusparser")
 
@@ -88,36 +86,60 @@ def get_paths():
 PATHS = get_paths()
 
 WHITELIST_SUBNETS = [
-    "95.163.0.0/16",
-    "89.208.0.0/16",
-    "217.16.0.0/16",
     "5.188.0.0/16",
-    "109.120.0.0/16",
-    "217.12.0.0/16",
-    "176.108.0.0/16",
-    "178.154.0.0/16",
-    "176.109.0.0/16",
-    "176.32.0.0/16",
-    "193.53.0.0/16",
-    "45.129.0.0/16",
     "37.18.0.0/16",
-    "78.159.0.0/16",
-    "185.177.0.0/16",
-    "45.15.0.0/16",
-    "176.122.0.0/16",
-    "185.130.0.0/16",
     "37.139.0.0/16",
+    "45.15.0.0/16",
+    "45.129.0.0/16",
+    "51.250.0.0/16", 
+    "51.250.0.0/17", 
+    "77.88.21.0/24", 
+    "78.159.0.0/16",
+    "78.159.247.0/24", 
+    "79.174.91.0/24",  
+    "79.174.92.0/24",  
+    "79.174.93.0/24",  
+    "79.174.94.0/24", 
+    "79.174.95.0/24",  
     "83.166.0.0/16",
+    "84.201.0.0/16",   
+    "84.201.128.0/18", 
+    "87.250.247.0/24", 
+    "87.250.250.0/24",
+    "87.250.251.0/24", 
+    "87.250.254.0/24", 
+    "89.208.0.0/16",
+    "89.253.200.0/21", 
     "91.219.0.0/16",
-    "51.250.0.0/16",
-    "84.201.0.0/16",
+    "91.222.239.0/24", 
+    "95.163.0.0/16",
+    "95.163.248.0/22", 
+    "95.181.182.0/24", 
+    "103.111.114.0/24", 
+    "109.120.0.0/16",
+    "109.73.201.0/24", 
+    "130.193.0.0/16",
+    "134.17.94.0/24",  
     "158.160.0.0/16",
-    "130.193.0.0/16"
+    "176.32.0.0/16",
+    "176.108.0.0/16",
+    "176.109.0.0/16",
+    "176.122.0.0/16",
+    "178.154.0.0/16",
+    "185.39.206.0/24",
+    "185.130.0.0/16",
+    "185.141.216.0/24", 
+    "185.177.0.0/16",
+    "185.177.73.0/24", 
+    "185.241.192.0/22", 
+    "193.53.0.0/16",
+    "217.12.0.0/16",
+    "217.16.0.0/16",    
+    "217.16.24.0/21",  
 ]
-# Преобразуем подсети в объекты ipaddress для быстрой проверки
+
 WHITELIST_NETWORKS = [ipaddress.ip_network(subnet) for subnet in WHITELIST_SUBNETS]
 
-# Источники конфигов
 URLS = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
@@ -192,7 +214,6 @@ def extract_host_port(config: str) -> tuple[str, int] | None:
         return None
     
     try:
-        # VMESS
         if config.startswith("vmess://"):
             try:
                 payload = config[8:]
@@ -212,7 +233,6 @@ def extract_host_port(config: str) -> tuple[str, int] | None:
             except Exception:
                 pass
         
-        # VLESS / TROJAN / SS
         patterns = [
             r'@([\w\.-]+):(\d{1,5})',
             r'host=([\w\.-]+).*?port=(\d{1,5})',
@@ -227,12 +247,10 @@ def extract_host_port(config: str) -> tuple[str, int] | None:
                 port = int(match.group(2))
                 return host, port
         
-        # Прямой IP:PORT
         match = re.search(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})', config)
         if match:
             return match.group(1), int(match.group(2))
         
-        # Ищем хост и порт в любой комбинации
         match = re.search(r'([\w\.-]+):(\d{1,5})', config)
         if match:
             host = match.group(1)
@@ -250,17 +268,14 @@ def is_ip_in_subnets(ip_str: str) -> bool:
     try:
         ip = ipaddress.ip_address(ip_str)
         
-        # Проверяем только IPv4
         if ip.version != 4:
             return False
             
-        # Проверяем принадлежность к любой из подсетей
         for network in WHITELIST_NETWORKS:
             if ip in network:
                 return True
         return False
     except ValueError:
-        # Невалидный IP адрес
         return False
 
 
@@ -271,7 +286,6 @@ def download_and_process_url(url: str) -> list[str]:
         if not data:
             return []
         
-        # Разделяем слипшиеся конфиги
         data = re.sub(r'(vmess|vless|trojan|ss|ssr|tuic|hysteria|hysteria2)://', r'\n\1://', data)
         lines = data.splitlines()
         
@@ -279,16 +293,13 @@ def download_and_process_url(url: str) -> list[str]:
         for line in lines:
             line = line.strip()
             if line and not line.startswith('#') and len(line) > 10:
-                # Проверяем, что это похоже на конфиг
                 if any(line.startswith(p) for p in ['vmess://', 'vless://', 'trojan://', 
                                                      'ss://', 'ssr://', 'tuic://', 
                                                      'hysteria://', 'hysteria2://']):
                     configs.append(line)
-                # Также принимаем строки, содержащие @host:port
                 elif '@' in line and ':' in line and line.count(':') >= 2:
                     configs.append(line)
         
-        # Безопасный способ извлечения имени репозитория
         try:
             repo_name = url.split('/')[3] if '/' in url else 'unknown'
         except:
@@ -307,9 +318,7 @@ def download_and_process_url(url: str) -> list[str]:
 def add_numbering_to_name(config: str, number: int) -> str:
     """Добавляет нумерацию и вотермарк в поле name конфига"""
     try:
-        # Определяем тип протокола
         if config.startswith("vmess://"):
-            # Для VMESS: парсим JSON и меняем поле "ps"
             try:
                 payload = config[8:]
                 rem = len(payload) % 4
@@ -320,20 +329,16 @@ def add_numbering_to_name(config: str, number: int) -> str:
                 
                 if decoded.startswith('{'):
                     j = json.loads(decoded)
-                    # Получаем существующий ps
                     existing_ps = j.get('ps', '')
                     
-                    # Извлекаем флаг из существующего ps
                     flag = ""
                     flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_ps)
                     if flag_match:
                         flag = flag_match.group(0) + " "
                     
-                    # Формируем новое имя
                     new_name = f"{number}. {flag}VMESS | TG: @wlrustg"
                     j['ps'] = new_name
                     
-                    # Кодируем обратно
                     new_json = json.dumps(j, separators=(',', ':'))
                     encoded = base64.b64encode(new_json.encode()).decode()
                     return f"vmess://{encoded}"
@@ -342,63 +347,48 @@ def add_numbering_to_name(config: str, number: int) -> str:
             return config
             
         elif config.startswith("vless://"):
-            # Для VLESS: имя задается через # (фрагмент)
             parsed = urllib.parse.urlparse(config)
             
-            # Извлекаем существующий фрагмент
             existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
             
-            # Извлекаем флаг из существующего фрагмента
             flag = ""
             flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
             if flag_match:
                 flag = flag_match.group(0) + " "
             
-            # Формируем новое имя
             new_name = f"{number}. {flag}VLESS | TG: @wlrustg"
             
-            # Создаем новый фрагмент
             new_fragment = urllib.parse.quote(new_name, safe='')
             
-            # Собираем URL с новым фрагментом
             new_parsed = parsed._replace(fragment=new_fragment)
             new_config = urllib.parse.urlunparse(new_parsed)
             
             return new_config
             
         elif config.startswith("trojan://"):
-            # Для Trojan: имя также может быть в фрагменте
             parsed = urllib.parse.urlparse(config)
             
-            # Извлекаем существующий фрагмент
             existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
             
-            # Извлекаем флаг
             flag = ""
             flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
             if flag_match:
                 flag = flag_match.group(0) + " "
             
-            # Формируем новое имя
             new_name = f"{number}. {flag}TROJAN | TG: @wlrustg"
             
-            # Создаем новый фрагмент
             new_fragment = urllib.parse.quote(new_name, safe='')
             
-            # Собираем URL
             new_parsed = parsed._replace(fragment=new_fragment)
             new_config = urllib.parse.urlunparse(new_parsed)
             
             return new_config
             
         elif config.startswith("ss://"):
-            # Для SS: имя может быть в фрагменте или в параметрах
             parsed = urllib.parse.urlparse(config)
             
-            # Сначала проверяем фрагмент
             existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
             
-            # Если нет фрагмента, проверяем query параметры
             name_from_query = ""
             if not existing_fragment and parsed.query:
                 params = urllib.parse.parse_qs(parsed.query)
@@ -407,39 +397,30 @@ def add_numbering_to_name(config: str, number: int) -> str:
             
             existing_name = existing_fragment or name_from_query
             
-            # Извлекаем флаг
             flag = ""
             flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_name)
             if flag_match:
                 flag = flag_match.group(0) + " "
             
-            # Формируем новое имя
             new_name = f"{number}. {flag}SS | TG: @wlrustg"
             
-            # Предпочитаем использовать фрагмент
             new_fragment = urllib.parse.quote(new_name, safe='')
             
-            # Собираем URL
             new_parsed = parsed._replace(fragment=new_fragment)
             new_config = urllib.parse.urlunparse(new_parsed)
             
             return new_config
             
         else:
-            # Для других протоколов пытаемся добавить через # в конец
-            # Проверяем, есть ли уже фрагмент
             if '#' in config:
-                # Разделяем на основную часть и фрагмент
                 base_part, fragment = config.rsplit('#', 1)
                 existing_fragment = urllib.parse.unquote(fragment)
                 
-                # Извлекаем флаг
                 flag = ""
                 flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
                 if flag_match:
                     flag = flag_match.group(0) + " "
                 
-                # Определяем тип протокола по началу
                 config_type = "CONFIG"
                 if config.startswith("ssr://"):
                     config_type = "SSR"
@@ -450,13 +431,11 @@ def add_numbering_to_name(config: str, number: int) -> str:
                 elif config.startswith("hysteria2://"):
                     config_type = "HYSTERIA2"
                 
-                # Формируем новое имя
                 new_name = f"{number}. {flag}{config_type} | TG: @wlrustg"
                 new_fragment = urllib.parse.quote(new_name, safe='')
                 
                 return f"{base_part}#{new_fragment}"
             else:
-                # Добавляем фрагмент в конец
                 config_type = "CONFIG"
                 if config.startswith("ssr://"):
                     config_type = "SSR"
@@ -481,15 +460,12 @@ def extract_existing_info(config: str) -> tuple:
     """Извлекает существующие информацию из конфига: номер, флаг, вотермарк"""
     config_clean = config.strip()
     
-    # Ищем номер в формате #123, 123., #123.
     number_match = re.search(r'(?:#?\s*)(\d{1,3})(?:\.|\s+|$)', config_clean)
     number = number_match.group(1) if number_match else None
     
-    # Ищем флаг эмодзи
     flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', config_clean)
     flag = flag_match.group(0) if flag_match else ""
     
-    # Ищем вотермарк TG: @wlrustg
     tg_match = re.search(r'TG\s*:\s*@wlrustg', config_clean, re.IGNORECASE)
     tg = tg_match.group(0) if tg_match else ""
     
@@ -501,7 +477,6 @@ def process_configs_with_numbering(configs: list[str]) -> list[str]:
     processed_configs = []
     
     for i, config in enumerate(configs, 1):
-        # Проверяем, есть ли уже нумерация и наш вотермарк
         existing_number, _, existing_tg = extract_existing_info(config)
         
         # Если уже есть номер и наш вотермарк, не меняем
@@ -541,16 +516,13 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
         
         unique_configs.append(config)
         
-        # Проверяем, принадлежит ли хост к whitelist подсетям
         if host_port:
             host = host_port[0]
-            # Пытаемся распарсить как IP адрес
             try:
                 ip = ipaddress.ip_address(host)
                 if ip.version == 4 and is_ip_in_subnets(str(ip)):
                     whitelist_configs.append(config)
             except ValueError:
-                # Если это не IP адрес (доменное имя), пропускаем для whitelist
                 pass
     
     return unique_configs, whitelist_configs
@@ -558,7 +530,6 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
 
 def save_to_file(configs: list[str], file_type: str, description: str = "", add_numbering: bool = False):
     """Сохраняет конфиги в файл с динамическим именем"""
-    # Определяем путь по типу файла
     if file_type == "merged":
         filepath = PATHS["merged"]
         filename = os.path.basename(filepath)
@@ -574,7 +545,7 @@ def save_to_file(configs: list[str], file_type: str, description: str = "", add_
         
         with open(filepath, "w", encoding="utf-8") as f:
             if 'Whitelist' in description:
-               f.write("#profile-title: WL RUS (checked subnets)\n")
+               f.write("#profile-title: WL RUS (wl.txt)\n")
             else:
                f.write("#profile-title: WL RUS (all)\n")
         
@@ -613,22 +584,18 @@ def upload_to_github(filename: str, remote_path: str = None, branch: str = "main
         with open(filename, "r", encoding="utf-8") as f:
             content = f.read()
         
-        # Если remote_path не указан, используем относительный путь
         if remote_path is None:
             remote_path = filename
         
         try:
-            # Пытаемся получить существующий файл
             file_in_repo = REPO.get_contents(remote_path, ref=branch)
             current_sha = file_in_repo.sha
             
-            # Проверяем, изменился ли контент
             remote_content = file_in_repo.decoded_content.decode("utf-8", errors="replace")
             if remote_content == content:
                 log(f"Файл {remote_path} не изменился в ветке {branch}")
                 return
             
-            # Обновляем файл
             REPO.update_file(
                 path=remote_path,
                 message="🤖 Авто-обновление: " + offset,
@@ -640,7 +607,6 @@ def upload_to_github(filename: str, remote_path: str = None, branch: str = "main
             
         except GithubException as e:
             if e.status == 404:
-                # Файл не существует, создаем новый
                 REPO.create_file(
                     path=remote_path,
                     message="🤖 Первое создание: " + offset,
@@ -663,12 +629,10 @@ def update_readme(total_configs: int, wl_configs_count: int):
         return
     
     try:
-        # Получаем текущий README
         try:
             readme_file = REPO.get_contents("README.md")
             old_content = readme_file.decoded_content.decode("utf-8")
         except GithubException:
-            # Если README не существует, создаем новый
             old_content = "# Объединенные конфиги VPN\n\n"
         
         # Формируем ссылки на файлы
@@ -678,11 +642,9 @@ def update_readme(total_configs: int, wl_configs_count: int):
         
         
         
-        # Разделяем время и дату
         time_part = offset.split(" | ")[0]
         date_part = offset.split(" | ")[1] if " | " in offset else ""
         
-        # Создаем новую таблицу
         new_section = "\n## 📊 Статус обновления\n\n"
         new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
         new_section += "|------|----------|----------|------------------|------|\n"
@@ -690,35 +652,6 @@ def update_readme(total_configs: int, wl_configs_count: int):
         new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n"
         new_section += f"| [`selected.txt`]({raw_url_selected}) | Отборные админами конфиги, самый надежный список | не знаю | {time_part} | {date_part} |\n\n"
         
-        # Добавляем информацию о подсетях
-        new_section += "## 📋 Whitelist подсети\n"
-        new_section += f"Файл `wl.txt` содержит только конфиги из {len(WHITELIST_SUBNETS)} проверенных подсетей:\n\n"
-        
-        # Группируем подсети по строкам для лучшей читаемости
-        for i in range(0, len(WHITELIST_SUBNETS), 4):
-            subnet_line = WHITELIST_SUBNETS[i:i+4]
-            new_section += "`" + "` `".join(subnet_line) + "`  \n"
-        
-        new_section += "\n## 🌐 Варианты доступа\n"
-        
-        
-        new_section += "### Прямые ссылки GitHub\n"
-        new_section += f"- Все конфиги: [{raw_url_merged}]({raw_url_merged})\n"
-        new_section += f"- Только whitelist: [{raw_url_wl}]({raw_url_wl})\n\n"
-        
-        
-        new_section += "## ⚙️ Авто-обновление\n"
-        new_section += "Конфиги автоматически обновляются каждый час через GitHub Actions.\n\n"
-        
-        new_section += "## 📢 Контакты\n"
-        new_section += "Telegram канал: [@wlrustg](https://t.me/wlrustg)\n"
-        
-        # Заменяем или добавляем секцию статуса
-        status_pattern = r'## 📊 Статус обновления[\s\S]*?(?=## |$)'
-        if re.search(status_pattern, old_content):
-            new_content = re.sub(status_pattern, new_section.strip(), old_content)
-        else:
-            new_content = old_content.strip() + "\n\n" + new_section
         
         # Обновляем файл
         sha = readme_file.sha if 'readme_file' in locals() else None
