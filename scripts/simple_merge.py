@@ -51,7 +51,6 @@ except Exception as e:
     log("Ошибка подключения к GitHub: " + str(e)[:100])
     REPO = None
 
-
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "confs")
 
 CONFIG = {
@@ -279,6 +278,40 @@ def is_ip_in_subnets(ip_str: str) -> bool:
         return False
 
 
+
+def detect_provider_from_config(config: str) -> tuple[str, str]:
+    """Извлекает флаг и провайдера из конфига"""
+    config_clean = config.strip()
+    
+    # Извлекаем флаг
+    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', config_clean)
+    flag = flag_match.group(0) if flag_match else ""
+    
+    # Извлекаем провайдера из имени конфига
+    provider = "unknown"
+    
+    # Проверяем по ключевым словам в конфиге
+    config_lower = config_clean.lower()
+    
+    provider_keywords = {
+        "VK": ["vk", "вк", "yandexcloud", "yacloud"],
+        "Yandex": ["yandex", "яндекс", "ya.ru"],
+        "Selectel": ["selectel", "селектел"],
+        "Timeweb": ["timeweb", "таймвеб"],
+        "CIDR": ["cidr", "сидр"]
+    }
+    
+    for prov, keywords in provider_keywords.items():
+        for keyword in keywords:
+            if keyword in config_lower:
+                provider = prov
+                break
+        if provider != "unknown":
+            break
+    
+    
+    return flag, provider
+
 def download_and_process_url(url: str) -> list[str]:
     """Загружает и обрабатывает конфиги с одного URL"""
     try:
@@ -316,8 +349,11 @@ def download_and_process_url(url: str) -> list[str]:
     
 
 def add_numbering_to_name(config: str, number: int) -> str:
-    """Добавляет нумерацию и вотермарк в поле name конфига"""
+    """Добавляет нумерацию, флаг, провайдера и вотермарк в поле name конфига"""
     try:
+        # Извлекаем флаг и провайдера из конфига
+        flag, provider = detect_provider_from_config(config)
+        
         if config.startswith("vmess://"):
             try:
                 payload = config[8:]
@@ -331,12 +367,12 @@ def add_numbering_to_name(config: str, number: int) -> str:
                     j = json.loads(decoded)
                     existing_ps = j.get('ps', '')
                     
-                    flag = ""
-                    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_ps)
-                    if flag_match:
-                        flag = flag_match.group(0) + " "
+                    # Формируем новое имя с флагом, провайдером и номером
+                    flag_display = f"{flag} " if flag else ""
+                    provider_display = f"{provider} " if provider != "unknown" else ""
                     
-                    new_name = f"{number}. {flag}VMESS | TG: @wlrustg"
+
+                    new_name = f"{number}. {flag_display}VMESS | {provider_display} | TG: @wlrustg"
                     j['ps'] = new_name
                     
                     new_json = json.dumps(j, separators=(',', ':'))
@@ -351,12 +387,11 @@ def add_numbering_to_name(config: str, number: int) -> str:
             
             existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
             
-            flag = ""
-            flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
-            if flag_match:
-                flag = flag_match.group(0) + " "
+            # Формируем новое имя с флагом, провайдером и номером
+            flag_display = f"{flag} " if flag else ""
+            provider_display = f"{provider} " if provider != "unknown" else ""
             
-            new_name = f"{number}. {flag}VLESS | TG: @wlrustg"
+            new_name = f"{number}. {flag_display}VLESS | {provider_display} | TG: @wlrustg"
             
             new_fragment = urllib.parse.quote(new_name, safe='')
             
@@ -370,12 +405,11 @@ def add_numbering_to_name(config: str, number: int) -> str:
             
             existing_fragment = urllib.parse.unquote(parsed.fragment) if parsed.fragment else ""
             
-            flag = ""
-            flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
-            if flag_match:
-                flag = flag_match.group(0) + " "
+            # Формируем новое имя с флагом, провайдером и номером
+            flag_display = f"{flag} " if flag else ""
+            provider_display = f"{provider} " if provider != "unknown" else ""
             
-            new_name = f"{number}. {flag}TROJAN | TG: @wlrustg"
+            new_name = f"{number}. {flag_display}TROJAN | {provider_display} | TG: @wlrustg"
             
             new_fragment = urllib.parse.quote(new_name, safe='')
             
@@ -395,14 +429,11 @@ def add_numbering_to_name(config: str, number: int) -> str:
                 if 'name' in params:
                     name_from_query = urllib.parse.unquote(params['name'][0])
             
-            existing_name = existing_fragment or name_from_query
+            # Формируем новое имя с флагом, провайдером и номером
+            flag_display = f"{flag} " if flag else ""
+            provider_display = f"{provider} " if provider != "unknown" else ""
             
-            flag = ""
-            flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_name)
-            if flag_match:
-                flag = flag_match.group(0) + " "
-            
-            new_name = f"{number}. {flag}SS | TG: @wlrustg"
+            new_name = f"{number}. {flag_display}SS | {provider_display} | TG: @wlrustg"
             
             new_fragment = urllib.parse.quote(new_name, safe='')
             
@@ -416,10 +447,9 @@ def add_numbering_to_name(config: str, number: int) -> str:
                 base_part, fragment = config.rsplit('#', 1)
                 existing_fragment = urllib.parse.unquote(fragment)
                 
-                flag = ""
-                flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', existing_fragment)
-                if flag_match:
-                    flag = flag_match.group(0) + " "
+                # Формируем новое имя с флагом, провайдером и номером
+                flag_display = f"{flag} " if flag else ""
+                provider_display = f"{provider} " if provider != "unknown" else ""
                 
                 config_type = "CONFIG"
                 if config.startswith("ssr://"):
@@ -431,11 +461,15 @@ def add_numbering_to_name(config: str, number: int) -> str:
                 elif config.startswith("hysteria2://"):
                     config_type = "HYSTERIA2"
                 
-                new_name = f"{number}. {flag}{config_type} | TG: @wlrustg"
+                new_name = f"{number}. {flag_display}{provider_display}{config_type} | TG: @wlrustg"
                 new_fragment = urllib.parse.quote(new_name, safe='')
                 
                 return f"{base_part}#{new_fragment}"
             else:
+                # Формируем новое имя с флагом, провайдером и номером
+                flag_display = f"{flag} " if flag else ""
+                provider_display = f"{provider} " if provider != "unknown" else ""
+                
                 config_type = "CONFIG"
                 if config.startswith("ssr://"):
                     config_type = "SSR"
@@ -446,7 +480,7 @@ def add_numbering_to_name(config: str, number: int) -> str:
                 elif config.startswith("hysteria2://"):
                     config_type = "HYSTERIA2"
                 
-                new_name = f"{number}. {config_type} | TG: @wlrustg"
+                new_name = f"{number}. {flag_display}{provider_display}{config_type} | TG: @wlrustg"
                 new_fragment = urllib.parse.quote(new_name, safe='')
                 
                 return f"{config}#{new_fragment}"
@@ -457,27 +491,27 @@ def add_numbering_to_name(config: str, number: int) -> str:
 
 
 def extract_existing_info(config: str) -> tuple:
-    """Извлекает существующие информацию из конфига: номер, флаг, вотермарк"""
+    """Извлекает существующие информацию из конфига: номер, флаг, провайдер, вотермарк"""
     config_clean = config.strip()
     
     number_match = re.search(r'(?:#?\s*)(\d{1,3})(?:\.|\s+|$)', config_clean)
     number = number_match.group(1) if number_match else None
     
-    flag_match = re.search(r'[\U0001F1E6-\U0001F1FF]{2}', config_clean)
-    flag = flag_match.group(0) if flag_match else ""
+    # Извлекаем флаг и провайдера
+    flag, provider = detect_provider_from_config(config)
     
     tg_match = re.search(r'TG\s*:\s*@wlrustg', config_clean, re.IGNORECASE)
     tg = tg_match.group(0) if tg_match else ""
     
-    return number, flag, tg
+    return number, flag, provider, tg
 
 
 def process_configs_with_numbering(configs: list[str]) -> list[str]:
-    """Добавляет нумерацию и вотермарк в поле name конфигов"""
+    """Добавляет нумерацию, флаг, провайдера и вотермарк в поле name конфигов"""
     processed_configs = []
     
     for i, config in enumerate(configs, 1):
-        existing_number, _, existing_tg = extract_existing_info(config)
+        existing_number, _, existing_provider, existing_tg = extract_existing_info(config)
         
         # Если уже есть номер и наш вотермарк, не меняем
         if existing_number and "TG: @wlrustg" in config:
@@ -640,8 +674,6 @@ def update_readme(total_configs: int, wl_configs_count: int):
         raw_url_wl = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/wl.txt"
         raw_url_selected = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/selected.txt"
         
-        
-        
         time_part = offset.split(" | ")[0]
         date_part = offset.split(" | ")[1] if " | " in offset else ""
         
@@ -651,7 +683,6 @@ def update_readme(total_configs: int, wl_configs_count: int):
         new_section += f"| [`merged.txt`]({raw_url_merged}) | Все конфиги из {len(URLS)} источников | {total_configs} | {time_part} | {date_part} |\n"
         new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n"
         new_section += f"| [`selected.txt`]({raw_url_selected}) | Отборные админами конфиги, самый надежный список | не знаю | {time_part} | {date_part} |\n\n"
-        
         
         # Обновляем файл
         sha = readme_file.sha if 'readme_file' in locals() else None
@@ -783,8 +814,6 @@ def process_selected_file():
 
 def main():
     """Основная функция"""
-
-
     log("📥 Загрузка конфигов...")
     
     all_configs = []
@@ -810,27 +839,24 @@ def main():
     
     log("📊 Скачано всего: " + str(len(all_configs)) + " конфигов")
     
-    # 2. Обрабатываем selected.txt (ручные серверы)
+    # Обрабатываем selected.txt (ручные серверы)
     log("🔧 Обработка selected.txt...")
     selected_configs = process_selected_file()
-    
     
     if not all_configs:
         log("❌ Не удалось загрузить ни одного конфига")
         return
     
-    # 4. Дедупликация и сортировка по подсетям
+    # Дедупликация и сортировка по подсетям
     log("🔄 Дедупликация и фильтрация...")
     unique_configs, whitelist_configs = merge_and_deduplicate(all_configs)
     log("🔄 После дедупликации: " + str(len(unique_configs)) + " конфигов")
     log("🛡️ Whitelist конфигов: " + str(len(whitelist_configs)))
     
-    # 5. Сохраняем локально
+    # Сохраняем локально
     os.makedirs("confs", exist_ok=True)
-    output_file_merged = "confs/merged.txt"
-    output_file_wl = "confs/wl.txt"
     
-    # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
+    # СОХРАНЯЕМ файлы с нумерацией
     save_to_file(unique_configs, "merged", "Объединенные конфиги", add_numbering=True)
     save_to_file(whitelist_configs, "wl", "Whitelist конфиги", add_numbering=True)
     
@@ -839,16 +865,10 @@ def main():
     upload_to_github(PATHS["wl"])
     upload_to_github(PATHS["selected"])
     
-   # Загружаем selected.txt на GitHub, если он существует
-   # selected_file = "githubmirror/selected.txt"
-   # if os.path.exists(selected_file):
-   #     upload_to_github(selected_file, "githubmirror/selected.txt", "main")
-    
-    
-    # 8. Обновляем README
+    # Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
-    # 9. Выводим итоги
+    # Выводим итоги
     log("=" * 60)
     log("📊 ИТОГИ:")
     log("   🌐 Источников: " + str(len(URLS)))
