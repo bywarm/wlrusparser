@@ -133,6 +133,7 @@ WHITELIST_SUBNETS = [
     "185.177.73.0/24", 
     "185.241.192.0/22", 
     "193.53.0.0/16",
+    "212.233.72.0/21",
     "217.12.0.0/16",
     "217.16.0.0/16",    
     "217.16.24.0/21",  
@@ -149,6 +150,7 @@ URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_nolite.txt",
     "https://fsub.flux.2bd.net/githubmirror/bypass/bypass-all.txt",
     "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
+    "https://raw.githubusercontent.com/koteey/Ms.Kerosin-VPN/refs/heads/main/proxies.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
