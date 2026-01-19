@@ -386,3 +386,7 @@ vless://e34a84c4-8a52-4b4e-9a7d-cfa1a4d77e95@212.233.72.112:443/?type=tcp&encryp
 vless://e34a84c4-8a52-4b4e-9a7d-cfa1a4d77e95@84.201.181.141:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=ads.x5.ru&fp=chrome&security=reality&pbk=0rPvIBbfmdq3YJkkNGc8p7t-1zme85V-nj3v8ekm4DE&sid=1b3de616b36b1233#192.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://e34a84c4-8a52-4b4e-9a7d-cfa1a4d77e95@178.154.206.7:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=maps.yandex.ru&fp=chrome&security=reality&pbk=_1CdC4TRCkeTD3sHtnnZo2kkCGZkbYzLO2I-mJsWvmk&sid=e3b1c4d5a6f70912#193.%20%F0%9F%87%AB%F0%9F%87%AE%20VLESS%20%7C%20TG%3A%20%40wlrustg
+
+vless://8a993afa-0f5e-4de8-a2d6-1d850fd52dcc@51.250.16.78:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=MS65bqOY_SgSw67G9gj5a_5v6GzaVRlC1EDSdYEy1lg&security=reality&sid=f7c0a11edbdb07f2&sni=www.yandex.ru&type=tcp#%F0%9F%87%B7%F0%9F%87%BA%20LTE%20%7C%20%D0%9E%D0%B1%D1%85%D0%BE%D0%B4%20%D0%9E%D0%B1%D1%89%D0%B8%D0%B9
+
+vless://8a993afa-0f5e-4de8-a2d6-1d850fd52dcc@84.201.164.23:443?encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=6MBskgCzwyJi9_G1EnoUJOj8ZHU8HkvhIchQ3OIl1mQ&security=reality&sid=c66077b9e0825624&sni=cdnv-img.perekrestok.ru&type=tcp#%F0%9F%87%B7%F0%9F%87%BA%20LTE%20%7C%20%D0%9E%D0%B1%D1%85%D0%BE%D0%B4%20MegaFon
