@@ -147,6 +147,8 @@ URLS = [
     "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/refs/heads/main/githubmirror/26.txt",
     "https://raw.githubusercontent.com/vsevjik/OBSpiskov/refs/heads/main/wwh",
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_nolite.txt",
+    "https://fsub.flux.2bd.net/githubmirror/bypass/bypass-all.txt",
+    "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
