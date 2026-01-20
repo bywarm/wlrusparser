@@ -151,6 +151,7 @@ URLS = [
     "https://fsub.flux.2bd.net/githubmirror/bypass/bypass-all.txt",
     "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
     "https://raw.githubusercontent.com/koteey/Ms.Kerosin-VPN/refs/heads/main/proxies.txt",
+    "https://raw.githubusercontent.com/SilentGhostCodes/WhiteListVpn/refs/heads/main/config.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
