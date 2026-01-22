@@ -40,6 +40,13 @@ offset = thistime.strftime("%H:%M | %d.%m.%Y")
 GITHUB_TOKEN = os.environ.get("MY_TOKEN", "")
 REPO_NAME = os.environ.get("GITHUB_REPOSITORY", "bywarm/wlrusparser")
 
+# Cloud.ru S3 конфигурация
+CLOUD_RU_ENDPOINT = os.environ.get("CLOUD_RU_ENDPOINT", "https://s3.cloud.ru/bucket-93b250")
+CLOUD_RU_ACCESS_KEY = os.environ.get("CLOUD_RU_ACCESS_KEY", "")
+CLOUD_RU_SECRET_KEY = os.environ.get("CLOUD_RU_SECRET_KEY", "")
+CLOUD_RU_BUCKET = os.environ.get("CLOUD_RU_BUCKET", "bucket-93b250")
+CLOUD_RU_REGION = os.environ.get("CLOUD_RU_REGION", "ru-central-1")
+
 if GITHUB_TOKEN:
     g = Github(auth=Auth.Token(GITHUB_TOKEN))
 else:
@@ -626,7 +633,6 @@ def upload_to_github(filename: str, remote_path: str = None, branch: str = "main
     except Exception as e:
         log("Ошибка при загрузке на GitHub: " + str(e))
 
-
 def update_readme(total_configs: int, wl_configs_count: int):
     """Обновляет README.md со статистикой"""
     if not REPO:
@@ -645,10 +651,10 @@ def update_readme(total_configs: int, wl_configs_count: int):
         raw_url_wl = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/wl.txt"
         raw_url_selected = "https://github.com/" + REPO_NAME + "/raw/main/githubmirror/selected.txt"
         
-        
-        
-        time_part = offset.split(" | ")[0]
-        date_part = offset.split(" | ")[1] if " | " in offset else ""
+        # Разделяем время и дату
+        time_parts = offset.split(" | ")
+        time_part = time_parts[0] if len(time_parts) > 0 else ""
+        date_part = time_parts[1] if len(time_parts) > 1 else ""
         
         new_section = "\n## 📊 Статус обновления\n\n"
         new_section += "| Файл | Описание | Конфигов | Время обновления | Дата |\n"
@@ -657,13 +663,12 @@ def update_readme(total_configs: int, wl_configs_count: int):
         new_section += f"| [`wl.txt`]({raw_url_wl}) | Только конфиги из {len(WHITELIST_SUBNETS)} подсетей | {wl_configs_count} | {time_part} | {date_part} |\n"
         new_section += f"| [`selected.txt`]({raw_url_selected}) | Отборные админами конфиги, самый надежный список | не знаю | {time_part} | {date_part} |\n\n"
         
-        
         # Обновляем файл
         sha = readme_file.sha if 'readme_file' in locals() else None
         REPO.update_file(
             path="README.md",
             message="📝 Обновление README: " + str(total_configs) + " конфигов, " + str(wl_configs_count) + " в whitelist",
-            content=new_content,
+            content=new_section,
             sha=sha
         )
         log("📝 README.md обновлён")
@@ -786,9 +791,61 @@ def process_selected_file():
         log("ℹ️ Файл selected.txt не найден")
         return []
 
+def upload_to_cloud_ru(file_path: str, s3_path: str = None):
+    """Загружает файл в bucket Cloud.ru по S3 API"""
+    if not all([CLOUD_RU_ENDPOINT, CLOUD_RU_ACCESS_KEY, CLOUD_RU_SECRET_KEY, CLOUD_RU_BUCKET]):
+        log("❌ Пропускаю загрузку в Cloud.ru: отсутствуют необходимые переменные окружения")
+        return
+    
+    try:
+        # Пробуем импортировать boto3
+        try:
+            import boto3
+            from botocore.config import Config
+        except ImportError:
+            log("❌ Модуль boto3 не установлен. Установите: pip install boto3")
+            return
+        
+        if not os.path.exists(file_path):
+            log(f"❌ Файл {file_path} не найден для загрузки в Cloud.ru")
+            return
+        
+        # Определяем имя файла в bucket
+        if s3_path is None:
+            s3_path = os.path.basename(file_path)
+        
+        log(f"☁️  Загружаю {file_path} в Cloud.ru bucket {CLOUD_RU_BUCKET} как {s3_path}")
+        
+        # Настройка клиента S3 для Cloud.ru
+        s3_client = boto3.client(
+            's3',
+            endpoint_url=CLOUD_RU_ENDPOINT,
+            aws_access_key_id=CLOUD_RU_ACCESS_KEY,
+            aws_secret_access_key=CLOUD_RU_SECRET_KEY,
+            region_name=CLOUD_RU_REGION,
+            config=Config(signature_version='s3v4')
+        )
+        
+        # Загружаем файл
+        with open(file_path, 'rb') as f:
+            s3_client.put_object(
+                Bucket=CLOUD_RU_BUCKET,
+                Key=s3_path,
+                Body=f,
+                ContentType='text/plain; charset=utf-8',
+            )
+        
+        log(f"✅ Файл успешно загружен в Cloud.ru: {s3_path}")
+        
+        # Формируем ссылку на файл
+        file_url = f"{CLOUD_RU_ENDPOINT}/{CLOUD_RU_BUCKET}/{s3_path}"
+        log(f"🔗 Ссылка на файл: {file_url}")
+        
+    except Exception as e:
+        log(f"❌ Ошибка при загрузке в Cloud.ru: {str(e)}")
+
 def main():
     """Основная функция"""
-
 
     log("📥 Загрузка конфигов...")
     
@@ -844,11 +901,19 @@ def main():
     upload_to_github(PATHS["wl"])
     upload_to_github(PATHS["selected"])
     
-   # Загружаем selected.txt на GitHub, если он существует
-   # selected_file = "githubmirror/selected.txt"
-   # if os.path.exists(selected_file):
-   #     upload_to_github(selected_file, "githubmirror/selected.txt", "main")
+    # 7. Загружаем в Cloud.ru
+    log("☁️  Начинаю загрузку в Cloud.ru...")
+    files_to_upload = {
+        "merged.txt": PATHS["merged"],
+        "wl.txt": PATHS["wl"],
+        "selected.txt": PATHS["selected"]
+    }
     
+    for s3_name, local_path in files_to_upload.items():
+        if os.path.exists(local_path):
+            upload_to_cloud_ru(local_path, s3_name)
+        else:
+            log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
     
     # 8. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
@@ -867,6 +932,7 @@ def main():
     log(f"      • {PATHS['merged']}")
     log(f"      • {PATHS['wl']}")
     log(f"      • {PATHS['selected']}")
+    log("   ☁️  Cloud.ru bucket: " + (CLOUD_RU_BUCKET if CLOUD_RU_BUCKET else "не настроен"))
     log("=" * 60)
     
     # Проверяем изменения для GitHub Actions
