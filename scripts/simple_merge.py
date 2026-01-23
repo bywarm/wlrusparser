@@ -888,21 +888,19 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
         if remote_path is None:
             remote_path = os.path.basename(filename)
         
-        # Согласно документации, используем базовый URL
-        base_url = "https://api.gitverse.ru"
+        # Базовый URL API
+        base_url = "https://api.gitverse.ru/public/api"
         
-        # Подготовим заголовки согласно документации
-        # Важно: формат Accept-заголовка должен быть точным
-        # "application/vnd.gitverse.object+json;version=1"
+        # Подготовим заголовки
         headers = {
             "Authorization": f"Bearer {GITVERSE_TOKEN}",
-            "Accept": "application/vnd.gitverse.object+json;version=1",  # Согласно документации
+            "Accept": "application/vnd.gitverse.object+json;version=1",
             "Content-Type": "application/json"
         }
         
-        # 1. Сначала проверим, что пользователь существует и токен валиден
+        # 1. Проверяем доступ к API
         log(f"🔍 Проверяю доступ к GitVerse API...")
-        user_url = f"{base_url}/user"
+        user_url = f"https://api.gitverse.ru/public/api/user"
         try:
             user_response = requests.get(user_url, headers=headers, timeout=10)
             
@@ -910,12 +908,11 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
                 user_info = user_response.json()
                 log(f"✅ Аутентифицирован как: {user_info.get('login', 'Unknown')}")
                 
-                # Проверяем, совпадает ли логин с владельцем репозитория
+                # Проверяем логин
                 user_login = user_info.get('login', '')
                 if user_login and user_login != GITVERSE_REPO_OWNER:
                     log(f"⚠️  Внимание: аутентифицирован как '{user_login}', но репозиторий принадлежит '{GITVERSE_REPO_OWNER}'")
-                    log(f"   Убедитесь, что у вас есть права на запись в этот репозиторий")
-            
+                    
             elif user_response.status_code == 401:
                 log(f"❌ Ошибка аутентификации: неверный токен")
                 log(f"   Убедитесь, что токен действителен и имеет права 'Публичное API'")
@@ -936,57 +933,36 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
                 log(f"✅ Репозиторий найден")
             elif repo_response.status_code == 404:
                 log(f"❌ Репозиторий не найден: {GITVERSE_REPO_OWNER}/{GITVERSE_REPO_NAME}")
-                log(f"   Проверьте:")
-                log(f"   1. Существует ли репозиторий")
-                log(f"   2. Правильно ли указаны имя владельца и репозитория")
-                log(f"   3. Имеете ли вы доступ к репозиторию")
                 return
             else:
                 error_msg = repo_response.text[:200] if repo_response.text else str(repo_response.status_code)
                 log(f"❌ Ошибка при проверке репозитория: {repo_response.status_code} - {error_msg}")
-                
-                # Проверяем, не связана ли ошибка с версией API
-                if repo_response.status_code == 400:
-                    # Проверяем заголовки для определения версии API
-                    api_headers = repo_response.headers
-                    if 'Gitverse-Api-Latest-Version' in api_headers:
-                        latest_version = api_headers['Gitverse-Api-Latest-Version']
-                        log(f"ℹ️  Последняя версия API: {latest_version}")
-                        log(f"🔄 Пробую использовать версию {latest_version}")
-                        
-                        # Обновляем заголовок с новой версией
-                        headers["Accept"] = f"application/vnd.gitverse.object+json;version={latest_version}"
-                        
-                        # Пробуем снова
-                        repo_response = requests.get(repo_url, headers=headers, timeout=10)
-                        if repo_response.status_code == 200:
-                            log(f"✅ Успешно с версией API {latest_version}")
-                        else:
-                            log(f"❌ Ошибка сохраняется даже с версией {latest_version}")
-                            return
-                    else:
-                        log(f"ℹ️  Заголовок Gitverse-Api-Latest-Version не найден в ответе")
                 return
                 
         except requests.exceptions.RequestException as e:
             log(f"❌ Ошибка подключения при проверке репозитория: {str(e)[:100]}")
             return
         
-        # 3. Работаем с файлом
+        # 3. Формируем URL для работы с файлом согласно документации
         content_url = f"{base_url}/repos/{GITVERSE_REPO_OWNER}/{GITVERSE_REPO_NAME}/contents/{remote_path}"
         
-        # Кодируем содержимое в base64
-        content_b64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
+        # Кодируем содержимое в base64 (удаляем переносы строк для чистого base64)
+        content_b64 = base64.b64encode(content.encode('utf-8')).decode('utf-8').replace('\n', '')
         
+        # Сначала получаем информацию о существующем файле (если есть)
         try:
-            # Сначала получаем информацию о существующем файле
+            params = {}
+            if GITVERSE_BRANCH:
+                params['ref'] = GITVERSE_BRANCH
+                
             response = requests.get(
                 content_url,
                 headers=headers,
-                params={'ref': GITVERSE_BRANCH} if GITVERSE_BRANCH else {},
+                params=params,
                 timeout=15
             )
             
+            sha = None
             if response.status_code == 200:
                 # Файл существует, получаем его SHA
                 existing_file = response.json()
@@ -1000,94 +976,62 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
                         if existing_content_decoded == content:
                             log(f"ℹ️  Файл {remote_path} не изменился в GitVerse")
                             return
-                    except Exception as e:
-                        # Если не удалось декодировать, продолжаем
-                        log(f"ℹ️  Не удалось сравнить содержимое, обновляю файл")
+                    except Exception:
+                        pass
                 
-                # Подготавливаем данные для обновления
-                data = {
-                    "message": f"🤖 Авто-обновление: {offset}",
-                    "content": content_b64,
-                    "sha": sha,
-                    "branch": GITVERSE_BRANCH
-                }
-                
-                log(f"🔄 Обновляю файл {remote_path} в ветке {GITVERSE_BRANCH}")
-                update_response = requests.put(content_url, headers=headers, json=data, timeout=15)
-                
-                if update_response.status_code in [200, 201]:
-                    log(f"✅ Файл {remote_path} успешно обновлён на GitVerse")
-                else:
-                    error_msg = update_response.text[:200] if update_response.text else str(update_response.status_code)
-                    log(f"❌ Ошибка обновления файла: {update_response.status_code} - {error_msg}")
-                    
-                    # Если ошибка связана с SHA, попробуем получить актуальный SHA
-                    if "sha" in error_msg.lower():
-                        log(f"🔄 Получаю актуальный SHA файла...")
-                        fresh_response = requests.get(content_url, headers=headers, timeout=10)
-                        if fresh_response.status_code == 200:
-                            fresh_file = fresh_response.json()
-                            new_sha = fresh_file.get('sha', '')
-                            if new_sha != sha:
-                                log(f"ℹ️  SHA изменился с {sha} на {new_sha}, пробую снова")
-                                data["sha"] = new_sha
-                                retry_response = requests.put(content_url, headers=headers, json=data, timeout=15)
-                                if retry_response.status_code in [200, 201]:
-                                    log(f"✅ Файл обновлён после получения актуального SHA")
-                                else:
-                                    error_msg = retry_response.text[:200] if retry_response.text else str(retry_response.status_code)
-                                    log(f"❌ Ошибка при повторной попытке: {retry_response.status_code} - {error_msg}")
-            
+                log(f"🔄 Обновляю файл {remote_path} в ветке {GITVERSE_BRANCH or 'основной'}")
             elif response.status_code == 404:
-                # Файл не существует, создаём новый
-                data = {
-                    "message": f"🤖 Первое создание: {offset}",
-                    "content": content_b64,
-                    "branch": GITVERSE_BRANCH
-                }
-                
-                log(f"🆕 Создаю новый файл {remote_path} в ветке {GITVERSE_BRANCH}")
-                create_response = requests.put(content_url, headers=headers, json=data, timeout=15)
-                
-                if create_response.status_code in [200, 201]:
-                    log(f"✅ Файл {remote_path} успешно создан на GitVerse")
-                else:
-                    error_msg = create_response.text[:200] if create_response.text else str(create_response.status_code)
-                    log(f"❌ Ошибка создания файла: {create_response.status_code} - {error_msg}")
-                    
-                    # Если ошибка 422 (некорректный запрос), возможно нужно использовать POST
-                    if create_response.status_code == 422:
-                        log(f"🔄 Пробую использовать метод POST для создания файла")
-                        post_response = requests.post(content_url, headers=headers, json=data, timeout=15)
-                        if post_response.status_code in [200, 201]:
-                            log(f"✅ Файл создан с использованием POST")
-                        else:
-                            error_msg = post_response.text[:200] if post_response.text else str(post_response.status_code)
-                            log(f"❌ Ошибка при использовании POST: {post_response.status_code} - {error_msg}")
-            
-            elif response.status_code == 401:
-                log(f"❌ Ошибка авторизации при доступе к файлу")
-                log(f"   Проверьте права доступа к репозиторию {GITVERSE_REPO_OWNER}/{GITVERSE_REPO_NAME}")
-            
-            elif response.status_code == 400:
-                error_msg = response.text[:200] if response.text else str(response.status_code)
-                log(f"❌ Ошибка 400 (Bad Request): {error_msg}")
-                
-                # Проверяем заголовки для версии API
-                if 'Gitverse-Api-Latest-Version' in response.headers:
-                    latest_version = response.headers['Gitverse-Api-Latest-Version']
-                    log(f"ℹ️  Последняя версия API: {latest_version}")
-                    log(f"   Обновите Accept-заголовок на версию {latest_version}")
-            
+                log(f"🆕 Создаю новый файл {remote_path} в ветке {GITVERSE_BRANCH or 'основной'}")
             else:
                 error_msg = response.text[:200] if response.text else str(response.status_code)
-                log(f"❌ Неожиданный статус код {response.status_code}: {error_msg}")
+                log(f"❌ Ошибка при проверке файла: {response.status_code} - {error_msg}")
+                return
+            
+            # Подготавливаем данные для запроса
+            data = {
+                "message": f"🤖 Автоматическое обновление: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+                "content": content_b64,
+            }
+            
+            # Добавляем ветку, если указана
+            if GITVERSE_BRANCH:
+                data["branch"] = GITVERSE_BRANCH
+            
+            # Добавляем SHA для обновления существующего файла
+            if sha:
+                data["sha"] = sha
+            
+            # Выполняем PUT запрос (создание или обновление)
+            put_response = requests.put(content_url, headers=headers, json=data, timeout=15)
+            
+            if put_response.status_code in [200, 201]:
+                action = "обновлён" if sha else "создан"
+                log(f"✅ Файл {remote_path} успешно {action} на GitVerse")
+                
+                # Выводим информацию о коммите
+                commit_info = put_response.json().get('commit', {})
+                commit_sha = commit_info.get('sha', '')[:8]
+                if commit_sha:
+                    log(f"   Коммит: {commit_sha}")
+                    
+            elif put_response.status_code == 409:
+                log(f"❌ Конфликт: SHA не совпадает с текущей версией файла")
+                log(f"   Возможно, файл был изменен с момента последней проверки")
+                
+            elif put_response.status_code == 422:
+                error_msg = put_response.text[:200] if put_response.text else str(put_response.status_code)
+                log(f"❌ Ошибка валидации (422): {error_msg}")
+                
+            else:
+                error_msg = put_response.text[:500] if put_response.text else str(put_response.status_code)
+                log(f"❌ Ошибка при загрузке файла: {put_response.status_code}")
+                log(f"   Ответ: {error_msg}")
                 
         except requests.exceptions.RequestException as e:
             log(f"❌ Ошибка сети при работе с файлом: {str(e)[:100]}")
             
     except Exception as e:
-        log(f"❌ Общая ошибка при загрузке на GitVerse: {str(e)[:100]}")
+        log(f"❌ Общая ошибка при загрузке на GitVerse: {str(e)}")
     
 def main():
     """Основная функция"""
