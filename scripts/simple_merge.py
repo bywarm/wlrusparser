@@ -900,7 +900,7 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
         
         # 1. Проверяем доступ к API
         log(f"🔍 Проверяю доступ к GitVerse API...")
-        user_url = f"https://api.gitverse.ru"
+        user_url = f"https://api.gitverse.ru/public/api"
         try:
             user_response = requests.get(user_url, headers=headers, timeout=10)
             
