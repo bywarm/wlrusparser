@@ -838,8 +838,14 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
             's3',
             endpoint_url=CLOUD_RU_ENDPOINT,
             aws_access_key_id=CLOUD_RU_ACCESS_KEY,
-            aws_secret_access_key=CLOUD_RU_SECRET_KEY
+            aws_secret_access_key=CLOUD_RU_SECRET_KEY,
+            region_name=CLOUD_RU_REGION,
+            config=Config(
+                signature_version='s3v4',
+                s3={'addressing_style': 'path'}
+            )
         )
+        
         # Загружаем файл
         with open(file_path, 'rb') as f:
             s3_client.put_object(
@@ -856,10 +862,15 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
         log(f"🔗 Ссылка на файл: {file_url}")
         
     except Exception as e:
-        log(f"❌ Ошибка при загрузке в Cloud.ru: {str(e)}")
+        error_msg = str(e)
+        # Более подробное логирование ошибки
+        if "AuthorizationHeaderMalformed" in error_msg:
+            log(f"❌ Ошибка авторизации Cloud.ru: неверный регион или endpoint. Убедитесь, что регион: {CLOUD_RU_REGION}")
+        else:
+            log(f"❌ Ошибка при загрузке в Cloud.ru: {error_msg[:200]}")
         
 def upload_to_gitverse(filename: str, remote_path: str = None):
-    """Загружает файл на GitVerse через API согласно документации"""
+    """Загружает файл на GitVerse через API"""
     if not GITVERSE_TOKEN:
         log("❌ Пропускаю загрузку на GitVerse: отсутствует токен")
         return
@@ -875,12 +886,12 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
         if remote_path is None:
             remote_path = os.path.basename(filename)
         
-        # Формируем URL для API GitVerse согласно документации
+        # Формируем URL для API GitVerse
         api_url = f"{GITVERSE_ENDPOINT}/repos/{GITVERSE_REPO_OWNER}/{GITVERSE_REPO_NAME}/contents/{remote_path}"
         
-        # Подготавливаем заголовки
+        # Подготавливаем заголовки (GitVerse использует token вместо Bearer)
         headers = {
-            "Authorization": f"Bearer {GITVERSE_TOKEN}",
+            "Authorization": f"token {GITVERSE_TOKEN}",
             "Accept": "application/json",
             "Content-Type": "application/json"
         }
@@ -888,8 +899,21 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
         # Кодируем содержимое в base64
         content_b64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
         
-        # 1. Сначала пытаемся получить информацию о существующем файле (GET /repos/{owner}/{repo}/contents/{path})
+        # Сначала пробуем получить информацию о репозитории (проверка доступности)
+        repo_check_url = f"{GITVERSE_ENDPOINT}/repos/{GITVERSE_REPO_OWNER}/{GITVERSE_REPO_NAME}"
         try:
+            repo_response = requests.get(repo_check_url, headers=headers, timeout=30)
+            if repo_response.status_code != 200:
+                log(f"❌ Репозиторий GitVerse недоступен или не существует: {repo_response.status_code}")
+                log(f"   Проверьте: владелец={GITVERSE_REPO_OWNER}, репозиторий={GITVERSE_REPO_NAME}")
+                return
+        except Exception as e:
+            log(f"❌ Ошибка подключения к GitVerse: {str(e)[:100]}")
+            return
+        
+        # Затем работаем с файлом
+        try:
+            # Пробуем получить информацию о существующем файле
             response = requests.get(
                 api_url,
                 headers=headers,
@@ -898,34 +922,16 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
             )
             
             if response.status_code == 200:
-                # Файл существует, получаем его SHA
+                # Файл существует
                 existing_file = response.json()
                 sha = existing_file.get('sha', '')
                 
-                # Проверяем, изменилось ли содержимое
-                if existing_file.get('content'):
-                    # Декодируем существующее содержимое (оно в base64)
-                    existing_content_b64 = existing_file['content'].replace('\n', '')
-                    # Декодируем для сравнения
-                    try:
-                        existing_content_decoded = base64.b64decode(existing_content_b64).decode('utf-8', errors='ignore')
-                        if existing_content_decoded == content:
-                            log(f"ℹ️  Файл {remote_path} не изменился в GitVerse")
-                            return
-                    except:
-                        # Если не удалось декодировать, все равно обновляем
-                        pass
-                
-                # 2. Обновляем существующий файл (PUT /repos/{owner}/{repo}/contents/{filename})
+                # Обновляем существующий файл
                 data = {
-                    "message": f": {offset}",
+                    "message": f"🤖 Авто-обновление: {offset}",
                     "content": content_b64,
                     "sha": sha,
-                    "branch": GITVERSE_BRANCH,
-                    "committer": {
-                        "name": "rsser",
-                        "email": "warm@gmail.com"
-                    }
+                    "branch": GITVERSE_BRANCH
                 }
                 
                 response = requests.put(api_url, headers=headers, json=data, timeout=30)
@@ -934,32 +940,30 @@ def upload_to_gitverse(filename: str, remote_path: str = None):
                     log(f"⬆️  Файл {remote_path} обновлён на GitVerse в ветке {GITVERSE_BRANCH}")
                 else:
                     error_msg = response.text[:200] if response.text else str(response.status_code)
-                    log(f"❌ Ошибка обновления файла на GitVerse: {error_msg}")
+                    log(f"❌ Ошибка обновления файла на GitVerse {response.status_code}: {error_msg}")
             
             elif response.status_code == 404:
                 # Файл не существует, создаем новый
-                # 3. Создаем новый файл (PUT /repos/{owner}/{repo}/contents/{filename})
                 data = {
-                    "message": f": {offset}",
+                    "message": f"🤖 Первое создание: {offset}",
                     "content": content_b64,
-                    "branch": GITVERSE_BRANCH,
-                    "committer": {
-                        "name": "rsser",
-                        "email": "warm@gmail.com"
-                    }
+                    "branch": GITVERSE_BRANCH
                 }
                 
-                response = requests.put(api_url, headers=headers, json=data, timeout=30)
+                response = requests.post(api_url, headers=headers, json=data, timeout=30)
                 
                 if response.status_code in [200, 201]:
                     log(f"🆕 Файл {remote_path} создан на GitVerse в ветке {GITVERSE_BRANCH}")
                 else:
                     error_msg = response.text[:200] if response.text else str(response.status_code)
-                    log(f"❌ Ошибка создания файла на GitVerse: {error_msg}")
+                    log(f"❌ Ошибка создания файла на GitVerse {response.status_code}: {error_msg}")
             
             else:
                 error_msg = response.text[:200] if response.text else str(response.status_code)
-                log(f"❌ Ошибка при проверке файла на GitVerse: {error_msg}")
+                log(f"❌ Ошибка при работе с GitVerse {response.status_code}: {error_msg}")
+                # Добавляем отладочную информацию
+                log(f"   URL: {api_url}")
+                log(f"   Ветка: {GITVERSE_BRANCH}")
                 
         except requests.exceptions.RequestException as e:
             error_msg = str(e)[:100]
@@ -1035,24 +1039,23 @@ def main():
             upload_to_cloud_ru(local_path, s3_name)
         else:
             log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
+# 8. Загружаем на GitVerse (если задан токен)
+if GITVERSE_TOKEN:
+    log("🚀 Начинаю загрузку на GitVerse...")
+    gitverse_files = {
+        "merged.txt": PATHS["merged"],
+        "wl.txt": PATHS["wl"],
+        "selected.txt": PATHS["selected"]
+    }
     
-    # 8. Загружаем на GitVerse (если задан токен)
-    if GITVERSE_TOKEN:
-        log("🚀 Начинаю загрузку на GitVerse...")
-        gitverse_files = {
-            "merged.txt": PATHS["merged"],
-            "wl.txt": PATHS["wl"],
-            "selected.txt": PATHS["selected"]
-        }
-        
-        for remote_name, local_path in gitverse_files.items():
-            if os.path.exists(local_path):
-                upload_to_gitverse(local_path, remote_name)
-            else:
-                log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку на GitVerse")
-    else:
-        log("ℹ️  Токен GitVerse не задан, пропускаю загрузку")
-    
+    # Создаем сессию для повторного использования соединений
+    for remote_name, local_path in gitverse_files.items():
+        if os.path.exists(local_path):
+            upload_to_gitverse(local_path, remote_name)
+        else:
+            log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку на GitVerse")
+else:
+    log("ℹ️  Токен GitVerse не задан, пропускаю загрузку")
     # 9. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
