@@ -1039,23 +1039,24 @@ def main():
             upload_to_cloud_ru(local_path, s3_name)
         else:
             log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
-# 8. Загружаем на GitVerse (если задан токен)
-if GITVERSE_TOKEN:
-    log("🚀 Начинаю загрузку на GitVerse...")
-    gitverse_files = {
-        "merged.txt": PATHS["merged"],
-        "wl.txt": PATHS["wl"],
-        "selected.txt": PATHS["selected"]
-    }
+
+    if GITVERSE_TOKEN:
+        log("🚀 Начинаю загрузку на GitVerse...")
+        gitverse_files = {
+            "merged.txt": PATHS["merged"],
+            "wl.txt": PATHS["wl"],
+            "selected.txt": PATHS["selected"]
+        }
     
-    # Создаем сессию для повторного использования соединений
-    for remote_name, local_path in gitverse_files.items():
-        if os.path.exists(local_path):
-            upload_to_gitverse(local_path, remote_name)
-        else:
-            log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку на GitVerse")
-else:
-    log("ℹ️  Токен GitVerse не задан, пропускаю загрузку")
+        # Создаем сессию для повторного использования соединений
+        for remote_name, local_path in gitverse_files.items():
+            if os.path.exists(local_path):
+                upload_to_gitverse(local_path, remote_name)
+            else:
+                log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку на GitVerse")
+    else:
+        log("ℹ️  Токен GitVerse не задан, пропускаю загрузку")
+    
     # 9. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
