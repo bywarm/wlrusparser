@@ -916,9 +916,9 @@ def main():
 # 7. Загружаем в Cloud.ru с другими именами
 log("☁️  Начинаю загрузку в Cloud.ru с переименованием...")
 files_to_upload = [
-    {"local": PATHS["merged"], "s3_name": "vpn_configs_merged.txt"},
-    {"local": PATHS["wl"], "s3_name": "vpn_configs_whitelist.txt"},
-    {"local": PATHS["selected"], "s3_name": "vpn_configs_selected.txt"}
+    {"local": PATHS["merged"], "s3_name": "GidvFj.txt"},
+    {"local": PATHS["wl"], "s3_name": "Gsiec.txt"},
+    {"local": PATHS["selected"], "s3_name": "JgUfsU.txt"}
 ]
 
 for file_info in files_to_upload:
