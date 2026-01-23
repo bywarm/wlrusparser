@@ -48,7 +48,7 @@ CLOUD_RU_BUCKET = os.environ.get("CLOUD_RU_BUCKET", "bucket-93b250")
 CLOUD_RU_REGION = os.environ.get("CLOUD_RU_REGION", "ru-central-1")
 
 # GitVerse API конфигурация (только токен в секретах)
-GITVERSE_TOKEN = os.environ.get("GITVERSE_TOKEN", "")
+GITVERSE_TOKEN = os.environ.get("GITVERSE_TOKEN", "020a09362d53112bfc02c9f95cd43d9b164231ef")
 
 # Остальные параметры GitVerse заданы явно в коде
 if GITVERSE_TOKEN:
