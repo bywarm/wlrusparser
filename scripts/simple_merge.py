@@ -821,10 +821,7 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
             's3',
             endpoint_url=CLOUD_RU_ENDPOINT,
             aws_access_key_id=CLOUD_RU_ACCESS_KEY,
-            aws_secret_access_key=CLOUD_RU_SECRET_KEY,
-            region_name=CLOUD_RU_REGION,
-            config=Config(signature_version='s3v4')
-        )
+            aws_secret_access_key=CLOUD_RU_SECR
         
         # Загружаем файл
         with open(file_path, 'rb') as f:
@@ -846,7 +843,6 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
 
 def main():
     """Основная функция"""
-
     log("📥 Загрузка конфигов...")
     
     all_configs = []
@@ -876,7 +872,6 @@ def main():
     log("🔧 Обработка selected.txt...")
     selected_configs = process_selected_file()
     
-    
     if not all_configs:
         log("❌ Не удалось загрузить ни одного конфига")
         return
@@ -889,8 +884,6 @@ def main():
     
     # 5. Сохраняем локально
     os.makedirs("confs", exist_ok=True)
-    output_file_merged = "confs/merged.txt"
-    output_file_wl = "confs/wl.txt"
     
     # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
     save_to_file(unique_configs, "merged", "Объединенные конфиги", add_numbering=True)
@@ -900,20 +893,22 @@ def main():
     upload_to_github(PATHS["merged"])
     upload_to_github(PATHS["wl"])
     upload_to_github(PATHS["selected"])
-# 7. Загружаем в Cloud.ru
+    
+    # 7. Загружаем в Cloud.ru
     log("☁️  Начинаю загрузку в Cloud.ru...")
     files_to_upload = {
-       "merged.txt": PATHS["merged"],
-       "wl.txt": PATHS["wl"],
-       "selected.txt": PATHS["selected"]
+        "merged.txt": PATHS["merged"],
+        "wl.txt": PATHS["wl"],
+        "selected.txt": PATHS["selected"]
     }
-
-   for s3_name, local_path in files_to_upload.items():
-       if os.path.exists(local_path):
-           upload_to_cloud_ru(local_path, s3_name)
-       else:
-           log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
     
+    for s3_name, local_path in files_to_upload.items():
+        if os.path.exists(local_path):
+            upload_to_cloud_ru(local_path, s3_name)
+        else:
+            log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
+    
+    # 8. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
     # 9. Выводим итоги
@@ -930,7 +925,6 @@ def main():
     log(f"      • {PATHS['merged']}")
     log(f"      • {PATHS['wl']}")
     log(f"      • {PATHS['selected']}")
-    log("   ☁️  Cloud.ru bucket: " + (CLOUD_RU_BUCKET if CLOUD_RU_BUCKET else "не настроен"))
     log("=" * 60)
     
     # Проверяем изменения для GitHub Actions
