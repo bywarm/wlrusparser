@@ -822,7 +822,7 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
             endpoint_url=CLOUD_RU_ENDPOINT,
             aws_access_key_id=CLOUD_RU_ACCESS_KEY,
             aws_secret_access_key=CLOUD_RU_SECR
-        
+        )
         # Загружаем файл
         with open(file_path, 'rb') as f:
             s3_client.put_object(
