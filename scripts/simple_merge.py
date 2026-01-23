@@ -47,6 +47,23 @@ CLOUD_RU_SECRET_KEY = os.environ.get("CLOUD_RU_SECRET_KEY", "b8075e77945ec94ed6e
 CLOUD_RU_BUCKET = os.environ.get("CLOUD_RU_BUCKET", "bucket-93b250")
 CLOUD_RU_REGION = os.environ.get("CLOUD_RU_REGION", "ru-central-1")
 
+# GitVerse API конфигурация (только токен в секретах)
+GITVERSE_TOKEN = os.environ.get("GITVERSE_TOKEN", "")
+
+# Остальные параметры GitVerse заданы явно в коде
+if GITVERSE_TOKEN:
+    # Настройки по умолчанию - можно изменить под ваш репозиторий
+    GITVERSE_ENDPOINT = "https://api.gitverse.ru"
+    GITVERSE_REPO_OWNER = "bywarm"  # Замените на владельца репозитория
+    GITVERSE_REPO_NAME = "rser"  # Замените на имя репозитория
+    GITVERSE_BRANCH = "main"
+else:
+    # Если токен не задан, параметры не важны
+    GITVERSE_ENDPOINT = ""
+    GITVERSE_REPO_OWNER = ""
+    GITVERSE_REPO_NAME = ""
+    GITVERSE_BRANCH = ""
+
 if GITHUB_TOKEN:
     g = Github(auth=Auth.Token(GITHUB_TOKEN))
 else:
@@ -840,9 +857,120 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
         
     except Exception as e:
         log(f"❌ Ошибка при загрузке в Cloud.ru: {str(e)}")
-
+        
+def upload_to_gitverse(filename: str, remote_path: str = None):
+    """Загружает файл на GitVerse через API согласно документации"""
+    if not GITVERSE_TOKEN:
+        log("❌ Пропускаю загрузку на GitVerse: отсутствует токен")
+        return
+    
+    if not os.path.exists(filename):
+        log(f"❌ Файл {filename} не найден для загрузки на GitVerse")
+        return
+    
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        if remote_path is None:
+            remote_path = os.path.basename(filename)
+        
+        # Формируем URL для API GitVerse согласно документации
+        api_url = f"{GITVERSE_ENDPOINT}/repos/{GITVERSE_REPO_OWNER}/{GITVERSE_REPO_NAME}/contents/{remote_path}"
+        
+        # Подготавливаем заголовки
+        headers = {
+            "Authorization": f"Bearer {GITVERSE_TOKEN}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+        
+        # Кодируем содержимое в base64
+        content_b64 = base64.b64encode(content.encode('utf-8')).decode('utf-8')
+        
+        # 1. Сначала пытаемся получить информацию о существующем файле (GET /repos/{owner}/{repo}/contents/{path})
+        try:
+            response = requests.get(
+                api_url,
+                headers=headers,
+                params={'ref': GITVERSE_BRANCH},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                # Файл существует, получаем его SHA
+                existing_file = response.json()
+                sha = existing_file.get('sha', '')
+                
+                # Проверяем, изменилось ли содержимое
+                if existing_file.get('content'):
+                    # Декодируем существующее содержимое (оно в base64)
+                    existing_content_b64 = existing_file['content'].replace('\n', '')
+                    # Декодируем для сравнения
+                    try:
+                        existing_content_decoded = base64.b64decode(existing_content_b64).decode('utf-8', errors='ignore')
+                        if existing_content_decoded == content:
+                            log(f"ℹ️  Файл {remote_path} не изменился в GitVerse")
+                            return
+                    except:
+                        # Если не удалось декодировать, все равно обновляем
+                        pass
+                
+                # 2. Обновляем существующий файл (PUT /repos/{owner}/{repo}/contents/{filename})
+                data = {
+                    "message": f": {offset}",
+                    "content": content_b64,
+                    "sha": sha,
+                    "branch": GITVERSE_BRANCH,
+                    "committer": {
+                        "name": "rsser",
+                        "email": "warm@gmail.com"
+                    }
+                }
+                
+                response = requests.put(api_url, headers=headers, json=data, timeout=30)
+                
+                if response.status_code in [200, 201]:
+                    log(f"⬆️  Файл {remote_path} обновлён на GitVerse в ветке {GITVERSE_BRANCH}")
+                else:
+                    error_msg = response.text[:200] if response.text else str(response.status_code)
+                    log(f"❌ Ошибка обновления файла на GitVerse: {error_msg}")
+            
+            elif response.status_code == 404:
+                # Файл не существует, создаем новый
+                # 3. Создаем новый файл (PUT /repos/{owner}/{repo}/contents/{filename})
+                data = {
+                    "message": f": {offset}",
+                    "content": content_b64,
+                    "branch": GITVERSE_BRANCH,
+                    "committer": {
+                        "name": "rsser",
+                        "email": "warm@gmail.com"
+                    }
+                }
+                
+                response = requests.put(api_url, headers=headers, json=data, timeout=30)
+                
+                if response.status_code in [200, 201]:
+                    log(f"🆕 Файл {remote_path} создан на GitVerse в ветке {GITVERSE_BRANCH}")
+                else:
+                    error_msg = response.text[:200] if response.text else str(response.status_code)
+                    log(f"❌ Ошибка создания файла на GitVerse: {error_msg}")
+            
+            else:
+                error_msg = response.text[:200] if response.text else str(response.status_code)
+                log(f"❌ Ошибка при проверке файла на GitVerse: {error_msg}")
+                
+        except requests.exceptions.RequestException as e:
+            error_msg = str(e)[:100]
+            log(f"❌ Ошибка подключения к GitVerse API: {error_msg}")
+        
+    except Exception as e:
+        log(f"❌ Ошибка при загрузке на GitVerse: {str(e)[:100]}")
+    
 def main():
     """Основная функция"""
+
     log("📥 Загрузка конфигов...")
     
     all_configs = []
@@ -908,10 +1036,27 @@ def main():
         else:
             log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
     
-    # 8. Обновляем README
+    # 8. Загружаем на GitVerse (если задан токен)
+    if GITVERSE_TOKEN:
+        log("🚀 Начинаю загрузку на GitVerse...")
+        gitverse_files = {
+            "merged.txt": PATHS["merged"],
+            "wl.txt": PATHS["wl"],
+            "selected.txt": PATHS["selected"]
+        }
+        
+        for remote_name, local_path in gitverse_files.items():
+            if os.path.exists(local_path):
+                upload_to_gitverse(local_path, remote_name)
+            else:
+                log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку на GitVerse")
+    else:
+        log("ℹ️  Токен GitVerse не задан, пропускаю загрузку")
+    
+    # 9. Обновляем README
     update_readme(len(unique_configs), len(whitelist_configs))
     
-    # 9. Выводим итоги
+    # 10. Выводим итоги
     log("=" * 60)
     log("📊 ИТОГИ:")
     log("   🌐 Источников: " + str(len(URLS)))
@@ -925,6 +1070,8 @@ def main():
     log(f"      • {PATHS['merged']}")
     log(f"      • {PATHS['wl']}")
     log(f"      • {PATHS['selected']}")
+    log("   ☁️  Cloud.ru bucket: " + (CLOUD_RU_BUCKET if CLOUD_RU_BUCKET else "не настроен"))
+    log("   🚀 GitVerse: " + ("настроен" if GITVERSE_TOKEN else "не настроен"))
     log("=" * 60)
     
     # Проверяем изменения для GitHub Actions
