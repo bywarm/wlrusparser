@@ -56,7 +56,7 @@ if GITVERSE_TOKEN:
     GITVERSE_ENDPOINT = "https://api.gitverse.ru"
     GITVERSE_REPO_OWNER = "bywarm"  # Замените на владельца репозитория
     GITVERSE_REPO_NAME = "rser"  # Замените на имя репозитория
-    GITVERSE_BRANCH = "main"
+    GITVERSE_BRANCH = "master"
 else:
     # Если токен не задан, параметры не важны
     GITVERSE_ENDPOINT = ""
@@ -838,7 +838,7 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None):
             's3',
             endpoint_url=CLOUD_RU_ENDPOINT,
             aws_access_key_id=CLOUD_RU_ACCESS_KEY,
-            aws_secret_access_key=CLOUD_RU_SECR
+            aws_secret_access_key=CLOUD_RU_SECRET_KEY
         )
         # Загружаем файл
         with open(file_path, 'rb') as f:
