@@ -791,8 +791,8 @@ def process_selected_file():
         log("ℹ️ Файл selected.txt не найден")
         return []
 
-def upload_to_cloud_ru(file_path: str, s3_path: str = None, custom_name: str = None, add_prefix: str = None):
-    """Загружает файл в bucket Cloud.ru по S3 API с возможностью использования другого имени"""
+def upload_to_cloud_ru(file_path: str, s3_path: str = None):
+    """Загружает файл в bucket Cloud.ru по S3 API"""
     if not all([CLOUD_RU_ENDPOINT, CLOUD_RU_ACCESS_KEY, CLOUD_RU_SECRET_KEY, CLOUD_RU_BUCKET]):
         log("❌ Пропускаю загрузку в Cloud.ru: отсутствуют необходимые переменные окружения")
         return
@@ -812,22 +812,9 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None, custom_name: str = N
         
         # Определяем имя файла в bucket
         if s3_path is None:
-            # Берем базовое имя файла
-            base_name = os.path.basename(file_path)
-            
-            # Применяем кастомное имя, если указано
-            if custom_name:
-                final_name = custom_name
-            # Или добавляем префикс, если указан
-            elif add_prefix:
-                final_name = f"{add_prefix}_{base_name}"
-            # Иначе используем оригинальное имя
-            else:
-                final_name = base_name
-        else:
-            final_name = s3_path
+            s3_path = os.path.basename(file_path)
         
-        log(f"☁️  Загружаю {file_path} в Cloud.ru bucket {CLOUD_RU_BUCKET} как {final_name}")
+        log(f"☁️  Загружаю {file_path} в Cloud.ru bucket {CLOUD_RU_BUCKET} как {s3_path}")
         
         # Настройка клиента S3 для Cloud.ru
         s3_client = boto3.client(
@@ -843,15 +830,15 @@ def upload_to_cloud_ru(file_path: str, s3_path: str = None, custom_name: str = N
         with open(file_path, 'rb') as f:
             s3_client.put_object(
                 Bucket=CLOUD_RU_BUCKET,
-                Key=final_name,
+                Key=s3_path,
                 Body=f,
                 ContentType='text/plain; charset=utf-8',
             )
         
-        log(f"✅ Файл успешно загружен в Cloud.ru: {final_name}")
+        log(f"✅ Файл успешно загружен в Cloud.ru: {s3_path}")
         
         # Формируем ссылку на файл
-        file_url = f"{CLOUD_RU_ENDPOINT}/{CLOUD_RU_BUCKET}/{final_name}"
+        file_url = f"{CLOUD_RU_ENDPOINT}/{CLOUD_RU_BUCKET}/{s3_path}"
         log(f"🔗 Ссылка на файл: {file_url}")
         
     except Exception as e:
@@ -913,23 +900,20 @@ def main():
     upload_to_github(PATHS["merged"])
     upload_to_github(PATHS["wl"])
     upload_to_github(PATHS["selected"])
-# 7. Загружаем в Cloud.ru с другими именами
-log("☁️  Начинаю загрузку в Cloud.ru с переименованием...")
-files_to_upload = [
-    {"local": PATHS["merged"], "s3_name": "GidvFj.txt"},
-    {"local": PATHS["wl"], "s3_name": "Gsiec.txt"},
-    {"local": PATHS["selected"], "s3_name": "JgUfsU.txt"}
-]
+# 7. Загружаем в Cloud.ru
+    log("☁️  Начинаю загрузку в Cloud.ru...")
+    files_to_upload = {
+    "merged.txt": PATHS["merged"],
+    "wl.txt": PATHS["wl"],
+    "selected.txt": PATHS["selected"]
+     }
 
-for file_info in files_to_upload:
-    local_path = file_info["local"]
-    s3_name = file_info["s3_name"]
-    
-    if os.path.exists(local_path):
-        upload_to_cloud_ru(local_path, custom_name=s3_name)
-    else:
+     for s3_name, local_path in files_to_upload.items():
+      if os.path.exists(local_path):
+        upload_to_cloud_ru(local_path, s3_name)
+      else:
         log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
-    # 8. Обновляем README
+    
     update_readme(len(unique_configs), len(whitelist_configs))
     
     # 9. Выводим итоги
