@@ -50,6 +50,7 @@ jobs:
         MY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         OUTPUT_DIR: ${{ github.event.inputs.folder_name || 'confs' }}
         GITVERSE_TOKEN:  ${{ secrets.GITVERSE_TOKEN }}
+        CLOUD_RU_SECRET_KEY: ${{ secrets.CLOUD_RU_SECRET_KEY }}
       run: |
         echo "🕐 Запуск скрипта..."
         echo "📁 Используемая папка: $OUTPUT_DIR"
