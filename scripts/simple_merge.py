@@ -43,7 +43,7 @@ REPO_NAME = os.environ.get("GITHUB_REPOSITORY", "bywarm/wlrusparser")
 # Cloud.ru S3 конфигурация
 CLOUD_RU_ENDPOINT = os.environ.get("CLOUD_RU_ENDPOINT", "https://s3.cloud.ru/bucket-93b250")
 CLOUD_RU_ACCESS_KEY = os.environ.get("CLOUD_RU_ACCESS_KEY", "28a54be8-b238-4edf-8079-7cee88d2ab3c:d103f9e8c17b5d760f0d713ca4af063c")
-CLOUD_RU_SECRET_KEY = os.environ.get("CLOUD_RU_SECRET_KEY", "b8075e77945ec94ed6ec7e6f81d8b276")
+CLOUD_RU_SECRET_KEY = os.environ.get("CLOUD_RU_SECRET_KEY", "")
 CLOUD_RU_BUCKET = os.environ.get("CLOUD_RU_BUCKET", "bucket-93b250")
 CLOUD_RU_REGION = os.environ.get("CLOUD_RU_REGION", "ru-central-1")
 
