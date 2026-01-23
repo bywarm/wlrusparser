@@ -306,4 +306,3 @@ vless://85f36269-3184-465e-9e2d-2f9b8cde6bdc@84.201.139.151:5443/?type=tcp&encry
 vless://f8692a50-9593-482f-9d33-4927df87f978@51.250.89.29:5443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=max.ru&fp=chrome&security=reality&pbk=Po6vtOwHYjzS-ibY01_2yrvhpw7jhOBDFesZKMcxUi8&sid=8cd9d7c88b8fd22c#152.%20%F0%9F%87%B7%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://95abaefc-7861-417a-81b7-166cb788ce1a@217.16.24.222:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=api-maps.yandex.ru&fp=chrome&security=reality&pbk=Uwz6QjH6QTonKba4RVv35LNmhJLA6c2kxtI2nXRQWTg&sid=2c60d62e1d95c07a#153.%20%F0%9F%87%A9%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
