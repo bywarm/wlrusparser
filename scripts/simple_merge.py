@@ -901,17 +901,17 @@ def main():
     upload_to_github(PATHS["wl"])
     upload_to_github(PATHS["selected"])
 # 7. Загружаем в Cloud.ru
-    log("☁️  Начинаю загрузку в Cloud.ru...")
-    files_to_upload = {
+log("☁️  Начинаю загрузку в Cloud.ru...")
+files_to_upload = {
     "merged.txt": PATHS["merged"],
     "wl.txt": PATHS["wl"],
     "selected.txt": PATHS["selected"]
-     }
+}
 
-     for s3_name, local_path in files_to_upload.items():
-      if os.path.exists(local_path):
+for s3_name, local_path in files_to_upload.items():
+    if os.path.exists(local_path):
         upload_to_cloud_ru(local_path, s3_name)
-      else:
+    else:
         log(f"⚠️  Файл {local_path} не найден, пропускаю загрузку в Cloud.ru")
     
     update_readme(len(unique_configs), len(whitelist_configs))
