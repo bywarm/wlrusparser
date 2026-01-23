@@ -725,6 +725,11 @@ const sampleLinks = [
                 url: "https://wlr.s3-website.cloud.ru/bucket-93b250/wl.txt",
                 label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
                 type: "mirror"
+            },
+            {
+                url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/wl.txt",
+                label: "Зеркало 2 (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
             }
         ]
     },
@@ -743,6 +748,11 @@ const sampleLinks = [
                 url: "https://wlr.s3-website.cloud.ru/bucket-93b250/merged.txt",
                 label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
                 type: "mirror"
+            },
+            {
+                url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/merged.txt",
+                label: "Зеркало 2 (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
             }
         ]
     },
@@ -760,6 +770,11 @@ const sampleLinks = [
             {
                 url: "https://wlr.s3-website.cloud.ru/bucket-93b250/selected.txt",
                 label: "Зеркало",
+                type: "mirror"
+            },
+            {
+                url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/selected.txt",
+                label: "Зеркало 2 (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
                 type: "mirror"
             }
         ]
@@ -841,7 +856,7 @@ function showLinks() {
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
                                 <span style="color: #cbd5e1; font-size: 0.85rem;">
-                                    Основную ссылку не обновить при белых списках, а зеркало можно. Есть и нюанс - зеркало в любой момент может упасть, быть заблокированным, поменять URL и т. д. (пока что проблем с этим не наблюдается, будут изменения - укажу здесь)
+                                    Основную ссылку не обновить при белых списках, а зеркало можно. Все ссылки и зеркала обновляются автоматически (рекомендую обновлять хотя бы раз в 4 часа подписки в приложении).
                                 </span>
                             </div>
                         </div>
