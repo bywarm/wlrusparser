@@ -56,7 +56,7 @@ if GITVERSE_TOKEN:
     GITVERSE_ENDPOINT = "https://api.gitverse.ru"  # Основной endpoint согласно документации
     GITVERSE_REPO_OWNER = "bywarm"  # ВАШ логин на GitVerse
     GITVERSE_REPO_NAME = "rser"  # ВАШ репозиторий
-    GITVERSE_BRANCH = "main"
+    GITVERSE_BRANCH = "master"
 else:
     # Если токен не задан, параметры не важны
     GITVERSE_ENDPOINT = ""
