@@ -176,6 +176,8 @@ URLS = [
     "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
     "https://raw.githubusercontent.com/koteey/Ms.Kerosin-VPN/refs/heads/main/proxies.txt",
     "https://raw.githubusercontent.com/SilentGhostCodes/WhiteListVpn/refs/heads/main/config.txt",
+    "https://raw.githubusercontent.com/HikaruApps/WhiteLattice/refs/heads/main/subscriptions/main-sub.txt",
+    "https://raw.githubusercontent.com/avbak/sturdy-octo-tribble1/refs/heads/main/VLESS-RU-MOBILE-CIDR-WHITELIST-filtered.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
