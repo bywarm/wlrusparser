@@ -180,9 +180,9 @@ URLS = [
     "https://raw.githubusercontent.com/FalerChannel/FalerChannel/refs/heads/main/configs",
     "https://raw.githubusercontent.com/officialdakari/psychic-octo-tribble/refs/heads/main/subwl.txt",
     "https://raw.githubusercontent.com/RKPchannel/RKP_bypass_configs/refs/heads/main/configs",
-    "https://raw.githubusercontent.com/Ai123999/WhiteeListSub/refs/heads/main/whitelistkeys",
-    "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/2",
 
+    "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/2",
+    "https://s3c3.001.gpucloud.ru/dixsm/htxml",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
