@@ -563,7 +563,6 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
     
     return unique_configs, whitelist_configs
 
-
 def save_to_file(configs: list[str], file_type: str, description: str = "", add_numbering: bool = False):
     """Сохраняет конфиги в файл с динамическим именем"""
     if file_type == "merged":
@@ -579,7 +578,7 @@ def save_to_file(configs: list[str], file_type: str, description: str = "", add_
     try:
         os.makedirs(PATHS["base_dir"], exist_ok=True)
         
-        with open(filepath, "w", encoding="utf-8") as f:
+        with open(filepath, "w", encoding="utf-8", errors="replace") as f:
             if 'Whitelist' in description:
                f.write("#profile-title: WL RUS (wl.txt)\n")
             else:
@@ -605,7 +604,7 @@ def save_to_file(configs: list[str], file_type: str, description: str = "", add_
         
     except Exception as e:
         log(f"Ошибка сохранения файла {filename}: {str(e)}")
-        
+
 def upload_to_github(filename: str, remote_path: str = None, branch: str = "main"):
     """Загружает файл на GitHub в указанную ветку"""
     if not REPO:
@@ -617,8 +616,28 @@ def upload_to_github(filename: str, remote_path: str = None, branch: str = "main
         return
     
     try:
-        with open(filename, "r", encoding="utf-8") as f:
-            content = f.read()
+        # Читаем файл в бинарном режиме, затем декодируем
+        with open(filename, "rb") as f:
+            binary_content = f.read()
+        
+        # Декодируем содержимое с обработкой ошибок
+        try:
+            content = binary_content.decode("utf-8")
+        except UnicodeDecodeError:
+            # Если не удается декодировать как UTF-8, пробуем другие кодировки
+            log(f"⚠️  Ошибка декодирования UTF-8 в файле {filename}, пробую другие кодировки...")
+            try:
+                content = binary_content.decode("utf-8-sig")  # UTF-8 с BOM
+            except UnicodeDecodeError:
+                try:
+                    content = binary_content.decode("cp1251")  # Windows-1251
+                except UnicodeDecodeError:
+                    try:
+                        content = binary_content.decode("latin-1")  # Latin-1
+                    except UnicodeDecodeError:
+                        # В крайнем случае игнорируем ошибки
+                        content = binary_content.decode("utf-8", errors="replace")
+                        log(f"⚠️  Использована замена некорректных символов в файле {filename}")
         
         if remote_path is None:
             remote_path = filename
