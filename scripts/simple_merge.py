@@ -109,6 +109,21 @@ def get_paths():
 
 PATHS = get_paths()
 
+EXCLUDE_PATTERNS = [
+    "rootface-@pwn1337-telegram",
+    "01010101",
+    "9292929",
+    "38388282",
+    "star_test1",
+]
+
+# Дополнительные настройки
+EXCLUDE_SETTINGS = {
+    "case_sensitive": False,  # Регистрозависимость
+    "log_excluded": True,     # Логировать исключенные конфиги
+    "save_excluded": True,    # Сохранять исключенные в отдельный файл
+}
+
 WHITELIST_SUBNETS = [
     "5.188.0.0/16",
     "37.18.0.0/16",
@@ -833,6 +848,95 @@ def process_selected_file():
         log("ℹ️ Файл selected.txt не найден")
         return []
 
+def filter_excluded_configs(configs, exclude_patterns=None, settings=None, excluded_file=None):
+    """
+    Фильтрует конфиги по паттернам исключения
+    """
+    if exclude_patterns is None:
+        exclude_patterns = EXCLUDE_PATTERNS
+    
+    if settings is None:
+        settings = EXCLUDE_SETTINGS.copy()
+    else:
+        settings = settings.copy()
+    
+    if excluded_file:
+        settings["excluded_file"] = excluded_file
+    
+    filtered_configs = []
+    excluded_configs = []
+    exclusion_stats = {}
+    
+    # Подготовка паттернов (регистр)
+    if not settings.get("case_sensitive", False):
+        exclude_patterns = [p.lower() for p in exclude_patterns]
+    
+    for config in configs:
+        config_for_check = config if settings.get("case_sensitive", False) else config.lower()
+        excluded = False
+        reason = ""
+        
+        # Проверка каждого паттерна
+        for pattern in exclude_patterns:
+            # Разные типы проверок в зависимости от паттерна
+            if pattern.startswith("#"):  # Исключение по remark
+                remark_pattern = pattern[1:]  # Убираем #
+                if f"#{remark_pattern}" in config_for_check:
+                    excluded = True
+                    reason = f"remark содержит: {pattern}"
+                    break
+                    
+            elif pattern.startswith("@"):  # Исключение по адресу
+                addr_pattern = pattern[1:]  # Убираем @
+                # Ищем адрес после @ и до : или ?
+                if f"@{addr_pattern}" in config_for_check:
+                    excluded = True
+                    reason = f"адрес содержит: {pattern}"
+                    break
+                    
+            elif pattern.startswith("/"):  # Исключение по path
+                if f"path={pattern}" in config_for_check or f"path%3D{pattern}" in config_for_check:
+                    excluded = True
+                    reason = f"path содержит: {pattern}"
+                    break
+                    
+            else:  # Общая проверка по подстроке
+                if pattern in config_for_check:
+                    excluded = True
+                    reason = f"содержит: {pattern}"
+                    break
+        
+        if excluded:
+            excluded_configs.append(config)
+            # Статистика по причинам
+            if reason in exclusion_stats:
+                exclusion_stats[reason] += 1
+            else:
+                exclusion_stats[reason] = 1
+        else:
+            filtered_configs.append(config)
+    
+    # Вывод статистики
+    if settings.get("log_excluded", True):
+        log(f"🚫 Фильтрация исключений:")
+        log(f"   Всего конфигов до фильтрации: {len(configs)}")
+        log(f"   Исключено: {len(excluded_configs)}")
+        log(f"   Осталось после исключений: {len(filtered_configs)}")
+        
+        if exclusion_stats:
+            log(f"   Причины исключений:")
+            for reason, count in exclusion_stats.items():
+                log(f"     • {reason}: {count}")
+    
+    # Сохранение исключенных конфигов
+    if settings.get("save_excluded", True) and excluded_configs:
+        excluded_filename = settings.get("excluded_file", "excluded.txt")
+        with open(excluded_filename, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(excluded_configs))
+        log(f"💾 Исключенные конфиги сохранены в {excluded_filename} ({len(excluded_configs)} шт.)")
+    
+    return filtered_configs, excluded_configs
+
 def upload_to_cloud_ru(file_path: str, s3_path: str = None):
     """Загружает файл в bucket Cloud.ru по S3 API"""
     if not all([CLOUD_RU_ENDPOINT, CLOUD_RU_ACCESS_KEY, CLOUD_RU_SECRET_KEY, CLOUD_RU_BUCKET]):
@@ -1080,25 +1184,52 @@ def main():
         log("❌ Не удалось загрузить ни одного конфига")
         return
     
+    # 3. Добавляем selected конфиги в общий список
+    all_configs.extend(selected_configs)
+    
     # 4. Дедупликация и сортировка по подсетям
     log("🔄 Дедупликация и фильтрация...")
     unique_configs, whitelist_configs = merge_and_deduplicate(all_configs)
     log("🔄 После дедупликации: " + str(len(unique_configs)) + " конфигов")
     log("🛡️ Whitelist конфигов: " + str(len(whitelist_configs)))
     
-    # 5. Сохраняем локально
+    # 5. ФИЛЬТРАЦИЯ ИСКЛЮЧЕНИЙ - НОВЫЙ ЭТАП
+    log("🚫 Применение списка исключений...")
+    
+    # Фильтруем основной список (merged)
+    filtered_unique_configs, excluded_unique = filter_excluded_configs(
+        unique_configs, 
+        excluded_file="excluded_merged.txt"
+    )
+    
+    # Фильтруем whitelist список
+    filtered_whitelist_configs, excluded_whitelist = filter_excluded_configs(
+        whitelist_configs,
+        excluded_file="excluded_wl.txt"
+    )
+    
+    # Обновляем переменные для дальнейшего использования
+    unique_configs = filtered_unique_configs
+    whitelist_configs = filtered_whitelist_configs
+    
+    log(f"✅ После исключений:")
+    log(f"   • merged: {len(unique_configs)} конфигов (исключено {len(excluded_unique)})")
+    log(f"   • whitelist: {len(whitelist_configs)} конфигов (исключено {len(excluded_whitelist)})")
+    
+    # 6. Сохраняем локально
     os.makedirs("confs", exist_ok=True)
     
     # СОХРАНЯЕМ merged.txt С НУМЕРАЦИЕЙ (включая конфиги из selected.txt)
-    save_to_file(unique_configs, "merged", "Объединенные конфиги", add_numbering=True)
-    save_to_file(whitelist_configs, "wl", "Whitelist конфиги", add_numbering=True)
+    save_to_file(unique_configs, "merged", "Объединенные конфиги (после исключений)", add_numbering=True)
+    save_to_file(whitelist_configs, "wl", "Whitelist конфиги (после исключений)", add_numbering=True)
     
-    # Загружаем на GitHub
+    # 7. Загружаем на GitHub
+    log("🌐 Загрузка на GitHub...")
     upload_to_github(PATHS["merged"])
     upload_to_github(PATHS["wl"])
     upload_to_github(PATHS["selected"])
     
-    # 7. Загружаем в Cloud.ru
+    # 8. Загружаем в Cloud.ru
     log("☁️  Начинаю загрузку в Cloud.ru...")
     files_to_upload = {
         "merged.txt": PATHS["merged"],
@@ -1138,14 +1269,15 @@ def main():
     log("   🌐 Источников: " + str(len(URLS)))
     log("   📥 Скачано из URL: " + str(len(all_configs) - len(selected_configs)))
     log("   🔧 Из selected.txt: " + str(len(selected_configs)))
-    log("   🔄 Уникальных: " + str(len(unique_configs)))
-    total_duplicates = (len(all_configs) - len(selected_configs)) + len(selected_configs) - len(unique_configs)
-    log("   📊 Дубликатов: " + str(total_duplicates))
-    log("   🛡️ Whitelist: " + str(len(whitelist_configs)))
+    log("   🔄 Уникальных (после дедупликации): " + str(len(filtered_unique_configs)))
+    log("   🚫 Исключено паттернами: " + str(len(excluded_unique) + len(excluded_whitelist)))
+    log("   🛡️ Whitelist (после исключений): " + str(len(filtered_whitelist_configs)))
     log("   💾 Основные файлы:")
-    log(f"      • {PATHS['merged']}")
-    log(f"      • {PATHS['wl']}")
+    log(f"      • {PATHS['merged']} ({len(unique_configs)} конфигов)")
+    log(f"      • {PATHS['wl']} ({len(whitelist_configs)} конфигов)")
     log(f"      • {PATHS['selected']}")
+    log(f"      • excluded_merged.txt ({len(excluded_unique)} конфигов)")
+    log(f"      • excluded_wl.txt ({len(excluded_whitelist)} конфигов)")
     log("   ☁️  Cloud.ru bucket: " + (CLOUD_RU_BUCKET if CLOUD_RU_BUCKET else "не настроен"))
     log("   🚀 GitVerse: " + ("настроен" if GITVERSE_TOKEN else "не настроен"))
     log("=" * 60)
