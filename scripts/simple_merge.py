@@ -170,7 +170,6 @@ URLS = [
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
     "https://raw.githubusercontent.com/vsevjik/OBSpiskov/refs/heads/main/wwh",
-    "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_nolite.txt",
     "https://fsub.flux.2bd.net/githubmirror/bypass/bypass-all.txt",
     "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
     "https://raw.githubusercontent.com/koteey/Ms.Kerosin-VPN/refs/heads/main/proxies.txt",
@@ -180,7 +179,7 @@ URLS = [
     "https://raw.githubusercontent.com/FalerChannel/FalerChannel/refs/heads/main/configs",
     "https://raw.githubusercontent.com/officialdakari/psychic-octo-tribble/refs/heads/main/subwl.txt",
     "https://raw.githubusercontent.com/RKPchannel/RKP_bypass_configs/refs/heads/main/configs",
-
+    "https://raw.githubusercontent.com/Ai123999/WhiteeListSub/refs/heads/main/whitelistkeys",
     "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/2",
     "https://s3c3.001.gpucloud.ru/dixsm/htxml",
 ]
