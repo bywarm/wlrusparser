@@ -178,6 +178,10 @@ URLS = [
     "https://raw.githubusercontent.com/SilentGhostCodes/WhiteListVpn/refs/heads/main/config.txt",
     "https://raw.githubusercontent.com/HikaruApps/WhiteLattice/refs/heads/main/subscriptions/main-sub.txt",
     "https://raw.githubusercontent.com/avbak/sturdy-octo-tribble1/refs/heads/main/VLESS-RU-MOBILE-CIDR-WHITELIST-filtered.txt",
+    "https://raw.githubusercontent.com/FalerChannel/FalerChannel/refs/heads/main/configs",
+    "https://raw.githubusercontent.com/officialdakari/psychic-octo-tribble/refs/heads/main/subwl.txt",
+    "https://raw.githubusercontent.com/RKPchannel/RKP_bypass_configs/refs/heads/main/configs",
+    "https://raw.githubusercontent.com/Ai123999/WhiteeListSub/refs/heads/main/whitelistkeys",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
