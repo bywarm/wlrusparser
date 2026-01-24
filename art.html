@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор HTML статей | FreeAccess</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .logo i {
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Editor Section */
+        .editor-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        /* Toolbar */
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg-card-light);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .toolbar-group {
+            display: flex;
+            gap: 5px;
+            border-right: 1px solid var(--border-color);
+            padding-right: 15px;
+            margin-right: 10px;
+        }
+        
+        .toolbar-group:last-child {
+            border-right: none;
+            padding-right: 0;
+            margin-right: 0;
+        }
+        
+        .toolbar-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-gray);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        
+        .toolbar-btn:hover {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+            border-color: var(--primary);
+        }
+        
+        .toolbar-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: var(--bg-card-light);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        .form-textarea {
+            width: 100%;
+            min-height: 400px;
+            background: var(--bg-card-light);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            color: var(--text-light);
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        /* Preview Section */
+        .preview-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            overflow-y: auto;
+            max-height: 800px;
+        }
+        
+        .preview-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        .preview-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .preview-content h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .preview-content h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 12px;
+            color: var(--secondary);
+        }
+        
+        .preview-content h4 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px;
+            color: var(--accent);
+        }
+        
+        .preview-content p {
+            margin-bottom: 20px;
+            color: var(--text-gray);
+        }
+        
+        .preview-content ul, .preview-content ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            color: var(--text-gray);
+        }
+        
+        .preview-content li {
+            margin-bottom: 10px;
+        }
+        
+        .preview-content strong, .preview-content b {
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        
+        .preview-content em, .preview-content i {
+            font-style: italic;
+        }
+        
+        .preview-content u {
+            text-decoration: underline;
+        }
+        
+        .preview-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+        
+        .preview-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        
+        .preview-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: #e2e8f0;
+        }
+        
+        .preview-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: var(--text-gray);
+            background: rgba(124, 58, 237, 0.1);
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .preview-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        .preview-content a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .preview-content a:hover {
+            border-bottom: 1px solid var(--primary);
+        }
+        
+        .preview-content .spoiler {
+            background: var(--bg-card-light);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .preview-content .spoiler-header {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .preview-content .spoiler-content {
+            padding: 20px;
+            display: none;
+            color: var(--text-gray);
+        }
+        
+        .preview-content .spoiler.open .spoiler-content {
+            display: block;
+        }
+        
+        .preview-content .spoiler.open .spoiler-header i {
+            transform: rotate(180deg);
+        }
+        
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+        }
+        
+        .clear-btn {
+            background: var(--bg-card);
+            color: var(--text-gray);
+            border: 1px solid var(--border-color);
+        }
+        
+        .clear-btn:hover {
+            background: var(--bg-card-light);
+            color: var(--text-light);
+        }
+        
+        /* Export Modal */
+        .export-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .export-modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .export-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .export-modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        .close-export-modal {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-export-modal:hover {
+            color: var(--text-light);
+        }
+        
+        .export-code-container {
+            flex-grow: 1;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .export-code {
+            width: 100%;
+            height: 400px;
+            background: var(--bg-dark);
+            color: var(--text-light);
+            border: none;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            overflow-y: auto;
+        }
+        
+        .export-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .export-action-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, var(--accent), #34d399);
+            color: white;
+        }
+        
+        .export-action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        /* Modal для вставки изображения */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .image-modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+        }
+        
+        .image-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .image-modal-header h3 {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        .close-image-modal {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-image-modal:hover {
+            color: var(--text-light);
+        }
+        
+        /* Вкладки */
+        .image-modal-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .image-tab {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .image-tab:hover {
+            color: var(--text-light);
+        }
+        
+        .image-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .image-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .image-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .image-input-group label {
+            color: var(--text-gray);
+            font-weight: 600;
+        }
+        
+        .image-input-group input {
+            background: var(--bg-card-light);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .image-input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .image-file-input {
+            padding: 10px;
+            background: var(--bg-card-light);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            color: var(--text-gray);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .image-file-input:hover {
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
+        
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .upload-progress {
+            display: none;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: var(--bg-card-light);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .upload-status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .upload-status.success {
+            color: var(--accent);
+        }
+        
+        .upload-status.error {
+            color: var(--danger);
+        }
+        
+        .image-form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .image-form-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-size: 1rem;
+        }
+        
+        .insert-image-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .cancel-image-btn {
+            background: var(--bg-card);
+            color: var(--text-gray);
+            border: 1px solid var(--border-color);
+        }
+        
+        .image-form-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                gap: 20px;
+            }
+            
+            .editor-section, .preview-section {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .toolbar-group {
+                margin-bottom: 10px;
+                border-right: none;
+                padding-right: 0;
+                margin-right: 0;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .form-textarea {
+                min-height: 300px;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .export-actions {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 0;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .preview-content h1 {
+                font-size: 2rem;
+            }
+            
+            .preview-content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .preview-content h3 {
+                font-size: 1.3rem;
+            }
+        }
+        .article-content pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 20px 0;
+    border: 1px solid var(--border-color);
+    font-family: 'Courier New', monospace;
+    line-height: 1.5;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.article-content pre::before {
+    content: '📋 Код';
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: var(--bg-card);
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+/* Улучшение стилей для списков */
+.article-content ul, .article-content ol {
+    margin: 15px 0 20px 25px;
+    color: var(--text-gray);
+}
+
+.article-content ul {
+    list-style-type: disc;
+}
+
+.article-content ol {
+    list-style-type: decimal;
+}
+
+.article-content li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+/* Улучшение цитат */
+.article-content blockquote {
+    border-left: 4px solid var(--primary);
+    padding: 15px 20px 15px 25px;
+    margin: 20px 0;
+    font-style: italic;
+    color: var(--text-gray);
+    background: rgba(124, 58, 237, 0.1);
+    border-radius: 0 10px 10px 0;
+    position: relative;
+}
+
+.article-content blockquote::before {
+    content: '"';
+    font-size: 3rem;
+    color: var(--primary);
+    opacity: 0.3;
+    position: absolute;
+    left: 10px;
+    top: 5px;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <span>Генератор HTML статей</span>
+            </div>
+            <p class="subtitle">Создавайте красивые статьи с форматированием и экспортируйте в HTML</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- Editor Section -->
+            <div class="editor-section">
+                <h2 class="section-title">
+                    <i class="fas fa-edit"></i> Редактор
+                </h2>
+                
+                <!-- Toolbar -->
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-format="bold" title="Жирный текст">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="toolbar-btn" data-format="italic" title="Курсив">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="toolbar-btn" data-format="underline" title="Подчеркивание">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-format="h2" title="Заголовок 2">
+                            H2
+                        </button>
+                        <button class="toolbar-btn" data-format="h3" title="Заголовок 3">
+                            H3
+                        </button>
+                        <button class="toolbar-btn" data-format="h4" title="Заголовок 4">
+                            H4
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-format="ul" title="Маркированный список">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button class="toolbar-btn" data-format="ol" title="Нумерованный список">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-format="link" title="Вставить ссылку">
+                            <i class="fas fa-link"></i>
+                        </button>
+                        <button class="toolbar-btn" data-format="image" title="Вставить изображение">
+                            <i class="fas fa-image"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-format="code" title="Вставить код">
+                            <i class="fas fa-code"></i>
+                        </button>
+                        <button class="toolbar-btn" data-format="quote" title="Вставить цитату">
+                            <i class="fas fa-quote-right"></i>
+                        </button>
+                        <button class="toolbar-btn" data-format="spoiler" title="Вставить спойлер">
+                            <i class="fas fa-eye-slash"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Form -->
+                <div class="form-group">
+                    <label class="form-label" for="articleTitle">Заголовок статьи:</label>
+                    <input type="text" id="articleTitle" class="form-input" placeholder="Введите заголовок статьи">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="articleContent">Содержимое статьи:</label>
+                    <textarea id="articleContent" class="form-textarea" placeholder="Начните писать статью здесь..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Подсказки по форматированию:</label>
+                    <div style="color: var(--text-gray); font-size: 0.9rem; line-height: 1.5; padding: 10px; background: var(--bg-card-light); border-radius: 8px;">
+                        <p><strong>Используйте кнопки панели инструментов для форматирования:</strong></p>
+                        <ul style="margin-top: 10px;">
+                            <li><strong>Жирный текст</strong> - выделите текст и нажмите <i class="fas fa-bold"></i></li>
+                            <li><strong>Курсив</strong> - выделите текст и нажмите <i class="fas fa-bold"></i></li>
+                            <li><strong>Заголовки</strong> - выделите текст и нажмите H2, H3 или H4</li>
+                            <li><strong>Списки</strong> - нажмите кнопку списка и вводите элементы</li>
+                            <li><strong>Изображения</strong> - нажмите <i class="fas fa-image"></i> и вставьте ссылку или загрузите файл</li>
+                            <li><strong>Код</strong> - выделите код и нажмите <i class="fas fa-code"></i></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preview Section -->
+            <div class="preview-section">
+                <h2 class="section-title">
+                    <i class="fas fa-eye"></i> Предпросмотр
+                </h2>
+                <div id="previewContent" class="preview-content">
+                    <p style="color: var(--text-gray); text-align: center; margin-top: 50px;">
+                        Здесь будет отображаться предпросмотр вашей статьи...
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions">
+            <button id="generateHtmlBtn" class="action-btn generate-btn">
+                <i class="fas fa-file-export"></i> Сгенерировать HTML
+            </button>
+            <button id="clearAllBtn" class="action-btn clear-btn">
+                <i class="fas fa-trash"></i> Очистить всё
+            </button>
+        </div>
+    </div>
+    
+    <!-- Export Modal -->
+    <div class="export-modal" id="exportModal">
+        <div class="export-modal-content">
+            <div class="export-modal-header">
+                <h3>Готовый HTML код</h3>
+                <button class="close-export-modal">×</button>
+            </div>
+            
+            <div class="export-code-container">
+                <textarea class="export-code" id="exportCode" readonly></textarea>
+            </div>
+            
+            <div class="export-actions">
+                <button id="copyCodeBtn" class="export-action-btn copy-btn">
+                    <i class="fas fa-copy"></i> Копировать код
+                </button>
+                <button id="downloadHtmlBtn" class="export-action-btn download-btn">
+                    <i class="fas fa-download"></i> Скачать HTML файл
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Modal -->
+    <div class="image-modal" id="imageModal">
+        <div class="image-modal-content">
+            <div class="image-modal-header">
+                <h3>Вставить изображение</h3>
+                <button class="close-image-modal">×</button>
+            </div>
+            
+            <!-- Вкладки -->
+            <div class="image-modal-tabs">
+                <button class="image-tab active" data-tab="link">По ссылке</button>
+                <button class="image-tab" data-tab="upload">Загрузить файл</button>
+            </div>
+            
+            <!-- Контент вкладки "По ссылке" -->
+            <div class="tab-content active" id="linkTab">
+                <form class="image-form" id="linkImageForm">
+                    <div class="image-input-group">
+                        <label for="imageUrlInput">Ссылка на изображение:</label>
+                        <input type="text" id="imageUrlInput" placeholder="https://example.com/image.jpg" required>
+                    </div>
+                    
+                    <div class="image-input-group">
+                        <label for="imageAltInput">Описание (alt текст):</label>
+                        <input type="text" id="imageAltInput" placeholder="Описание изображения">
+                    </div>
+                    
+                    <div class="image-form-actions">
+                        <button type="submit" class="image-form-btn insert-image-btn">
+                            <i class="fas fa-check"></i> Вставить
+                        </button>
+                        <button type="button" class="image-form-btn cancel-image-btn" id="cancelImageBtn">
+                            <i class="fas fa-times"></i> Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Контент вкладки "Загрузить файл" -->
+            <div class="tab-content" id="uploadTab">
+                <form class="image-form" id="uploadImageForm">
+                    <div class="image-input-group">
+                        <label for="imageFileInput">Выберите файл:</label>
+                        <input type="file" id="imageFileInput" class="image-file-input" accept="image/*" required>
+                        <img id="imagePreview" class="image-preview" alt="Предпросмотр">
+                    </div>
+                    
+                    <div class="image-input-group">
+                        <label for="uploadAltInput">Описание (alt текст):</label>
+                        <input type="text" id="uploadAltInput" placeholder="Описание изображения">
+                    </div>
+                    
+                    <div class="upload-progress" id="uploadProgress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-status" id="uploadStatus"></div>
+                    
+                    <div class="image-form-actions">
+                        <button type="submit" class="image-form-btn insert-image-btn" id="uploadImageBtn">
+                            <i class="fas fa-cloud-upload-alt"></i> Загрузить и вставить
+                        </button>
+                        <button type="button" class="image-form-btn cancel-image-btn" id="cancelUploadBtn">
+                            <i class="fas fa-times"></i> Отмена
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ключ API Imgbb - ВАШ КЛЮЧ ЗДЕСЬ
+        const IMGBB_API_KEY = 'f1dbbbdc1b9e7cd7cc7e502c966d9e2d';
+        
+        // Основные элементы
+        const articleTitle = document.getElementById('articleTitle');
+        const articleContent = document.getElementById('articleContent');
+        const previewContent = document.getElementById('previewContent');
+        const generateHtmlBtn = document.getElementById('generateHtmlBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const exportModal = document.getElementById('exportModal');
+        const exportCode = document.getElementById('exportCode');
+        const closeExportModal = document.querySelector('.close-export-modal');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+        const imageModal = document.getElementById('imageModal');
+        const linkImageForm = document.getElementById('linkImageForm');
+        const uploadImageForm = document.getElementById('uploadImageForm');
+        const closeImageModal = document.querySelector('.close-image-modal');
+        const cancelImageBtn = document.getElementById('cancelImageBtn');
+        const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+        const imageUrlInput = document.getElementById('imageUrlInput');
+        const imageAltInput = document.getElementById('imageAltInput');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const uploadAltInput = document.getElementById('uploadAltInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressFill = document.getElementById('progressFill');
+        const uploadStatus = document.getElementById('uploadStatus');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const toolbarButtons = document.querySelectorAll('.toolbar-btn');
+        const imageTabs = document.querySelectorAll('.image-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Экранирование HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Оценка времени чтения
+        function estimateReadingTime(text) {
+            const words = text.split(/\s+/).length;
+            const minutes = Math.ceil(words / 200);
+            
+            if (minutes === 1) return '1 минута';
+            if (minutes < 5) return minutes + ' минуты';
+            return minutes + ' минут';
+        }
+        
+        // Инициализация спойлеров
+        function initSpoilers() {
+            const spoilers = previewContent.querySelectorAll('.spoiler');
+            spoilers.forEach(spoiler => {
+                const header = spoiler.querySelector('.spoiler-header');
+                const content = spoiler.querySelector('.spoiler-content');
+                
+                if (header && content) {
+                    header.addEventListener('click', () => {
+                        spoiler.classList.toggle('open');
+                    });
+                }
+            });
+        }
+        
+        // Обновление предпросмотра
+  function updatePreview() {
+    const title = articleTitle.value.trim();
+    const content = articleContent.value;
+    
+    if (!title && !content) {
+        previewContent.innerHTML = '<p style="color: var(--text-gray); text-align: center; margin-top: 50px;">Здесь будет отображаться предпросмотр вашей статьи...</p>';
+        return;
+    }
+    
+    let html = '';
+    
+    if (title) {
+        html += '<h1>' + escapeHtml(title) + '</h1>';
+    }
+    
+    if (content) {
+        // Разбиваем содержимое на строки для обработки
+        const lines = content.split('\n');
+        let inList = false;
+        let listType = ''; // 'ul' или 'ol'
+        let inCodeBlock = false;
+        let inQuote = false;
+        let codeBlockContent = '';
+        
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i];
+            
+            // Обработка блоков кода ```
+            if (line.trim().startsWith('```')) {
+                if (!inCodeBlock) {
+                    // Начало блока кода
+                    inCodeBlock = true;
+                    codeBlockContent = '';
+                    // Закрываем предыдущие блоки
+                    if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; inList = false; }
+                    if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                } else {
+                    // Конец блока кода
+                    inCodeBlock = false;
+                    html += '<pre><code>' + escapeHtml(codeBlockContent) + '</code></pre>';
+                }
+                continue;
+            }
+            
+            if (inCodeBlock) {
+                codeBlockContent += line + '\n';
+                continue;
+            }
+            
+            // Обработка заголовков
+            if (line.startsWith('## ')) {
+                if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; inList = false; }
+                if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                html += '<h2>' + escapeHtml(line.substring(3)) + '</h2>';
+                continue;
+            }
+            
+            if (line.startsWith('### ')) {
+                if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; inList = false; }
+                if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                html += '<h3>' + escapeHtml(line.substring(4)) + '</h3>';
+                continue;
+            }
+            
+            // Обработка цитат
+            if (line.startsWith('> ')) {
+                if (!inQuote) {
+                    html += '<blockquote>';
+                    inQuote = true;
+                }
+                html += '<p>' + formatInlineHtml(line.substring(2)) + '</p>';
+                continue;
+            } else if (inQuote && line.trim() !== '' && !line.startsWith('> ')) {
+                // Если в цитате, но строка не начинается с >, добавляем как часть цитаты
+                html += '<p>' + formatInlineHtml(line) + '</p>';
+                continue;
+            } else if (inQuote) {
+                html += '</blockquote>';
+                inQuote = false;
+            }
+            
+            // Обработка маркированных списков
+            if (line.startsWith('- ')) {
+                if (!inList || listType !== 'ul') {
+                    if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; }
+                    html += '<ul>';
+                    inList = true;
+                    listType = 'ul';
+                }
+                html += '<li>' + formatInlineHtml(line.substring(2)) + '</li>';
+                continue;
+            }
+            
+            // Обработка нумерованных списков
+            const olMatch = line.match(/^(\d+)\.\s(.+)/);
+            if (olMatch) {
+                if (!inList || listType !== 'ol') {
+                    if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; }
+                    html += '<ol>';
+                    inList = true;
+                    listType = 'ol';
+                }
+                html += '<li>' + formatInlineHtml(olMatch[2]) + '</li>';
+                continue;
+            }
+            
+            // Обработка спойлеров
+            if (line.trim().startsWith(':::spoiler ')) {
+                // Закрываем предыдущие блоки
+                if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; inList = false; }
+                if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                
+                // Извлекаем заголовок спойлера
+                const spoilerTitle = line.substring(11).trim(); // 11 = длина ":::spoiler "
+                
+                // Собираем все строки спойлера
+                let spoilerLines = [];
+                let j = i + 1;
+                
+                while (j < lines.length && lines[j].trim() !== ':::') {
+                    spoilerLines.push(lines[j]);
+                    j++;
+                }
+                
+                // Если нашли закрывающий :::
+                if (j < lines.length && lines[j].trim() === ':::') {
+                    // Обрабатываем содержимое спойлера как отдельный блок
+                    let spoilerHtml = '';
+                    let inSpoilerList = false;
+                    let spoilerListType = '';
+                    let inSpoilerQuote = false;
+                    
+                    for (let k = 0; k < spoilerLines.length; k++) {
+                        let spoilerLine = spoilerLines[k];
+                        
+                        // Обработка цитат внутри спойлера
+                        if (spoilerLine.startsWith('> ')) {
+                            if (!inSpoilerQuote) {
+                                spoilerHtml += '<blockquote>';
+                                inSpoilerQuote = true;
+                            }
+                            spoilerHtml += '<p>' + formatInlineHtml(spoilerLine.substring(2)) + '</p>';
+                            continue;
+                        } else if (inSpoilerQuote && spoilerLine.trim() !== '' && !spoilerLine.startsWith('> ')) {
+                            spoilerHtml += '<p>' + formatInlineHtml(spoilerLine) + '</p>';
+                            continue;
+                        } else if (inSpoilerQuote) {
+                            spoilerHtml += '</blockquote>';
+                            inSpoilerQuote = false;
+                        }
+                        
+                        // Обработка списков внутри спойлера
+                        if (spoilerLine.startsWith('- ')) {
+                            if (!inSpoilerList || spoilerListType !== 'ul') {
+                                if (inSpoilerList) { spoilerHtml += spoilerListType === 'ul' ? '</ul>' : '</ol>'; }
+                                spoilerHtml += '<ul>';
+                                inSpoilerList = true;
+                                spoilerListType = 'ul';
+                            }
+                            spoilerHtml += '<li>' + formatInlineHtml(spoilerLine.substring(2)) + '</li>';
+                            continue;
+                        }
+                        
+                        const spoilerOlMatch = spoilerLine.match(/^(\d+)\.\s(.+)/);
+                        if (spoilerOlMatch) {
+                            if (!inSpoilerList || spoilerListType !== 'ol') {
+                                if (inSpoilerList) { spoilerHtml += spoilerListType === 'ul' ? '</ul>' : '</ol>'; }
+                                spoilerHtml += '<ol>';
+                                inSpoilerList = true;
+                                spoilerListType = 'ol';
+                            }
+                            spoilerHtml += '<li>' + formatInlineHtml(spoilerOlMatch[2]) + '</li>';
+                            continue;
+                        }
+                        
+                        // Закрываем список внутри спойлера, если строка пустая
+                        if (inSpoilerList && spoilerLine.trim() === '') {
+                            spoilerHtml += spoilerListType === 'ul' ? '</ul>' : '</ol>';
+                            inSpoilerList = false;
+                        }
+                        
+                        // Обычный текст внутри спойлера
+                        if (spoilerLine.trim() !== '') {
+                            spoilerHtml += '<p>' + formatInlineHtml(spoilerLine) + '</p>';
+                        }
+                    }
+                    
+                    // Закрываем открытые блоки внутри спойлера
+                    if (inSpoilerList) { spoilerHtml += spoilerListType === 'ul' ? '</ul>' : '</ol>'; }
+                    if (inSpoilerQuote) { spoilerHtml += '</blockquote>'; }
+                    
+                    // Формируем HTML спойлера
+                    html += `<div class="spoiler">
+                        <div class="spoiler-header">
+                            <span>${escapeHtml(spoilerTitle)}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="spoiler-content">${spoilerHtml}</div>
+                    </div>`;
+                    
+                    i = j; // Переходим к строке после :::
+                } else {
+                    // Если закрывающий ::: не найден, выводим как обычный текст
+                    html += '<p>' + formatInlineHtml(line) + '</p>';
+                }
+                
+                continue;
+            }
+            
+            // Обработка изображений
+            const imgMatch = line.match(/!\[(.*?)\]\((.*?)\)/);
+            if (imgMatch) {
+                if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; inList = false; }
+                if (inQuote) { html += '</blockquote>'; inQuote = false; }
+                html += '<img src="' + escapeHtml(imgMatch[2]) + '" alt="' + escapeHtml(imgMatch[1] || '') + '" style="max-width:100%;border-radius:10px;margin:20px 0;">';
+                continue;
+            }
+            
+            // Обработка ссылок (отдельные строки со ссылками)
+            const linkMatch = line.match(/^\[(.*?)\]\((.*?)\)$/);
+            if (linkMatch && line.trim() === line) {
+                html += '<p><a href="' + escapeHtml(linkMatch[2]) + '" target="_blank">' + escapeHtml(linkMatch[1]) + '</a></p>';
+                continue;
+            }
+            
+            // Закрываем список, если строка пустая
+            if (inList && line.trim() === '') {
+                html += listType === 'ul' ? '</ul>' : '</ol>';
+                inList = false;
+                listType = '';
+                continue;
+            }
+            
+            // Закрываем цитату, если строка пустая
+            if (inQuote && line.trim() === '') {
+                html += '</blockquote>';
+                inQuote = false;
+                continue;
+            }
+            
+            // Пропускаем пустые строки
+            if (line.trim() === '') {
+                continue;
+            }
+            
+            // Обработка обычного текста
+            html += '<p>' + formatInlineHtml(line) + '</p>';
+        }
+        
+        // Закрываем открытые блоки в конце
+        if (inList) { html += listType === 'ul' ? '</ul>' : '</ol>'; }
+        if (inQuote) { html += '</blockquote>'; }
+        if (inCodeBlock) { html += '<pre><code>' + escapeHtml(codeBlockContent) + '</code></pre>'; }
+    }
+    
+    previewContent.innerHTML = html;
+    
+    // Инициализируем спойлеры
+    initSpoilers();
+}
+
+// Вспомогательная функция для форматирования inline HTML
+function formatInlineHtml(text) {
+    if (!text) return '';
+    
+    // Экранируем HTML спецсимволы
+    let result = escapeHtml(text);
+    
+    // Обработка жирного текста
+    result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Обработка курсива
+    result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    // Обработка подчеркивания
+    result = result.replace(/~~(.*?)~~/g, '<u>$1</u>');
+    
+    // Обработка inline кода
+    result = result.replace(/`(.*?)`/g, '<code>$1</code>');
+    
+    // Обработка ссылок
+    result = result.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+    
+    return result;
+}
+        
+function generateFullHtml() {
+    const title = articleTitle.value.trim();
+    const content = articleContent.value;
+    
+    if (!title && !content) {
+        alert('Введите заголовок и содержимое статьи!');
+        return;
+    }
+    
+    const date = new Date().toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+    
+    // Сначала обновляем предпросмотр, чтобы получить отформатированный контент
+    updatePreview();
+    const formattedContent = previewContent.innerHTML.replace('<h1>' + escapeHtml(title) + '</h1>', '');
+    
+    // Создаем HTML код с правильным экранированием
+    const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(title)} | WL RUS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .article-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .article-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        .article-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        .article-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .article-content h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .article-content h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 12px;
+            color: var(--secondary);
+        }
+        
+        .article-content h4 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px;
+            color: var(--accent);
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+            color: var(--text-gray);
+        }
+        
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            color: var(--text-gray);
+        }
+        
+        .article-content li {
+            margin-bottom: 10px;
+        }
+        
+        .article-content strong, .article-content b {
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        
+        .article-content em, .article-content i {
+            font-style: italic;
+        }
+        
+        .article-content u {
+            text-decoration: underline;
+        }
+        
+        .article-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+        
+        .article-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: #e2e8f0;
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: var(--text-gray);
+            background: rgba(124, 58, 237, 0.1);
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .article-content a:hover {
+            border-bottom: 1px solid var(--primary);
+        }
+        
+        .article-content .spoiler {
+            background: var(--bg-card-light);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content .spoiler-header {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .article-content .spoiler-content {
+            padding: 20px;
+            display: none;
+            color: var(--text-gray);
+        }
+        
+        .article-content .spoiler.open .spoiler-content {
+            display: block;
+        }
+        
+        .article-content .spoiler.open .spoiler-header i {
+            transform: rotate(180deg);
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .article-title {
+                font-size: 2rem;
+            }
+            
+            .article-content h1 {
+                font-size: 2rem;
+            }
+            
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .article-content h3 {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .article-title {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="article-header">
+            <h1 class="article-title">${escapeHtml(title)}</h1>
+            <div class="article-meta">
+                <span><i class="far fa-calendar"></i> ${date}</span>
+                <span><i class="far fa-clock"></i> Примерное время чтения: ${estimateReadingTime(content)}</span>
+            </div>
+        </div>
+        
+        <div class="article-content">
+            ${formattedContent}
+        </div>
+        
+        <div class="footer">
+            <p>Статья создана командой WL RUS | <a href="/" style="color: var(--primary);">WL RUS WebSite</a></p>
+        </div>
+    </div>
+    
+<script>
+    // Инициализация спойлеров
+    document.addEventListener('DOMContentLoaded', function() {
+        const spoilers = document.querySelectorAll('.spoiler');
+        spoilers.forEach(spoiler => {
+            const header = spoiler.querySelector('.spoiler-header');
+            const content = spoiler.querySelector('.spoiler-content');
+            if (header && content) {
+                header.addEventListener('click', () => {
+                    spoiler.classList.toggle('open');
+                });
+            }
+        });
+    });
+<` + `/script>
+</body>
+</html>`;
+    
+    exportCode.value = html;
+    exportModal.style.display = 'flex';
+}
+        
+        // Очистка формы
+        function clearAll() {
+            if (confirm('Вы уверены, что хотите очистить всё?')) {
+                articleTitle.value = '';
+                articleContent.value = '';
+                updatePreview();
+            }
+        }
+        
+        // Загрузка изображения на Imgbb
+        async function uploadImageToImgbb(file, altText) {
+            if (IMGBB_API_KEY === 'YOUR_API_KEY_HERE') {
+                throw new Error('Пожалуйста, установите ваш API ключ Imgbb в переменной IMGBB_API_KEY');
+            }
+            
+            const formData = new FormData();
+            formData.append('key', IMGBB_API_KEY);
+            formData.append('image', file);
+            
+            // Показываем прогресс
+            uploadProgress.style.display = 'block';
+            progressFill.style.width = '30%';
+            
+            try {
+                const response = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                progressFill.style.width = '70%';
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                progressFill.style.width = '100%';
+                
+                if (data.success) {
+                    return {
+                        url: data.data.url,
+                        alt: altText || data.data.title || 'Изображение'
+                    };
+                } else {
+                    throw new Error(data.error?.message || 'Неизвестная ошибка загрузки');
+                }
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        // Настройка кнопок панели инструментов
+        function setupToolbarButtons() {
+            toolbarButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const format = this.getAttribute('data-format');
+                    const textarea = articleContent;
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    const selectedText = textarea.value.substring(start, end);
+                    let newText = '';
+                    
+                    switch(format) {
+                        case 'bold':
+                            newText = '**' + selectedText + '**';
+                            break;
+                        case 'italic':
+                            newText = '*' + selectedText + '*';
+                            break;
+                        case 'underline':
+                            newText = '~~' + selectedText + '~~';
+                            break;
+                        case 'h2':
+                            newText = '## ' + selectedText;
+                            break;
+                        case 'h3':
+                            newText = '### ' + selectedText;
+                            break;
+                        case 'h4':
+                            newText = '#### ' + selectedText;
+                            break;
+                        case 'ul':
+                            if (selectedText) {
+                                newText = selectedText.split('\n').map(line => '- ' + line).join('\n');
+                            } else {
+                                newText = '- ';
+                            }
+                            break;
+                        case 'ol':
+                            if (selectedText) {
+                                newText = selectedText.split('\n').map((line, i) => (i+1) + '. ' + line).join('\n');
+                            } else {
+                                newText = '1. ';
+                            }
+                            break;
+                        case 'link':
+                            const linkUrl = prompt('Введите URL ссылки:');
+                            if (linkUrl) {
+                                const linkText = prompt('Введите текст ссылки (опционально):', selectedText || 'Ссылка');
+                                newText = '[' + linkText + '](' + linkUrl + ')';
+                            } else {
+                                return;
+                            }
+                            break;
+                        case 'image':
+                            imageModal.style.display = 'flex';
+                            // Сбрасываем форму
+                            imageUrlInput.value = '';
+                            imageAltInput.value = selectedText || '';
+                            uploadAltInput.value = selectedText || '';
+                            imageFileInput.value = '';
+                            imagePreview.style.display = 'none';
+                            uploadProgress.style.display = 'none';
+                            uploadStatus.style.display = 'none';
+                            uploadStatus.className = 'upload-status';
+                            // Активируем вкладку по ссылке
+                            switchTab('link');
+                            return;
+                        case 'code':
+                            if (selectedText.includes('\n')) {
+                                newText = '```\n' + selectedText + '\n```';
+                            } else {
+                                newText = '`' + selectedText + '`';
+                            }
+                            break;
+                        case 'quote':
+                            if (selectedText) {
+                                newText = selectedText.split('\n').map(line => '> ' + line).join('\n');
+                            } else {
+                                newText = '> ';
+                            }
+                            break;
+                        case 'spoiler':
+                            const spoilerTitle = prompt('Введите заголовок спойлера:', 'Спойлер');
+                            if (spoilerTitle) {
+                                newText = ':::spoiler ' + spoilerTitle + '\n' + (selectedText || 'Содержимое спойлера') + '\n:::';
+                            }
+                            break;
+                    }
+                    
+                    // Вставка текста
+                    textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+                    
+                    // Обновление предпросмотра
+                    updatePreview();
+                    
+                    // Фокус на текстовое поле
+                    textarea.focus();
+                    textarea.selectionStart = textarea.selectionEnd = start + newText.length;
+                });
+            });
+        }
+        
+        // Переключение вкладок
+        function switchTab(tabName) {
+            // Обновляем активные вкладки
+            imageTabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Показываем активный контент
+            tabContents.forEach(content => {
+                if (content.id === tabName + 'Tab') {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
+        }
+        
+        // Инициализация
+        function init() {
+            // Обновление предпросмотра при изменении
+            articleTitle.addEventListener('input', updatePreview);
+            articleContent.addEventListener('input', updatePreview);
+            
+            // Кнопки действий
+            generateHtmlBtn.addEventListener('click', generateFullHtml);
+            clearAllBtn.addEventListener('click', clearAll);
+            
+            // Закрытие модального окна экспорта
+            closeExportModal.addEventListener('click', function() {
+                exportModal.style.display = 'none';
+            });
+            
+            // Копирование кода
+            copyCodeBtn.addEventListener('click', function() {
+                exportCode.select();
+                document.execCommand('copy');
+                
+                const originalText = copyCodeBtn.innerHTML;
+                copyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                
+                setTimeout(function() {
+                    copyCodeBtn.innerHTML = originalText;
+                }, 2000);
+            });
+            
+            // Скачивание файла
+            downloadHtmlBtn.addEventListener('click', function() {
+                const title = articleTitle.value.trim() || 'article';
+                const html = exportCode.value;
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+            
+            // Закрытие модального окна по клику вне его
+            window.addEventListener('click', function(e) {
+                if (e.target === exportModal) {
+                    exportModal.style.display = 'none';
+                }
+                if (e.target === imageModal) {
+                    imageModal.style.display = 'none';
+                }
+            });
+            
+            // Обработка формы изображения по ссылке
+            linkImageForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const url = imageUrlInput.value.trim();
+                const alt = imageAltInput.value.trim();
+                
+                if (!url) {
+                    alert('Введите ссылку на изображение!');
+                    return;
+                }
+                
+                const textarea = articleContent;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const selectedText = textarea.value.substring(start, end);
+                
+                const newText = '![' + (alt || 'Изображение') + '](' + url + ')';
+                
+                // Вставка текста
+                textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+                
+                // Обновление предпросмотра
+                updatePreview();
+                
+                // Закрытие модального окна
+                imageModal.style.display = 'none';
+                
+                // Фокус на текстовое поле
+                textarea.focus();
+                textarea.selectionStart = textarea.selectionEnd = start + newText.length;
+            });
+            
+            // Обработка формы загрузки файла
+            uploadImageForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const file = imageFileInput.files[0];
+                const alt = uploadAltInput.value.trim();
+                
+                if (!file) {
+                    alert('Выберите файл для загрузки!');
+                    return;
+                }
+                
+                // Проверка размера файла (32 MB)
+                if (file.size > 32 * 1024 * 1024) {
+                    alert('Файл слишком большой. Максимальный размер: 32 MB');
+                    return;
+                }
+                
+                // Блокируем кнопку загрузки
+                uploadImageBtn.disabled = true;
+                uploadImageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+                
+                // Сбрасываем статус
+                uploadStatus.style.display = 'none';
+                uploadStatus.className = 'upload-status';
+                
+                try {
+                    // Загружаем изображение
+                    const result = await uploadImageToImgbb(file, alt);
+                    
+                    // Вставляем изображение в редактор
+                    const textarea = articleContent;
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+                    
+                    const newText = '![' + result.alt + '](' + result.url + ')';
+                    
+                    // Вставка текста
+                    textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+                    
+                    // Обновление предпросмотра
+                    updatePreview();
+                    
+                    // Показываем успешный статус
+                    uploadStatus.textContent = 'Изображение успешно загружено!';
+                    uploadStatus.classList.add('success');
+                    uploadStatus.style.display = 'block';
+                    
+                    // Закрываем модальное окно через 1.5 секунды
+                    setTimeout(() => {
+                        imageModal.style.display = 'none';
+                        
+                        // Фокус на текстовое поле
+                        textarea.focus();
+                        textarea.selectionStart = textarea.selectionEnd = start + newText.length;
+                    }, 1500);
+                    
+                } catch (error) {
+                    // Показываем ошибку
+                    uploadStatus.textContent = 'Ошибка загрузки: ' + error.message;
+                    uploadStatus.classList.add('error');
+                    uploadStatus.style.display = 'block';
+                    
+                    console.error('Ошибка загрузки изображения:', error);
+                } finally {
+                    // Разблокируем кнопку загрузки
+                    uploadImageBtn.disabled = false;
+                    uploadImageBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Загрузить и вставить';
+                    
+                    // Сбрасываем прогресс
+                    progressFill.style.width = '0%';
+                    uploadProgress.style.display = 'none';
+                }
+            });
+            
+            // Предпросмотр изображения перед загрузкой
+            imageFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                }
+            });
+            
+            // Переключение вкладок
+            imageTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+            
+            // Закрытие модального окна изображения
+            closeImageModal.addEventListener('click', function() {
+                imageModal.style.display = 'none';
+            });
+            
+            cancelImageBtn.addEventListener('click', function() {
+                imageModal.style.display = 'none';
+            });
+            
+            cancelUploadBtn.addEventListener('click', function() {
+                imageModal.style.display = 'none';
+            });
+            
+            // Настройка кнопок панели инструментов
+            setupToolbarButtons();
+            
+            // Первоначальное обновление предпросмотра
+            updatePreview();
+            
+            // Предупреждение о ключе API
+            if (IMGBB_API_KEY === 'YOUR_API_KEY_HERE') {
+                console.warn('Пожалуйста, установите ваш API ключ Imgbb в переменной IMGBB_API_KEY');
+                // Можно добавить уведомление на странице
+                const warningDiv = document.createElement('div');
+                warningDiv.style.cssText = 'position: fixed; top: 10px; right: 10px; background: var(--danger); color: white; padding: 10px; border-radius: 8px; z-index: 9999; font-size: 0.9rem;';
+                warningDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Установите API ключ Imgbb в коде';
+                document.body.appendChild(warningDiv);
+                
+                setTimeout(() => {
+                    warningDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Запуск при загрузке страницы
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
