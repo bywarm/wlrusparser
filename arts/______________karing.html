@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Использование Karing | WL RUS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #3b82f6;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-light: #f8fafc;
+            --text-gray: #cbd5e1;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-light: #334155;
+            --border-color: rgba(124, 58, 237, 0.2);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .article-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .article-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .article-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        .article-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-light);
+        }
+        
+        .article-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--text-light);
+            line-height: 1.3;
+        }
+        
+        .article-content h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 15px;
+            color: var(--primary);
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .article-content h3 {
+            font-size: 1.5rem;
+            margin: 25px 0 12px;
+            color: var(--secondary);
+        }
+        
+        .article-content h4 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px;
+            color: var(--accent);
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+            color: var(--text-gray);
+        }
+        
+        .article-content ul, .article-content ol {
+            margin-bottom: 20px;
+            padding-left: 25px;
+            color: var(--text-gray);
+        }
+        
+        .article-content li {
+            margin-bottom: 10px;
+        }
+        
+        .article-content strong, .article-content b {
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        
+        .article-content em, .article-content i {
+            font-style: italic;
+        }
+        
+        .article-content u {
+            text-decoration: underline;
+        }
+        
+        .article-content code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+        
+        .article-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            font-family: 'Courier New', monospace;
+            line-height: 1.5;
+        }
+        
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: #e2e8f0;
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: var(--text-gray);
+            background: rgba(124, 58, 237, 0.1);
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .article-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .article-content a:hover {
+            border-bottom: 1px solid var(--primary);
+        }
+        
+        .article-content .spoiler {
+            background: var(--bg-card-light);
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        
+        .article-content .spoiler-header {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .article-content .spoiler-content {
+            padding: 20px;
+            display: none;
+            color: var(--text-gray);
+        }
+        
+        .article-content .spoiler.open .spoiler-content {
+            display: block;
+        }
+        
+        .article-content .spoiler.open .spoiler-header i {
+            transform: rotate(180deg);
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .article-title {
+                font-size: 2rem;
+            }
+            
+            .article-content h1 {
+                font-size: 2rem;
+            }
+            
+            .article-content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .article-content h3 {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .article-title {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="article-header">
+            <h1 class="article-title">Использование Karing</h1>
+            <div class="article-meta">
+                <span><i class="far fa-calendar"></i> 25 января 2026 г.</span>
+                <span><i class="far fa-clock"></i> Примерное время чтения: 1 минута</span>
+            </div>
+        </div>
+        
+        <div class="article-content">
+            <blockquote><p>По всем вопросам обращаемся в <a href="https://t.me/wlrustg?direct" target="_blank">@wlrustg</a> или спрашиваем <a href="https://t.me/wlrforum" target="_blank">на форуме</a></p></blockquote><p>Инструкция для новичков. Подходит для всех актуальных подписок.</p><ul><li>При первом открытии приложения происходит первоначальная настройка. Во время настройки <strong>рекомендую отключить режим новичка</strong></li></ul><img src="https://i.ibb.co/zhZ22F1h/Picsart-26-01-25-12-40-23-362.jpg" alt="Picsart 26 01 25 12 40 23 362" style="max-width:100%;border-radius:10px;margin:20px 0;"><ul><li>Далее нажимаем "<em>Добавление подписки</em>"</li></ul><img src="https://i.ibb.co/zWP12DKs/Picsart-26-01-25-12-41-34-211.jpg" alt="Picsart 26 01 25 12 41 34 211" style="max-width:100%;border-radius:10px;margin:20px 0;"><ul><li>Вставляем <u>ссылку на подписку</u> в нужное поле. В моем случае это: <code>https://bp.wl.free.nf/confs/wl.txt</code></li></ul><img src="https://i.ibb.co/JFx9rL6Y/Picsart-26-01-25-12-43-32-868.png" alt="Picsart 26 01 25 12 43 32 868" style="max-width:100%;border-radius:10px;margin:20px 0;"><ul><li>С <strong>главного экрана</strong> переходим в "<em>Профили</em>"</li></ul><img src="https://i.ibb.co/Z6Mz3tr8/Picsart-26-01-25-12-44-32-894.png" alt="Picsart 26 01 25 12 44 32 894" style="max-width:100%;border-radius:10px;margin:20px 0;"><div class="spoiler">
+                        <div class="spoiler-header">
+                            <span>ВНИМАНИЕ</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="spoiler-content"><p>На этом моменте переключаемся на <u>мобильный интернет с белым списком</u></p></div>
+                    </div><ul><li>Нажимаем на значок молнии для проверки доступности серверов</li></ul><img src="https://i.ibb.co/Mxp09L7P/Picsart-26-01-25-12-45-47-872.png" alt="Picsart 26 01 25 12 45 47 872" style="max-width:100%;border-radius:10px;margin:20px 0;"><ul><li>После окончания проверки переходим на главный экран</li></ul><img src="https://i.ibb.co/mpD7pLT/Picsart-26-01-25-12-46-42-745.png" alt="Picsart 26 01 25 12 46 42 745" style="max-width:100%;border-radius:10px;margin:20px 0;"><ul><li>На этом моменте приложение само выберет лучший сервер</li></ul><img src="https://i.ibb.co/b5ttRKyz/Picsart-26-01-25-12-47-23-101.jpg" alt="Picsart 26 01 25 12 47 23 101" style="max-width:100%;border-radius:10px;margin:20px 0;"><blockquote><p>Если сервер, выбранный приложением <strong>не работает</strong> - вы можете выбрать сервер с маленькой задержкой в разделе "<em>профили</em>" самостоятельно</p></blockquote>
+        </div>
+        
+        <div class="footer">
+            <p>Статья создана командой WL RUS | <a href="/" style="color: var(--primary);">WL RUS WebSite</a></p>
+        </div>
+    </div>
+    
+<script>
+    // Инициализация спойлеров
+    document.addEventListener('DOMContentLoaded', function() {
+        const spoilers = document.querySelectorAll('.spoiler');
+        spoilers.forEach(spoiler => {
+            const header = spoiler.querySelector('.spoiler-header');
+            const content = spoiler.querySelector('.spoiler-content');
+            if (header && content) {
+                header.addEventListener('click', () => {
+                    spoiler.classList.toggle('open');
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>
