@@ -214,3 +214,9 @@ vless://3bd011c9-c5ec-4024-8aaa-6d79db4e97d3@wa.sfasti.ru:443?security=reality&e
 vless://d342d11e-d424-4583-b36e-524ab1f0afa4@www.udemy.com:2095?path=%2F&security=&encryption=none&host=freenodes.pusytroller.cf&type=ws#106.%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://d44175ee-d3e2-45d3-b16a-ea2705cbfe7b@se1.public.grpc.vpn.clinic:8080?mode=gun&security=&encryption=none&type=grpc&serviceName=max.ru#107.%20%F0%9F%87%B8%F0%9F%87%AA%20VLESS%20%7C%20TG%3A%20%40wlrustg
+
+vless://7fdcf2e4-2ab7-48ae-8ffa-af8be86f4361@ru01-blh02.tcp-reset-club.net:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=www.kinopoisk.ru&fp=chrome&security=reality&pbk=mLmBhbVFfNuo2eUgBh6r9-5Koz9mUCn3aSzlR6IejUg&sid=8453e5fd9af927#%E2%9A%AB%20LTE%20%7C%20%D0%9C%D0%BE%D0%B1.%20%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9%20%D1%81%D0%BF%D0%B8%D1%81%D0%BE%D0%BA%20%7C%20kinopoisk
+
+vless://7fdcf2e4-2ab7-48ae-8ffa-af8be86f4361@ru01-blh01.tcp-reset-club.net:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=stats.vk-portal.net&fp=chrome&security=reality&pbk=mLmBhbVFfNuo2eUgBh6r9-5Koz9mUCn3aSzlR6IejUg&sid=31#%E2%9A%AB%20LTE%20%7C%20%D0%9C%D0%BE%D0%B1.%20%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9%20%D1%81%D0%BF%D0%B8%D1%81%D0%BE%D0%BA%20%7C%20vk
+
+vless://7fdcf2e4-2ab7-48ae-8ffa-af8be86f4361@ru01-blh03.tcp-reset-club.net:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=rutube.ru&fp=chrome&security=reality&pbk=mLmBhbVFfNuo2eUgBh6r9-5Koz9mUCn3aSzlR6IejUg&sid=e499f276e7bd6420#%E2%9A%AB%20LTE%20%7C%20%D0%9C%D0%BE%D0%B1.%20%D0%B1%D0%B5%D0%BB%D1%8B%D0%B9%20%D1%81%D0%BF%D0%B8%D1%81%D0%BE%D0%BA%20%7C%20rutube
