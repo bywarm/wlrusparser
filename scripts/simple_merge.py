@@ -199,6 +199,7 @@ URLS = [
     "https://s3c3.001.gpucloud.ru/dixsm/htxml",
     "https://gitverse.ru/api/repos/LowiK/LowiKLive/raw/branch/main/WhiteList-Bypass_Ru.txt",
     "https://rstnnl.gitverse.site/sb/dev.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
