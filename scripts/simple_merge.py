@@ -198,6 +198,7 @@ URLS = [
     "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/2",
     "https://s3c3.001.gpucloud.ru/dixsm/htxml",
     "https://gitverse.ru/api/repos/LowiK/LowiKLive/raw/branch/main/WhiteList-Bypass_Ru.txt",
+    "https://rstnnl.gitverse.site/sb/dev.txt",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
