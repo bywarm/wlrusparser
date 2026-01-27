@@ -317,7 +317,7 @@ def extract_host_port(config: str) -> tuple[str, int] | None:
     return None
 
 def generate_config_key(config: str) -> str:
-    """Генерирует уникальный ключ для конфига, учитывая его параметры"""
+    """Генерирует уникальный ключ для конфига на основе всех параметров"""
     if not config:
         return ""
     
@@ -327,16 +327,16 @@ def generate_config_key(config: str) -> str:
             parsed = urllib.parse.urlparse(config)
             
             # Извлекаем основные параметры
-            username = parsed.username or ""  # UUID
+            username = parsed.username or ""
             host = parsed.hostname or ""
             port = parsed.port or 443
             
             # Парсим query параметры
             query_params = urllib.parse.parse_qs(parsed.query)
             
-            # Собираем ключевые параметры
+            # Собираем ключевые параметры для уникальности
             key_parts = [
-                username,
+                username,  # UUID
                 host,
                 str(port),
                 query_params.get('security', [''])[0],
@@ -349,7 +349,8 @@ def generate_config_key(config: str) -> str:
                 query_params.get('encryption', [''])[0],
             ]
             
-            return "|".join(filter(None, key_parts))  # Фильтруем пустые значения
+            # Фильтруем пустые значения и объединяем
+            return "|".join([part for part in key_parts if part])
         
         # Для VMESS
         elif config.startswith("vmess://"):
@@ -364,25 +365,25 @@ def generate_config_key(config: str) -> str:
                 if decoded.startswith('{'):
                     j = json.loads(decoded)
                     key_parts = [
-                        j.get('id', ''),
-                        j.get('add', ''),
-                        str(j.get('port', '')),
-                        j.get('net', ''),
-                        j.get('host', ''),
-                        j.get('path', ''),
-                        j.get('tls', ''),
-                        j.get('sni', ''),
-                        j.get('type', ''),
-                        j.get('ps', ''),
+                        j.get('id', ''),  # UUID
+                        j.get('add', ''),  # Host
+                        str(j.get('port', '')),  # Port
+                        j.get('net', ''),  # Network type
+                        j.get('host', ''),  # Host header
+                        j.get('path', ''),  # Path
+                        j.get('tls', ''),  # TLS
+                        j.get('sni', ''),  # SNI
+                        j.get('type', ''),  # Type
+                        j.get('ps', ''),  # Remark/name
                     ]
-                    return "|".join(filter(None, key_parts))
+                    return "|".join([part for part in key_parts if part])
             except Exception:
                 pass
         
         # Для Trojan
         elif config.startswith("trojan://"):
             parsed = urllib.parse.urlparse(config)
-            username = parsed.username or ""  # Пароль для Trojan
+            username = parsed.username or ""  # Password for Trojan
             host = parsed.hostname or ""
             port = parsed.port or 443
             
@@ -397,47 +398,18 @@ def generate_config_key(config: str) -> str:
                 query_params.get('flow', [''])[0],
                 query_params.get('fp', [''])[0],
             ]
-            return "|".join(filter(None, key_parts))
+            return "|".join([part for part in key_parts if part])
         
-        # Для SS
-        elif config.startswith("ss://"):
-            try:
-                parsed = urllib.parse.urlparse(config)
-                # SS может быть в разных форматах, используем метод извлечения
-                match = re.search(r'@([\w\.-]+):(\d{1,5})', config)
-                if match:
-                    host = match.group(1)
-                    port = match.group(2)
-                    # Пытаемся извлечь метод шифрования
-                    method = ""
-                    if parsed.username:
-                        # SS в формате base64 метод:пароль
-                        try:
-                            decoded = base64.b64decode(parsed.username + '=' * (4 - len(parsed.username) % 4)).decode('utf-8')
-                            method = decoded.split(':')[0] if ':' in decoded else ""
-                        except:
-                            pass
-                    return f"{host}:{port}:{method}"
-            except Exception:
-                pass
-        
-        # Для других протоколов - используем упрощенный ключ
-        elif any(config.startswith(p) for p in ['ssr://', 'tuic://', 'hysteria://', 'hysteria2://']):
-            # Извлекаем хост и порт плюс первую часть параметров
-            match = re.search(r'@([\w\.-]+):(\d{1,5})', config)
-            if match:
-                host = match.group(1)
-                port = match.group(2)
-                # Добавляем тип протокола и первые 50 символов параметров
-                protocol = config.split('://')[0]
-                params = config.split('@', 1)[-1][:50] if '@' in config else config[8:58]
-                return f"{protocol}:{host}:{port}:{params}"
+        # Для других протоколов используем полную строку как ключ
+        else:
+            return config[:200]  # Используем начало конфига
         
     except Exception as e:
-        log(f"Ошибка генерации ключа для конфига: {str(e)[:50]}")
+        # В случае ошибки используем начало конфига
+        return config[:100]
     
-    # Фолбэк: используем полный конфиг как ключ (но обрезаем)
-    return config[:200]
+    # Фолбэк
+    return config[:100]
 
 def is_ip_in_subnets(ip_str: str) -> bool:
     """Проверяет, принадлежит ли IP-адрес одной из разрешенных подсетей"""
@@ -667,12 +639,12 @@ def process_configs_with_numbering(configs: list[str]) -> list[str]:
 
 
 def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]:
-    """Объединяет и дедуплицирует конфиги с учетом всех параметров"""
+    """Объединяет и дедуплицирует конфиги, возвращает два списка: все конфиги и whitelist конфиги"""
     if not all_configs:
         return [], []
     
     seen_full = set()
-    seen_config_keys = set()  # Уникальные ключи конфигов
+    seen_config_keys = set()  # Уникальные ключи конфигов (по параметрам)
     unique_configs = []
     whitelist_configs = []
     duplicate_count = 0
@@ -684,11 +656,10 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
             continue
         seen_full.add(config)
         
-        # Генерируем уникальный ключ конфига
+        # Генерируем уникальный ключ конфига на основе его параметров
         config_key = generate_config_key(config)
         if config_key and config_key in seen_config_keys:
             duplicate_count += 1
-            log(f"🔍 Найден дубликат по параметрам: {config_key[:80]}...")
             continue
         seen_config_keys.add(config_key)
         
@@ -706,7 +677,7 @@ def merge_and_deduplicate(all_configs: list[str]) -> tuple[list[str], list[str]]
                 pass
     
     if duplicate_count > 0:
-        log(f"🔄 Удалено {duplicate_count} дубликатов (полных или по параметрам)")
+        log(f"🔍 Удалено {duplicate_count} дубликатов (полных или по параметрам)")
     
     return unique_configs, whitelist_configs
 
@@ -910,30 +881,30 @@ def process_selected_file():
         
         if configs:
             try:
-
+                # ДЕДУПЛИКАЦИЯ С УЧЕТОМ ВСЕХ ПАРАМЕТРОВ КОНФИГА
+                config_indices = [idx for idx, _ in configs]
+                raw_configs = [config for _, config in configs]
+                
                 seen_full = set()
-                seen_config_keys = set()
+                seen_config_keys = set()  # Уникальные ключи конфигов (по параметрам)
                 unique_configs_with_index = []
-                selected_duplicate_count = 0
-
+                duplicates_count = 0
+                
                 for idx, config in zip(config_indices, raw_configs):
                     if config in seen_full:
-                        selected_duplicate_count += 1
+                        duplicates_count += 1
                         continue
                     seen_full.add(config)
-    
-                  config_key = generate_config_key(config)
+                    
+                    # Генерируем уникальный ключ конфига на основе его параметров
+                    config_key = generate_config_key(config)
                     if config_key and config_key in seen_config_keys:
-                        selected_duplicate_count += 1
+                        duplicates_count += 1
                         continue
                     seen_config_keys.add(config_key)
-    
+                    
                     unique_configs_with_index.append((idx, config))
-
-                if selected_duplicate_count > 0:
-                    log(f"🔍 Найдено {selected_duplicate_count} дубликатов в selected.txt")
                 
-                duplicates_count = len(configs) - len(unique_configs_with_index)
                 if duplicates_count > 0:
                     log(f"🔍 Найдено {duplicates_count} дубликатов в selected.txt")
                 
