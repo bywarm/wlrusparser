@@ -678,4 +678,3 @@ vless://27a5fc60-29b7-4598-9cdd-b8180a01b441@212.233.73.212:443/?type=tcp&encryp
 vless://27a5fc60-29b7-4598-9cdd-b8180a01b441@212.233.73.212:8443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=m.vk.ru&fp=chrome&security=reality&pbk=7zd9mJilgjOrg_ohtw23Vmio-pdnYqeP_r-kiWt87Cg&sid=2715592069f36fe7#338.%20%F0%9F%87%AD%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://0ff8dbfb-d7ee-4a19-b22d-b652a8b52e22@212.233.73.212:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=m.vk.ru&fp=chrome&security=reality&pbk=7zd9mJilgjOrg_ohtw23Vmio-pdnYqeP_r-kiWt87Cg&sid=f4b4a6365558ea2e#339.%20%F0%9F%87%AD%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
