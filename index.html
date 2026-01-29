@@ -735,29 +735,6 @@ const sampleLinks = [
     },
     {
         id: 2,
-        title: "Все конфиги",
-        icon: "fas fa-users",
-        description: "Много мусора, так как не проходит никакие проверки",
-        links: [
-            {
-                url: "https://bp.wl.free.nf/confs/merged.txt",
-                label: "Основная ссылка",
-                type: "primary"
-            },
-            {
-                url: "https://wlr.s3-website.cloud.ru/bucket-93b250/merged.txt",
-                label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
-                type: "mirror"
-            },
-            {
-                url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/merged.txt",
-                label: "Зеркало 2 (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
-                type: "mirror"
-            }
-        ]
-    },
-    {
-        id: 3,
         title: "Отборные серверы (тоже рекомендуется)",
         icon: "fas fa-crown",
         description: "Пополняется с поммощью комьюнити. Хотите помочь -> пишите в Telegram.",
@@ -779,6 +756,48 @@ const sampleLinks = [
             }
         ]
     },
+    {
+        id: 3,
+        title: "Фильтрованный",
+        icon: "fas fa-users",
+        description: "Все серверы, но с фильтрацией скриптом",
+        links: [
+            {
+                url: "https://bp.wl.free.nf/confs/filtered.txt",
+                label: "Основная ссылка",
+                type: "primary"
+            },
+            {
+                url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/filtered.txt",
+                label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
+            }
+        ]
+    },
+    {
+        id: 4,
+        title: "Все конфиги",
+        icon: "fas fa-users",
+        description: "Много мусора, так как не проходит никакие проверки",
+        links: [
+            {
+                url: "https://bp.wl.free.nf/confs/merged.txt",
+                label: "Основная ссылка",
+                type: "primary"
+            },
+            {
+                url: "https://wlr.s3-website.cloud.ru/bucket-93b250/merged.txt",
+                label: "Зеркало (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
+            },
+            {
+                url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/merged.txt",
+                label: "Зеркало 2 (ОБНОВЛЯЕТСЯ ПРИ БЕЛОМ СПИСКЕ)",
+                type: "mirror"
+            }
+        ]
+    },
+    
 ];
 
 function showLinks() {
