@@ -327,7 +327,7 @@ URLS = [
     "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/whitelist",
     "https://s3c3.001.gpucloud.ru/dixsm/htxml",
     "https://gitverse.ru/api/repos/LowiK/LowiKLive/raw/branch/main/ObhodBSfree.txt",
-    "https://rstnnl.gitverse.site/sb/dev.txt",
+    "https://sub-rostunnel.vercel.app/subs/gen.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
     "https://raw.githubusercontent.com/terik21/HiddifySubs-VlessKeys/refs/heads/main/WhiteKeys",
 ]
