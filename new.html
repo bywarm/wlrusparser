@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WL RUS | Обход белых списков</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-glow: #7c3aed;
+            --secondary: #06b6d4;
+            --accent: #10b981;
+            --bg-deep: #030712;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.03);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Cosmic Background --- */
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 50px 160px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.7), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            opacity: 0.3;
+            animation: twinkle 5s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.3; transform: translateY(0); }
+            100% { opacity: 0.5; transform: translateY(-10px); }
+        }
+
+        /* --- Utilities --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 24px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #22d3ee 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* --- Header --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 20px 0;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            color: var(--secondary);
+            filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+        }
+
+        /* --- Hero --- */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            font-weight: 800;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .mission-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 100px;
+            color: #34d399;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--primary), #6366f1);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 35px rgba(124, 58, 237, 0.6);
+        }
+
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(45deg);
+            animation: sheen 3s infinite;
+        }
+
+        @keyframes sheen {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        /* --- Section Titles --- */
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        .section-header p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- FAQ --- */
+        .faq-section {
+            padding: 40px 0;
+        }
+
+        .faq-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .faq-question {
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .faq-answer {
+            padding: 0 24px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .faq-item.active .faq-answer {
+            padding-bottom: 24px;
+            max-height: 300px;
+        }
+
+        .faq-item.active .faq-question i {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        /* --- Clients Grid --- */
+        .clients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding-bottom: 60px;
+        }
+
+        .client-card {
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .client-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            background: linear-gradient(to bottom, rgba(139, 92, 246, 0.1), rgba(30, 41, 59, 0.4));
+        }
+
+        .client-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--secondary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .client-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+
+        .client-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* --- Contacts --- */
+        .contacts-section {
+            padding: 40px 0 80px;
+        }
+
+        .contact-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.6));
+        }
+
+        .tg-btn {
+            background: #229ED9;
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(34, 158, 217, 0.3);
+        }
+
+        .tg-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- Articles --- */
+        .article-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px;
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s;
+        }
+        
+        .article-card:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: #000;
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .read-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .read-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+        }
+
+        .modal-window {
+            background: #1e293b;
+            width: 90%;
+            max-width: 650px;
+            max-height: 85vh;
+            border-radius: 24px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal-window {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        /* Styled Scrollbar for Modal */
+        .modal-body::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-body::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+        }
+        .modal-body::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 4px;
+        }
+
+        /* Link Accordion Styles inside Modal */
+        .link-group {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .link-group-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .link-group-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .link-group-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+
+        .link-group-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .link-group.open .link-group-content {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .url-row {
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .url-row:last-child {
+            border-bottom: none;
+        }
+
+        .url-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .url-input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--secondary);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .copy-trigger {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        .copy-trigger:hover {
+            filter: brightness(1.2);
+        }
+
+        .badge-url {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        .badge-primary { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-mirror { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(3, 7, 18, 0.6);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .url-input-group { flex-direction: column; }
+            .copy-trigger { padding: 12px; width: 100%; }
+            .article-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .read-btn { width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cosmic-bg"></div>
+    <div class="stars"></div>
+
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-shield-halved"></i>
+                    <span>WL RUS</span>
+                </div>
+                </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero container">
+            <div class="mission-badge">
+                <i class="fas fa-check-circle"></i> Полностью бесплатно
+            </div>
+            <h1>Обход блокировок <br><span class="gradient-text">нового поколения</span></h1>
+            <p class="hero-subtitle">
+                Проект создан для помощи людям в обходе белых списков на мобильном интернете.
+                Просто, быстро и безопасно для обычного серфинга.
+            </p>
+            
+            <button id="getLinksBtn" class="cta-button">
+                <i class="fas fa-key"></i>
+                <span>Получить ключи</span>
+            </button>
+        </section>
+
+        <section class="faq-section container">
+            <div class="glass-panel" style="padding: 20px;">
+                <h3 style="margin: 20px 0 30px 20px; font-size: 1.5rem;">Частые вопросы</h3>
+                
+                <div class="faq-item active">
+                    <div class="faq-question">
+                        <span>Как это работает?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Я собираю ключи из открытых источников, которые доступны всем, и публикую их в Общие подписки. Каждый пользователь может пользоваться этими ключами, они обновляются автоматически.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Это безопасно?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Все конфиги собираются из открытых источников. Я не могу гарантировать 100% безопасность серверов. Хоть логировать зашифрованный трафик трудно, я не советую использовать эти сервера для банковских приложений и государственных сервисов.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="container" style="padding-top: 40px;">
+            <div class="section-header">
+                <h2>Выбор клиента</h2>
+                <p>Скачайте одно из приложений ниже, чтобы начать пользоваться конфигами</p>
+            </div>
+
+            <div class="clients-grid">
+                <div class="glass-panel client-card">
+                    <div class="client-icon-wrapper">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>Happ</h4>
+                    <p>Идеален для новичков. Простой интерфейс и быстрая настройка.</p>
+                    <button class="download-btn" data-client="happ">
+                        <i class="fas fa-download"></i> Скачать
+                    </button>
+                </div>
+
+                <div class="glass-panel client-card">
+                    <div class="client-icon-wrapper">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h4>Karing</h4>
+                    <p>Мощный комбайн. Поддерживает множество протоколов и гибкую настройку.</p>
+                    <button class="download-btn" data-client="karing">
+                        <i class="fas fa-download"></i> Скачать
+                    </button>
+                </div>
+
+                <div class="glass-panel client-card">
+                    <div class="client-icon-wrapper">
+                        <i class="fas fa-ghost"></i>
+                    </div>
+                    <h4>Hiddify</h4>
+                    <p>Стабильный клиент. Хорошо показывает себя в условиях жестких блокировок.</p>
+                    <button class="download-btn" data-client="hiddify">
+                        <i class="fas fa-download"></i> Скачать
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="container" style="margin-bottom: 60px;">
+            <div class="glass-panel article-card">
+                <div>
+                    <div class="article-meta">
+                        <span class="badge">Инструкция</span>
+                        <span style="color: var(--text-muted)"><i class="far fa-calendar"></i> 11 Января 2026</span>
+                    </div>
+                    <h3>Настройка Happ клиента</h3>
+                    <p style="color: var(--text-muted); margin-top: 5px;">Пошаговое руководство по импорту конфигов и первой настройке.</p>
+                </div>
+                <a href="arts/happ.html" class="read-btn">
+                    Читать <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                </a>
+            </div>
+        </section>
+
+        <section class="contacts-section container">
+            <div class="glass-panel contact-box">
+                <i class="fab fa-telegram" style="font-size: 3rem; color: #229ED9; margin-bottom: 20px;"></i>
+                <h2>Telegram Канал</h2>
+                <p style="max-width: 500px; color: var(--text-muted); margin: 15px 0;">
+                    Подписывайтесь на канал, чтобы получать свежие конфиги, новости о блокировках и прямую связь с разработчиком.
+                </p>
+                <a href="https://t.me/wlrustg" target="_blank" class="tg-btn">
+                    Перейти в канал
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 WL RUS. Некоммерческий проект.</p>
+        </div>
+    </footer>
+
+    <div id="linksModal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-server" style="color: var(--primary); margin-right: 10px;"></i>
+                    Конфигурации
+                </div>
+                <button class="close-modal close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="modal-body" id="linksContent">
+                </div>
+
+            <div style="padding: 20px; background: rgba(124, 58, 237, 0.1); border-top: 1px solid rgba(124, 58, 237, 0.2);">
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                    <i class="fas fa-info-circle" style="color: var(--secondary)"></i> 
+                    Совет: Основные ссылки могут блокироваться. Если не работает — используйте Зеркало. Обновляйте подписку в приложении раз в 4 часа.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script async src="https://plausible.io/js/pa-osqKhKrMAwWmaghS0uMqx.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // --- FAQ Logic ---
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    faqItems.forEach(other => {
+                        if (other !== item && other.classList.contains('active')) {
+                            other.classList.remove('active');
+                        }
+                    });
+                    item.classList.toggle('active');
+                });
+            });
+
+            // --- Modal Logic ---
+            const modal = document.getElementById('linksModal');
+            const openBtn = document.getElementById('getLinksBtn');
+            const closeBtn = document.querySelector('.close-modal');
+            const linksContent = document.getElementById('linksContent');
+
+            // Data
+            const sampleLinks = [
+                {
+                    title: "Проверенные подсети",
+                    icon: "fas fa-shield-check",
+                    desc: "Рекомендуется. Только рабочие серверы.",
+                    links: [
+                        { url: "https://bp.wl.free.nf/confs/wl.txt", type: "primary" },
+                        { url: "https://wlr.s3-website.cloud.ru/bucket-93b250/wl.txt", type: "mirror" },
+                        { url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/wl.txt", type: "mirror" }
+                    ]
+                },
+                {
+                    title: "Отборные серверы",
+                    icon: "fas fa-star",
+                    desc: "Серверы от сообщества. Высокая скорость.",
+                    links: [
+                        { url: "https://bp.wl.free.nf/confs/selected.txt", type: "primary" },
+                        { url: "https://wlr.s3-website.cloud.ru/bucket-93b250/selected.txt", type: "mirror" },
+                        { url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/selected.txt", type: "mirror" }
+                    ]
+                },
+                {
+                    title: "Фильтрованный список",
+                    icon: "fas fa-filter",
+                    desc: "Редко обновляется, но стабилен.",
+                    links: [
+                        { url: "https://bp.wl.free.nf/confs/filtered.txt", type: "primary" },
+                        { url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/filtered.txt", type: "mirror" }
+                    ]
+                },
+                {
+                    title: "Все конфиги (Merged)",
+                    icon: "fas fa-dumpster",
+                    desc: "Все подряд. Может быть мусор.",
+                    links: [
+                        { url: "https://bp.wl.free.nf/confs/merged.txt", type: "primary" },
+                        { url: "https://wlr.s3-website.cloud.ru/bucket-93b250/merged.txt", type: "mirror" },
+                        { url: "https://gitverse.ru/api/repos/bywarm/rser/raw/branch/master/merged.txt", type: "mirror" }
+                    ]
+                }
+            ];
+
+            function renderLinks() {
+                let html = '';
+                sampleLinks.forEach((group, index) => {
+                    html += `
+                    <div class="link-group">
+                        <div class="link-group-header" onclick="toggleGroup(this)">
+                            <div class="link-group-title">
+                                <i class="${group.icon}" style="color: var(--primary); font-size: 1.1rem;"></i>
+                                <div>
+                                    <div>${group.title}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 400;">${group.desc}</div>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down" style="transition: transform 0.3s; color: var(--text-muted);"></i>
+                        </div>
+                        <div class="link-group-content">
+                    `;
+
+                    group.links.forEach(link => {
+                        const badgeClass = link.type === 'primary' ? 'badge-primary' : 'badge-mirror';
+                        const badgeText = link.type === 'primary' ? 'Основная' : 'Зеркало';
+                        
+                        html += `
+                            <div class="url-row">
+                                <span class="${badgeClass} badge-url">${badgeText}</span>
+                                <div class="url-input-group">
+                                    <input type="text" class="url-input" value="${link.url}" readonly onclick="this.select()">
+                                    <button class="copy-trigger" onclick="copyUrl('${link.url}', this)">
+                                        Копировать
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div></div>`;
+                });
+                linksContent.innerHTML = html;
+            }
+
+            // Global functions for inline onclicks
+            window.toggleGroup = function(header) {
+                const group = header.parentElement;
+                const arrow = header.querySelector('.fa-chevron-down');
+                const content = group.querySelector('.link-group-content');
+                
+                // Close others
+                document.querySelectorAll('.link-group').forEach(g => {
+                    if(g !== group) {
+                        g.classList.remove('open');
+                        g.querySelector('.link-group-content').style.maxHeight = null;
+                        g.querySelector('.fa-chevron-down').style.transform = 'rotate(0deg)';
+                    }
+                });
+
+                group.classList.toggle('open');
+                if (group.classList.contains('open')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    arrow.style.transform = 'rotate(180deg)';
+                } else {
+                    content.style.maxHeight = null;
+                    arrow.style.transform = 'rotate(0deg)';
+                }
+            };
+
+            window.copyUrl = function(url, btn) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const originalText = btn.innerText;
+                    btn.innerText = 'Скопировано!';
+                    btn.style.background = 'var(--accent)';
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.style.background = 'var(--primary)';
+                    }, 1500);
+                });
+            };
+
+            // Modal Events
+            openBtn.addEventListener('click', () => {
+                renderLinks();
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            });
+
+            const closeModalFunc = () => {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            };
+
+            closeBtn.addEventListener('click', closeModalFunc);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModalFunc();
+            });
+
+            // --- Download Buttons ---
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const client = this.getAttribute('data-client');
+                    const links = {
+                        happ: "https://www.happ.su/main/", 
+                        karing: "https://github.com/KaringX/karing/releases/latest" ,
+                        hiddify: "https://hiddify.com/#app"
+                    };
+                    
+                    if (links[client]) {
+                        window.open(links[client], '_blank');
+                        showNotification(`Переход на сайт ${client}...`);
+                    }
+                });
+            });
+
+            function showNotification(msg) {
+                const notif = document.createElement('div');
+                notif.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px;
+                    background: var(--glass-bg); backdrop-filter: blur(10px);
+                    border: 1px solid var(--primary); color: white;
+                    padding: 15px 25px; border-radius: 12px; z-index: 2000;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                    transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                `;
+                notif.innerHTML = `<i class="fas fa-check-circle" style="color: var(--accent); margin-right: 10px;"></i> ${msg}`;
+                document.body.appendChild(notif);
+                
+                setTimeout(() => notif.style.transform = 'translateY(0)', 10);
+                setTimeout(() => {
+                    notif.style.transform = 'translateY(100px)';
+                    setTimeout(() => notif.remove(), 300);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
