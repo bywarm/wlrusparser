@@ -313,7 +313,7 @@ URLS = [
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
-    "https://raw.githubusercontent.com/vsevjik/OBSpiskov/refs/heads/main/wwh",
+    "https://gitverse.ru/api/repos/Vsevj/OBS/raw/branch/master/wwh",
     "https://fsub.flux.2bd.net/githubmirror/bypass/bypass-all.txt",
     "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
     "https://raw.githubusercontent.com/koteey/Ms.Kerosin-VPN/refs/heads/main/proxies.txt",
@@ -329,6 +329,7 @@ URLS = [
     "https://gitverse.ru/api/repos/LowiK/LowiKLive/raw/branch/main/WhiteList-Bypass_Ru.txt",
     "https://rstnnl.gitverse.site/sb/dev.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
+    "https://raw.githubusercontent.com/terik21/HiddifySubs-VlessKeys/refs/heads/main/WhiteKeys",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
