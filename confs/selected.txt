@@ -1220,4 +1220,3 @@ vless://30dd5974-780c-4743-b88a-12a4450bd2a3@185.177.238.57:443/?type=tcp&encryp
 vless://83dd438b-357b-4060-a633-52e9714afabe@51.250.83.255:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=api-maps.yandex.ru&fp=chrome&security=reality&pbk=FkmYFobwxLMLEktYXywmjthuEYCZggITsxwPNasTKUg&sid=17802e8ff84f12df#609.%20%F0%9F%87%A6%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
 
 vless://83dd438b-357b-4060-a633-52e9714afabe@51.250.83.255:443/?type=tcp&encryption=none&flow=xtls-rprx-vision&sni=api-maps.yandex.ru&fp=chrome&security=reality&pbk=FkmYFobwxLMLEktYXywmjthuEYCZggITsxwPNasTKUg&sid=3f200574d011010f#610.%20%F0%9F%87%A6%F0%9F%87%BA%20VLESS%20%7C%20TG%3A%20%40wlrustg
-
