@@ -615,10 +615,109 @@
             .article-card { flex-direction: column; align-items: flex-start; gap: 20px; }
             .read-btn { width: 100%; text-align: center; }
         }
+        /* --- Top Announcement Bar --- */
+.top-bar {
+    background: linear-gradient(90deg, rgba(34, 158, 217, 0.9) 0%, rgba(124, 58, 237, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    font-size: 0.9rem;
+    position: relative; /* Change to 'fixed' and width: 100% if you want it to overlay everything */
+    z-index: 1001; /* Higher than header */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.top-bar-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 24px;
+    gap: 15px;
+    position: relative;
+}
+
+.top-bar-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.top-bar-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.top-bar-btn:hover {
+    background: white;
+    color: var(--primary);
+}
+
+.top-bar-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 1.1rem;
+    position: absolute;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.top-bar-close:hover {
+    color: white;
+}
+
+/* Animation for the icon */
+.top-bar-icon {
+    animation: wiggle 2s infinite;
+}
+
+@keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    10%, 30% { transform: rotate(-10deg); }
+    20%, 40% { transform: rotate(10deg); }
+    50% { transform: rotate(0deg); }
+}
+
+@media (max-width: 600px) {
+    .top-bar-text span {
+        display: none; /* Hides text on very small screens, keeps icon/btn */
+    }
+    .top-bar-text::after {
+        content: 'Новости и конфиги'; /* Shorter text for mobile */
+    }
+    .top-bar-close {
+        right: 10px;
+    }
+}
+        
     </style>
 </head>
 <body>
-
+     <div id="telegramBar" class="top-bar">
+    <div class="container top-bar-content">
+        <div class="top-bar-text">
+            <i class="fab fa-telegram top-bar-icon"></i>
+            <span>Подпишись на наш Telegram канал</span>
+        </div>
+        <a href="https://t.me/wlrustg" target="_blank" class="top-bar-btn">
+            Подписаться
+        </a>
+        <button class="top-bar-close" onclick="closeTopBar()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+     </div>
+    
     <div class="cosmic-bg"></div>
     <div class="stars"></div>
 
@@ -711,22 +810,6 @@
                         <i class="fas fa-download"></i> Скачать
                     </button>
                 </div>
-            </div>
-        </section>
-
-        <section class="container" style="margin-bottom: 60px;">
-            <div class="glass-panel article-card">
-                <div>
-                    <div class="article-meta">
-                        <span class="badge">Инструкция</span>
-                        <span style="color: var(--text-muted)"><i class="far fa-calendar"></i> 11 Января 2026</span>
-                    </div>
-                    <h3>Настройка Happ клиента</h3>
-                    <p style="color: var(--text-muted); margin-top: 5px;">Пошаговое руководство по импорту конфигов и первой настройке.</p>
-                </div>
-                <a href="arts/happ.html" class="read-btn">
-                    Читать <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
-                </a>
             </div>
         </section>
 
