@@ -310,16 +310,13 @@ WHITELIST_SUBNETS = [
 WHITELIST_NETWORKS = [ipaddress.ip_network(subnet) for subnet in WHITELIST_SUBNETS]
 
 URLS = [
-    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
+    "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt",
     "https://raw.githubusercontent.com/zieng2/wl/refs/heads/main/vless_universal.txt",
     "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt",
     "https://gitverse.ru/api/repos/Vsevj/OBS/raw/branch/master/wwh",
-    "https://fsub.flux.2bd.net/githubmirror/bypass/bypass-all.txt",
     "https://storage.yandexcloud.net/cid-vpn/whitelist.txt",
     "https://raw.githubusercontent.com/koteey/Ms.Kerosin-VPN/refs/heads/main/proxies.txt",
-    "https://raw.githubusercontent.com/SilentGhostCodes/WhiteListVpn/refs/heads/main/config.txt",
     "https://raw.githubusercontent.com/HikaruApps/WhiteLattice/refs/heads/main/subscriptions/main-sub.txt",
-    "https://raw.githubusercontent.com/avbak/sturdy-octo-tribble1/refs/heads/main/VLESS-RU-MOBILE-CIDR-WHITELIST-filtered.txt",
     "https://raw.githubusercontent.com/FalerChannel/FalerChannel/refs/heads/main/configs",
     "https://raw.githubusercontent.com/officialdakari/psychic-octo-tribble/refs/heads/main/subwl.txt",
     "https://raw.githubusercontent.com/RKPchannel/RKP_bypass_configs/refs/heads/main/configs",
@@ -329,7 +326,6 @@ URLS = [
     "https://gitverse.ru/api/repos/LowiK/LowiKLive/raw/branch/main/ObhodBSfree.txt",
     "https://sub-rostunnel.vercel.app/subs/gen.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
-    "https://raw.githubusercontent.com/terik21/HiddifySubs-VlessKeys/refs/heads/main/WhiteKeys",
 ]
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
