@@ -699,6 +699,25 @@
         right: 10px;
     }
 }
+        /* Стили для условий использования */
+.terms-list { list-style: none; margin: 20px 0; text-align: left; }
+.terms-item {
+    display: flex; gap: 15px; margin-bottom: 15px;
+    padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.terms-item i { font-size: 1.2rem; margin-top: 3px; }
+.terms-item.danger i { color: #ef4444; }
+.terms-item.info i { color: var(--secondary); }
+.terms-item.warning i { color: #f59e0b; }
+
+.accept-btn {
+    width: 100%; padding: 16px; background: var(--primary);
+    color: white; border: none; border-radius: 12px;
+    font-weight: 700; cursor: pointer; font-size: 1.1rem;
+    transition: all 0.3s; margin-top: 10px;
+}
+.accept-btn:hover { background: #7c3aed; transform: translateY(-2px); }
         
     </style>
 </head>
@@ -1005,12 +1024,56 @@
                 });
             };
 
-            // Modal Events
-            openBtn.addEventListener('click', () => {
-                renderLinks();
-                modal.style.display = 'flex';
-                setTimeout(() => modal.classList.add('active'), 10);
-            });
+            // Функция отображения правил
+function showTerms() {
+    const modalTitle = document.querySelector('.modal-title');
+    const linksContent = document.getElementById('linksContent');
+    
+    modalTitle.innerHTML = '<i class="fas fa-clipboard-check" style="color: var(--primary); margin-right: 10px;"></i>Правила использования';
+    
+    linksContent.innerHTML = `
+        <div style="padding: 5px;">
+            <p style="color: var(--text-muted); margin-bottom: 15px;">Для доступа к ключам подтвердите согласие с правилами:</p>
+            <ul class="terms-list">
+                <li class="terms-item danger">
+                    <i class="fas fa-ban"></i>
+                    <div>
+                        <strong>Никаких торрентов</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">P2P трафик запрещен. Использование торрентов приведет к блокировке сервера.</p>
+                    </div>
+                </li>
+                <li class="terms-item info">
+                    <i class="fas fa-mobile-screen-button"></i>
+                    <div>
+                        <strong>Только мобильные сети</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Конфиги предназначены исключительно для обхода "белых списков" мобильных операторов.</p>
+                    </div>
+                </li>
+                <li class="terms-item warning">
+                    <i class="fas fa-user-gear"></i>
+                    <div>
+                        <strong>Самостоятельная настройка</strong>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Вы обязуетесь самостоятельно решать базовые проблемы (переподключение, выбор зеркала).</p>
+                    </div>
+                </li>
+            </ul>
+            <button class="accept-btn" id="confirmTermsBtn">Я принимаю условия</button>
+        </div>
+    `;
+
+    document.getElementById('confirmTermsBtn').addEventListener('click', () => {
+        modalTitle.innerHTML = '<i class="fas fa-server" style="color: var(--primary); margin-right: 10px;"></i>Конфигурации';
+        renderLinks(); // Вызов вашей стандартной функции отрисовки ссылок
+    });
+}
+
+// Измените событие открытия модалки
+openBtn.addEventListener('click', () => {
+    showTerms(); // Сначала показываем правила
+    modal.style.display = 'flex';
+    setTimeout(() => modal.classList.add('active'), 10);
+});
+            
 
             const closeModalFunc = () => {
                 modal.classList.remove('active');
