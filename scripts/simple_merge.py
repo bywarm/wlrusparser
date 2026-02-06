@@ -3,7 +3,6 @@
 Скрипт для парсинга.
 Разрешается только некоммерческое использование.
 (если вы будете продавать конфиги из парсера - это будет нарушение лицензии)
-Сам парсер является полностью переписанным парсером goida-vpn-configs.
 """
 
 from requests.adapters import HTTPAdapter
@@ -322,7 +321,7 @@ URLS = [
     "https://raw.githubusercontent.com/RKPchannel/RKP_bypass_configs/refs/heads/main/configs",
     "https://raw.githubusercontent.com/Ai123999/WhiteeListSub/refs/heads/main/whitelistkeys",
     "https://raw.githubusercontent.com/EtoNeYaProject/etoneyaproject.github.io/refs/heads/main/whitelist",
-    "https://s3c3.001.gpucloud.ru/dixsm/htxml",
+    "https://raw.githubusercontent.com/gbwltg/gbwl/refs/heads/main/m2EsPqwmlc",
     "https://gitverse.ru/api/repos/LowiK/LowiKLive/raw/branch/main/ObhodBSfree.txt",
     "https://sub-rostunnel.vercel.app/subs/gen.txt",
     "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt",
