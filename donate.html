@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WL RUS | Sidylink</title>
+    <style>
+        :root {
+            --space-bg: #0b0d17;
+            --nebula-purple: #6b46c1;
+            --nebula-blue: #3182ce;
+            --accent-cyan: #4fd1c5;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Star Background */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: transparent;
+        }
+
+        /* Glass Card */
+        .donation-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .profile-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-cyan);
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        h1 { font-size: 1.8rem; margin-bottom: 5px; letter-spacing: 1px; }
+        p.tagline { color: #a0aec0; font-size: 0.9rem; margin-bottom: 30px; }
+
+        /* Address Blocks */
+        .crypto-section {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .crypto-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.2s;
+        }
+
+        .crypto-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-cyan);
+        }
+
+        .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            color: #e2e8f0;
+        }
+
+        /* Buttons */
+        .link-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-tg { background: #0088cc; color: white; }
+        .btn-dalink { background: linear-gradient(45deg, #ff4b2b, #ff416c); color: white; }
+
+        .btn:hover { opacity: 0.9; transform: scale(1.03); }
+
+        footer { margin-top: 30px; font-size: 0.7rem; color: #718096; }
+    </style>
+</head>
+<body>
+
+    <div class="stars-container"></div>
+
+    <div class="donation-card">
+        <img src="https://via.placeholder.com/80/4fd1c5/ffffff?text=🚀" alt="Logo" class="profile-img">
+        
+        <h1>Поддержите проект</h1>
+        <p class="tagline"></p>
+
+        <div class="crypto-section">
+            <div class="crypto-item">
+                <span class="label">Bitcoin (BTC)</span>
+                <span class="address">bc1qv2e4rg644hu0mmew05w5cuyq8aswwqzf2xwvsr</span>
+            </div>
+            <div class="crypto-item">
+                <span class="label">Ethereum</span>
+                <span class="address">0xDa706f189a0C1Fe15DdF2cab39190FbF19c9ccF2</span>
+            </div>
+            <div class="crypto-item">
+                <span class="label">TON</span>
+                <span class="address">UQAcZdwPMsqe3p5AB8XJbcKyvlOWF21NWWoskocOdYTT3SWM</span>
+            </div>
+        </div>
+
+        <div class="link-container">
+            <a href="https://t.me/wlrustg" class="btn btn-tg" target="_blank">Telegram</a>
+            <a href="https://dalink.to/sidylinkyoutubeds" class="btn btn-dalink" target="_blank">DonationAlerts</a>
+        </div>
+
+        <footer>© 2026 WLRUS. Права вообще не защищены.</footer>
+    </div>
+
+</body>
+</html>
